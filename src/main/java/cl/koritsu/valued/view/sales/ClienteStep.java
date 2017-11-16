@@ -3,12 +3,18 @@ package cl.koritsu.valued.view.sales;
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+
+import cl.koritsu.valued.component.ClienteWindow;
+import cl.koritsu.valued.domain.Cliente;
+
 import com.vaadin.ui.TextField;
 
 import cl.koritsu.valued.domain.enums.TIPO_OPERACION;
@@ -19,6 +25,11 @@ public class ClienteStep implements WizardStep {
 	public String getCaption() {
 		return "Cliente";
 	}
+	
+    private Cliente getCurrentCliente() {
+        return (Cliente) VaadinSession.getCurrent().getAttribute(
+        		Cliente.class.getName());
+    }
 
 	@Override
 	public Component getContent() {
@@ -34,8 +45,20 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
-				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
-				addComponents(tf,btn);
+				
+				final Cliente cliente = getCurrentCliente();
+				Button btnAgregarCliente = new Button(null,FontAwesome.PLUS_CIRCLE);				  
+				btnAgregarCliente.addClickListener(
+						new Button.ClickListener() {
+
+							@Override
+							public void buttonClick(ClickEvent event) {
+								// TODO Auto-generated method stub
+								ClienteWindow.open(cliente, false);								
+							}
+						});				
+						
+				addComponents(tf,btnAgregarCliente);
 			}
 		});
 		
@@ -54,6 +77,7 @@ public class ClienteStep implements WizardStep {
 		});
 		Label sucursalSel = new Label();
 		gl.addComponent(sucursalSel);
+		
 		
 		//ejecutivo
 		gl.addComponents(new Label("Nombre Ejecutivo"));

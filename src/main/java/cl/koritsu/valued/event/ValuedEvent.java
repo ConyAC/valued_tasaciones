@@ -82,4 +82,6 @@ public abstract class ValuedEvent {
     public static class ProfileUpdatedEvent {
     }
 
+    public static class ClienteUpdatedEvent {
+    }
 }
