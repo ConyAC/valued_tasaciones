@@ -42,19 +42,7 @@ import cl.koritsu.valued.domain.MovieRevenue;
 @SuppressWarnings("serial")
 public class SalesView extends VerticalLayout implements View, WizardProgressListener {
 
-   // private final Timeline timeline;
     private ComboBox movieSelect;
-/*
-    private static final SolidColor[] COLORS = new SolidColor[] {
-            new SolidColor(52, 154, 255), new SolidColor(242, 81, 57),
-            new SolidColor(255, 201, 35), new SolidColor(83, 220, 164) };
-    private static final SolidColor[] COLORS_ALPHA = new SolidColor[] {
-            new SolidColor(52, 154, 255, 0.3),
-            new SolidColor(242, 81, 57, 0.3),
-            new SolidColor(255, 201, 35, 0.3),
-            new SolidColor(83, 220, 164, 0.3) };
-            */
-    private int colorIndex = -1;
     
     private Wizard wizard;
 
