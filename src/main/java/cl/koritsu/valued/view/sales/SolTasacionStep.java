@@ -29,15 +29,18 @@ public class SolTasacionStep implements WizardStep {
 		gl.setMargin(true);
 		gl.setWidth("100%");
 		
-		
 		//tipo de operacion
 		gl.addComponents(new Label("Tipo de Informe"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				int i = 0;
 				for(TIPO_INFORME tipo : TIPO_INFORME.values()) {
 					tf.addItem(tipo);
+					if(i == 0)
+						tf.setValue(tipo);
+					i++;
 				}
 				addComponents(tf);
 			}
@@ -52,6 +55,7 @@ public class SolTasacionStep implements WizardStep {
 				ComboBox cb = new ComboBox();
 				cb.addItem("$");
 				cb.addItem("UF");
+				cb.setValue("$");
 				TextField tf = new TextField();
 				addComponents(cb,tf);
 			}

@@ -24,8 +24,8 @@ public class BienStep implements WizardStep {
 		GridLayout gl = new GridLayout(4,20);
 		gl.setSpacing(true);
 		gl.setMargin(true);
+		//gl.setSizeFull();
 		gl.setWidth("100%");
-		
 		
 		// clase de bien
 		gl.addComponents(new Label("Clase Bien"));
@@ -35,6 +35,7 @@ public class BienStep implements WizardStep {
 				OptionGroup tf = new OptionGroup();
 				tf.addItem("Inmueble");
 				tf.addItem("Mueble");
+				tf.setValue("Inmueble");
 				addComponents(tf);
 			}
 		});
@@ -46,8 +47,12 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				int i = 0;
 				for(TIPO_BIEN tipo : TIPO_BIEN.values()) {
 					tf.addItem(tipo);
+					if(i == 0)
+						tf.setValue(tipo);
+					i++;
 				}
 				addComponents(tf);
 			}
@@ -59,8 +64,27 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
-				for(String tipo : new String[] {"",""}) {
+				int i = 0;
+				for(String tipo : new String[] {
+						"Arica y Parinacota",
+						"Tarapacá",
+						"Antofagasta",
+						"Atacama",
+						"Coquimbo",
+						"Valparaíso",
+						"Metropolitana De Santiago",
+						"Del Libertador Gral. Bernardo O'Higgins",
+						"Del Maule",
+						"Del Biobío",
+						"De La Araucanía",
+						"De Los Ríos",
+						"De Los Lagos",
+						"Aysén Del Gral. Carlos Ibañez Del Campo",
+						"Magallanes Y De La Antártica Chilena"}) {
 					tf.addItem(tipo);
+					if(i == 0)
+						tf.setValue(tipo);
+					i++;
 				}
 				addComponents(tf);
 			}
@@ -72,8 +96,43 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
-				for(String tipo : new String[] {"",""}) {
+				int i = 0;
+				for(String tipo : new String[] {"Arica",
+						"Camarones",
+						"Putre",
+						"General Lagos",
+						"Iquique",
+						"Alto Hospicio",
+						"Pozo Almonte",
+						"Camiña",
+						"Colchane",
+						"Huara",
+						"Pica",
+						"Antofagasta",
+						"Mejillones",
+						"Sierra Gorda",
+						"Taltal",
+						"Calama",
+						"Ollagüe",
+						"San Pedro de Atacama",
+						"Tocopilla",
+						"María Elena",
+						"Copiapó",
+						"Caldera",
+						"Tierra Amarilla",
+						"Chañaral",
+						"Diego de Almagro",
+						"Vallenar",
+						"Alto del Carmen",
+						"Freirina",
+						"Huasco",
+						"La Serena",
+						"Coquimbo",
+						"Andacollo"}) {
 					tf.addItem(tipo);
+					if(i == 0)
+						tf.setValue(tipo);
+					i++;
 				}
 				addComponents(tf);
 			}

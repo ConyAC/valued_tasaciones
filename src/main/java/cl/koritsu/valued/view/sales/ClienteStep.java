@@ -87,8 +87,12 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				int i = 0;
 				for(TIPO_OPERACION tipo : TIPO_OPERACION.values()) {
 					tf.addItem(tipo);
+					if(i == 0)
+						tf.setValue(tipo);
+					i++;
 				}
 				addComponents(tf);
 			}

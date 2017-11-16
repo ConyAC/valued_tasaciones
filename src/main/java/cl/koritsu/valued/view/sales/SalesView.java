@@ -80,6 +80,8 @@ public class SalesView extends VerticalLayout implements View, WizardProgressLis
     private VerticalLayout buildContent() {
     	
     	 wizard = new Wizard();
+    	 wizard.setSizeFull();
+    	 
          wizard.setUriFragmentEnabled(true);
          wizard.addListener(this);
          wizard.getBackButton().setCaption("Anterior");
@@ -94,6 +96,7 @@ public class SalesView extends VerticalLayout implements View, WizardProgressLis
          wizard.setSizeFull();
 		return new VerticalLayout(){
 			{
+				setSizeFull();
 				addComponent(wizard);
 			}
 		};
