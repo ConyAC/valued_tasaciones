@@ -4,23 +4,37 @@ import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
 
 import cl.koritsu.valued.component.ClienteWindow;
 import cl.koritsu.valued.domain.Cliente;
 
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 
 import cl.koritsu.valued.domain.enums.TIPO_OPERACION;
 
-public class ClienteStep implements WizardStep {
 
+public class ClienteStep implements WizardStep {
+	
+	FormLayout testLayout, form;
+	VerticalLayout generalDetailLayout, ejecutivoDetailLayout;
+	HorizontalSplitPanel hsp;
+	Button btnEjecutivo, btnSucursal;
+	
 	@Override
 	public String getCaption() {
 		return "Cliente";
@@ -33,12 +47,188 @@ public class ClienteStep implements WizardStep {
 
 	@Override
 	public Component getContent() {
+		
+		hsp = new HorizontalSplitPanel();
+		hsp.setSizeFull();
+		
+		VerticalLayout usersListLayout = drawForm();
+		hsp.addComponent(usersListLayout);
+				
+		return hsp;
+	}
+
+	/*
+	 * Permite dibujar el formulario de nuevo ingreso para sucursal
+	 */
+	private VerticalLayout drawFormAddSucursal() {
+		
+		VerticalLayout vl = new VerticalLayout();
+		vl.setSpacing(true);
+		vl.setMargin(true);
+		vl.setSizeFull();
+		
+		FormLayout detailLayout = new FormLayout();
+		detailLayout.setMargin(true);
+		detailLayout.setSpacing(true);
+		
+		Panel p = new Panel(detailLayout);
+		p.setCaption("Creando nueva Sucursal");
+		p.setSizeFull();
+		vl.addComponent(p);
+		vl.setExpandRatio(p, 1.0f);
+
+		// Loop through the properties, build fields for them and add the fields
+        // to this UI 
+		TextField tfNombre = new TextField("Nombre");
+		tfNombre.setNullRepresentation("");
+		detailLayout.addComponent(tfNombre);
+		
+		TextField tfDireccion = new TextField("Dirección");
+		tfDireccion.setNullRepresentation("");
+		detailLayout.addComponent(tfDireccion);
+		
+		ComboBox cbComuna = new ComboBox("Comuna");
+		cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbComuna.setItemCaptionPropertyId("name");
+		cbComuna.setWidth("100%");
+		detailLayout.addComponent(cbComuna);
+		
+		ComboBox cbRegion = new ComboBox("Región");
+		cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbRegion.setItemCaptionPropertyId("name");
+		cbRegion.setWidth("100%");
+		detailLayout.addComponent(cbRegion);
+
+		HorizontalLayout botones = new HorizontalLayout();
+		botones.setHeight("60px");
+		botones.setSpacing(true);
+		
+		//agrega un boton que hace el commit
+        Button btnSave = new Button("Guardar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+        	}
+        }){{
+        	setIcon(FontAwesome.SAVE);
+        }};
+        
+        botones.addComponent(btnSave);
+        botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
+        
+      //agrega un boton que cencela acción
+        Button btnCancel = new Button("Cancelar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		hsp.removeComponent(generalDetailLayout);	
+        		btnSucursal.setEnabled(true);        		
+        	}
+        }){{
+        	addStyleName("link");
+        }};
+        
+        botones.addComponent(btnCancel);
+        botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
+        detailLayout.addComponent(botones);
+        
+		return vl;
+	}
+	
+	/*
+	 * Permite dibujar el formulario de nuevo ingreso para ejecutivo
+	 */
+	private VerticalLayout drawFormAddEjecutivo() {
+		
+		VerticalLayout vl = new VerticalLayout();
+		vl.setSpacing(true);
+		vl.setMargin(true);
+		vl.setSizeFull();
+		
+		FormLayout detailLayout = new FormLayout();
+		detailLayout.setMargin(true);
+		detailLayout.setSpacing(true);
+		
+		Panel p = new Panel(detailLayout);
+		p.setCaption("Creando nuevo ejecutivo");
+		p.setSizeFull();
+		vl.addComponent(p);
+		vl.setExpandRatio(p, 1.0f);
+
+		// Loop through the properties, build fields for them and add the fields
+        // to this UI 
+		TextField tfNombre = new TextField("Nombre");
+		tfNombre.setNullRepresentation("");
+		detailLayout.addComponent(tfNombre);
+		
+		TextField tfApellidos = new TextField("Apellidos");
+		tfApellidos.setNullRepresentation("");
+		detailLayout.addComponent(tfApellidos);
+		
+		TextField tfFono = new TextField("Teléfono Fijo");
+		tfFono.setNullRepresentation("");
+		detailLayout.addComponent(tfFono);
+		
+		TextField tfMovil= new TextField("Teléfono Móvil");
+		tfMovil.setNullRepresentation("");
+		detailLayout.addComponent(tfMovil);		
+
+		TextField tfEmail = new TextField("Teléfono Email");
+		tfEmail.setNullRepresentation("");
+		detailLayout.addComponent(tfEmail);
+
+		HorizontalLayout botones = new HorizontalLayout();
+		botones.setHeight("60px");
+		botones.setSpacing(true);
+		
+		//agrega un boton que hace el commit
+        Button btnSave = new Button("Guardar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		Notification.show("Ejecutivo guardado correctamente",Type.TRAY_NOTIFICATION);
+        	}
+        }){{
+        	setIcon(FontAwesome.SAVE);
+        }};
+        
+        botones.addComponent(btnSave);
+        botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
+        
+      //agrega un boton que cencela acción
+        Button btnCancel = new Button("Cancelar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		hsp.removeComponent(generalDetailLayout);	
+        		btnEjecutivo.setEnabled(true); 
+        	}
+        }){{
+        	addStyleName("link");
+        }};
+        
+        botones.addComponent(btnCancel);
+        botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
+        detailLayout.addComponent(botones);
+        
+		return vl;
+	}
+
+	/*
+	 * Permite dibujar el formulario de ingreso
+	 */
+	private VerticalLayout drawForm() {
+		
+		VerticalLayout vl = new VerticalLayout();
+		vl.setSpacing(true);
+		vl.setMargin(true);
+		vl.setSizeFull();
+		
 		GridLayout gl = new GridLayout(3,10);
 		gl.setSpacing(true);
 		gl.setMargin(true);
-		gl.setWidth("100%");
-		
-		
+                
 		// cliente
 		gl.addComponents(new Label("Nombre Cliente"));
 		gl.addComponent(new HorizontalLayout(){
@@ -53,8 +243,7 @@ public class ClienteStep implements WizardStep {
 
 							@Override
 							public void buttonClick(ClickEvent event) {
-								// TODO Auto-generated method stub
-								ClienteWindow.open(cliente, false);								
+								ClienteWindow.open(cliente);								
 							}
 						});				
 						
@@ -71,8 +260,19 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
-				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
-				addComponents(tf,btn);
+				btnSucursal = new Button(FontAwesome.PLUS_CIRCLE);
+				btnSucursal.addClickListener(
+						new Button.ClickListener() {
+
+							@Override
+							public void buttonClick(ClickEvent event) {
+								generalDetailLayout = drawFormAddSucursal();	
+								hsp.addComponent(generalDetailLayout);
+								btnSucursal.setEnabled(false);
+							}
+						});	
+			        
+				addComponents(tf,btnSucursal);
 			}
 		});
 		Label sucursalSel = new Label();
@@ -85,8 +285,18 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
-				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
-				addComponents(tf,btn);
+				btnEjecutivo = new Button(FontAwesome.PLUS_CIRCLE);
+				btnEjecutivo.addClickListener(
+						new Button.ClickListener() {
+
+							@Override
+							public void buttonClick(ClickEvent event) {
+								generalDetailLayout = drawFormAddEjecutivo();	
+								hsp.addComponent(generalDetailLayout);
+								btnEjecutivo.setEnabled(false);
+							}
+						});	
+				addComponents(tf,btnEjecutivo);
 			}
 		});
 		Label ejecutivoSel = new Label();
@@ -122,9 +332,12 @@ public class ClienteStep implements WizardStep {
 			}
 		});
 		
-		return gl;
+		vl.addComponent(gl);
+		vl.setExpandRatio(gl, 1.0f);
+		
+		return vl;
 	}
-
+	
 	@Override
 	public boolean onAdvance() {
 		return true;
@@ -134,5 +347,4 @@ public class ClienteStep implements WizardStep {
 	public boolean onBack() {
 		return false;
 	}
-
 }
