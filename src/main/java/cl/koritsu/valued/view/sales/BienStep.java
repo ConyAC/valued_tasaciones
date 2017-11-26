@@ -29,6 +29,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
+import cl.koritsu.valued.domain.enums.ESTADO_TASACION;
 import cl.koritsu.valued.domain.enums.TIPO_BIEN;
 
 public class BienStep implements WizardStep {
@@ -401,44 +402,48 @@ public class BienStep implements WizardStep {
 	 * Permite situar el mapa de acuerdo a los parametros ingresados por el usuario.
 	 */
 	private void refreshMap(String direccion, int zoom) throws IOException {
-		System.out.println("Ver direccion :"+direccion);
 		Geocoder geo = new Geocoder();
 		GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(direccion).setLanguage("en")
 				.getGeocoderRequest();
 		GeocodeResponse geocoderResponse = geo.geocode(geocoderRequest);
-		
-	    switch (geocoderResponse.getStatus()) {
-	         case ERROR:
-	        	 Notification.show("Se ha producido un error al realizar la búsqueda",Type.ERROR_MESSAGE);
-	             break;
-	         case INVALID_REQUEST:
-	        	 Notification.show("La solicitud es invalida, revise los parametros ingresados.", Type.WARNING_MESSAGE);
-	             break;
-	         case OVER_QUERY_LIMIT:
-	        	 Notification.show("Ha excedido la cuota permitida en su plan.", Type.ASSISTIVE_NOTIFICATION);
-	             break;
-	         case UNKNOWN_ERROR:
-	        	 Notification.show("No se pudo procesar la solicitud por un error en el servidor.", Type.ERROR_MESSAGE);
-	             break;
-	         case REQUEST_DENIED:
-		         Notification.show("Se ha rechazado la geolocalización.", Type.ASSISTIVE_NOTIFICATION);
-	             break;
-	         case ZERO_RESULTS:
-	        	 Notification.show("No existen resultados para la dirección ingresada.", Type.TRAY_NOTIFICATION);
-	             break;
-			case OK:
-				System.out.println("Ver Respuesta :"+geocoderResponse);
-				if(!geocoderResponse.getResults().isEmpty()) {
+		if(geocoderResponse.getStatus() != null) {
+		    switch (geocoderResponse.getStatus()) {
+		         case ERROR:
+		        	 Notification.show("Se ha producido un error al realizar la búsqueda",Type.ERROR_MESSAGE);
+		             break;
+		         case INVALID_REQUEST:
+		        	 Notification.show("La solicitud es invalida, revise los parametros ingresados.", Type.WARNING_MESSAGE);
+		             break;
+		         case OVER_QUERY_LIMIT:
+		        	 Notification.show("Ha excedido la cuota permitida en su plan.", Type.ASSISTIVE_NOTIFICATION);
+		             break;
+		         case UNKNOWN_ERROR:
+		        	 Notification.show("No se pudo procesar la solicitud por un error en el servidor.", Type.ERROR_MESSAGE);
+		             break;
+		         case REQUEST_DENIED:
+			         Notification.show("Se ha rechazado la geolocalización.", Type.ASSISTIVE_NOTIFICATION);
+		             break;
+		         case ZERO_RESULTS:
+		        	 Notification.show("No existen resultados para la dirección ingresada.", Type.TRAY_NOTIFICATION);
+		             break;
+				case OK:
+					for(GoogleMapMarker item : googleMap.getMarkers()){
+						if(item.getCaption().equals(ESTADO_TASACION.NUEVA_TASACION.toString())){
+							googleMap.removeMarker(item);
+						}
+					}
+					
+					System.out.println("Ver Respuesta :"+geocoderResponse);					
 					double lat = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLat().doubleValue();
 					double lon = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLng().doubleValue();
 					
 					googleMap.setCenter(new LatLon(lat,lon));
-					googleMap.addMarker("Solicitud de Tasación: BCI", new LatLon(
+					googleMap.addMarker(ESTADO_TASACION.NUEVA_TASACION.toString(), new LatLon(
 							lat, lon), true, "VAADIN/img/pin_tas_process.png");
-					googleMap.setZoom(zoom);
-				}
-			default:
-				break;
-	     }		
+					googleMap.setZoom(zoom);					
+				default:
+					break;
+		     }
+		 }
 	}
 }
