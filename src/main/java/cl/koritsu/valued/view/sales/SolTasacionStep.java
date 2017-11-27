@@ -2,6 +2,8 @@ package cl.koritsu.valued.view.sales;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
@@ -53,11 +55,13 @@ public class SolTasacionStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox cb = new ComboBox();
+				cb.setWidth("70px");
 				cb.addItem("$");
 				cb.addItem("UF");
 				cb.setValue("$");
 				TextField tf = new TextField();
 				addComponents(cb,tf);
+				setExpandRatio(tf, 1f);
 			}
 		});
 		
@@ -65,26 +69,41 @@ public class SolTasacionStep implements WizardStep {
 		
 		//sucursal
 		gl.addComponents(new Label("Requiere tasador"));
+		
+		final CheckBox cb = new CheckBox();
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				CheckBox tf = new CheckBox();
-				addComponents(tf);
+				cb.setValue(true);
+				addComponents(cb);
 			}
 		});
 		gl.addComponent(new Label(""));
 		
 		//ejecutivo
-		gl.addComponents(new Label("Nombre Tasador"));
-		gl.addComponent(new HorizontalLayout(){
+		final Label lbNombreTasador = new Label("Nombre Tasador");
+		final HorizontalLayout hlNombreTasador =  new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
 				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
 				addComponents(tf,btn);
 			}
-		});
+		};
+		gl.addComponents(lbNombreTasador);
+		gl.addComponent(hlNombreTasador);
 		gl.addComponent(new Label(""));
+		
+		//solo muestra el tasador si el checkbox está seleccionado
+		cb.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				Boolean isSelected = (Boolean)event.getProperty().getValue();
+				lbNombreTasador.setVisible(isSelected);
+				hlNombreTasador.setVisible(isSelected);
+			}
+		});
 		
 		//solicitante
 		gl.addComponents(new Label("Fecha Encargo"));

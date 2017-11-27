@@ -12,8 +12,18 @@ public final class Transaction {
     private double price;
     private long movieId;
     private String title;
+    private String vacio;
+    
+    
 
-    public long getMovieId() {
+    public String getVacio() {
+		return "";
+	}
+
+	public void setVacio(String vacio) {
+	}
+
+	public long getMovieId() {
         return movieId;
     }
 

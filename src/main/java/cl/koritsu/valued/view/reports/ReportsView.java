@@ -29,9 +29,9 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.ReportsCountUpdatedEvent;
 import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.reports.ReportEditor.PaletteItemType;
 import cl.koritsu.valued.view.reports.ReportEditor.ReportEditorListener;
 
@@ -48,7 +48,7 @@ public final class ReportsView extends TabSheet implements View, CloseHandler,
         setCloseHandler(this);
         ValuedEventBus.register(this);
 
-        addTab(buildDrafts());
+        addTab(new VerticalLayout(){{setSizeFull();setCaption("Todas");}});
     }
 
     private Component buildDrafts() {

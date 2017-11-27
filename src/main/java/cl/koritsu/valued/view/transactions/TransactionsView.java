@@ -38,6 +38,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.Align;
+import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.Table.TableDragMode;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -89,34 +90,18 @@ public final class TransactionsView extends VerticalLayout implements View {
         header.setSpacing(true);
         Responsive.makeResponsive(header);
 
-        Label title = new Label("Latest Transactions");
+        Label title = new Label("Mis Tasaciones en Curso");
         title.setSizeUndefined();
         title.addStyleName(ValoTheme.LABEL_H1);
         title.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(title);
 
-        createReport = buildCreateReport();
-        HorizontalLayout tools = new HorizontalLayout(buildFilter(),
-                createReport);
+        HorizontalLayout tools = new HorizontalLayout(buildFilter());
         tools.setSpacing(true);
         tools.addStyleName("toolbar");
         header.addComponent(tools);
 
         return header;
-    }
-
-    private Button buildCreateReport() {
-        final Button createReport = new Button("Create Report");
-        createReport
-                .setDescription("Create a new report from the selected transactions");
-        createReport.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                createNewReportFromSelection();
-            }
-        });
-        createReport.setEnabled(false);
-        return createReport;
     }
 
     private Component buildFilter() {
@@ -211,36 +196,23 @@ public final class TransactionsView extends VerticalLayout implements View {
         table.setColumnAlignment("seats", Align.RIGHT);
         table.setColumnAlignment("price", Align.RIGHT);
 
-        table.setVisibleColumns("time", "country", "city", "theater", "room",
-                "title", "seats", "price");
-        table.setColumnHeaders("Time", "Country", "City", "Theater", "Room",
-                "Title", "Seats", "Price");
+        table.setVisibleColumns("vacio","room","time", "country");
+        table.setColumnHeaders("","N° Tasación", "Fecha visita", "Observacion");
+        
+        table.addGeneratedColumn("Acciones", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				return new Button(FontAwesome.EDIT){{}};
+			}
+		});
 
         table.setFooterVisible(true);
         table.setColumnFooter("time", "Total");
 
-        table.setColumnFooter(
-                "price",
-                "$"
-                        + DECIMALFORMAT.format(ValuedUI.getDataProvider()
-                                .getTotalSum()));
-
         // Allow dragging items to the reports menu
         table.setDragMode(TableDragMode.MULTIROW);
         table.setMultiSelect(true);
-
-        table.addActionHandler(new TransactionsActionHandler());
-
-        table.addValueChangeListener(new ValueChangeListener() {
-            @Override
-            public void valueChange(final ValueChangeEvent event) {
-                if (table.getValue() instanceof Set) {
-                    Set<Object> val = (Set<Object>) table.getValue();
-                    createReport.setEnabled(val.size() > 0);
-                }
-            }
-        });
-        table.setImmediate(true);
 
         return table;
     }

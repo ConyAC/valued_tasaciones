@@ -42,14 +42,13 @@ import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.MovieDetailsWindow;
 import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 
 @SuppressWarnings("serial")
 public final class ScheduleView extends CssLayout implements View {
 
     private Calendar calendar;
-    private final Component tray;
 
     public ScheduleView() {
         setSizeFull();
@@ -60,15 +59,12 @@ public final class ScheduleView extends CssLayout implements View {
         tabs.setSizeFull();
         tabs.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
 
-        tabs.addComponent(buildCalendarView());
-        tabs.addComponent(buildCatalogView());
+        tabs.addComponent(new VerticalLayout(){{setSizeFull();setCaption("Clientes");}});
+        tabs.addComponent(new VerticalLayout(){{setSizeFull();setCaption("Tasadores");}});
 
         addComponent(tabs);
 
-        tray = buildTray();
-        addComponent(tray);
 
-        injectMovieCoverStyles();
     }
 
     @Override
@@ -113,7 +109,6 @@ public final class ScheduleView extends CssLayout implements View {
         calendar.setHandler(new EventClickHandler() {
             @Override
             public void eventClick(final EventClick event) {
-                setTrayVisible(false);
                 MovieEvent movieEvent = (MovieEvent) event.getCalendarEvent();
                 MovieDetailsWindow.open(movieEvent.getMovie(),
                         movieEvent.getStart(), movieEvent.getEnd());
@@ -138,7 +133,6 @@ public final class ScheduleView extends CssLayout implements View {
                             - editableEvent.getStart().getTime();
                     setDates(editableEvent, newFromTime,
                             new Date(newFromTime.getTime() + length));
-                    setTrayVisible(true);
                 }
             }
 
@@ -218,7 +212,6 @@ public final class ScheduleView extends CssLayout implements View {
         ClickListener close = new ClickListener() {
             @Override
             public void buttonClick(final ClickEvent event) {
-                setTrayVisible(false);
             }
         };
 
@@ -239,15 +232,6 @@ public final class ScheduleView extends CssLayout implements View {
         tray.addComponent(discard);
         tray.setComponentAlignment(discard, Alignment.MIDDLE_LEFT);
         return tray;
-    }
-
-    private void setTrayVisible(final boolean visible) {
-        final String styleReveal = "v-animate-reveal";
-        if (visible) {
-            tray.addStyleName(styleReveal);
-        } else {
-            tray.removeStyleName(styleReveal);
-        }
     }
 
     @Subscribe

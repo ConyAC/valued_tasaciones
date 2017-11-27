@@ -90,22 +90,22 @@ public final class DashboardView extends Panel implements View,
         sparks.setWidth("100%");
         Responsive.makeResponsive(sparks);
 
-        SparklineChart s = new SparklineChart("Traffic", "K", "",
+        SparklineChart s = new SparklineChart("Sol. Creadas", "K", "",
                // DummyDataGenerator.chartColors[0],
         		22, 20, 80);
         sparks.addComponent(s);
 
-        s = new SparklineChart("Revenue / Day", "M", "$",
+        s = new SparklineChart("Monto Esperado", "M UF", "",
                 //DummyDataGenerator.chartColors[2],
                 8, 89, 150);
         sparks.addComponent(s);
 
-        s = new SparklineChart("Checkout Time", "s", "",
+        s = new SparklineChart("Monto Facturado", " M UF", "",
         		//DummyDataGenerator.chartColors[3],
                 10, 30, 120);
         sparks.addComponent(s);
 
-        s = new SparklineChart("Theater Fill Rate", "%", "",
+        s = new SparklineChart("Tiempo promedio de visita", " días", "",
         		//DummyDataGenerator.chartColors[5],
                 50, 34, 100);
         sparks.addComponent(s);
@@ -172,7 +172,7 @@ public final class DashboardView extends Panel implements View,
 
         dashboardPanels.addComponent(buildTopGrossingMovies());
         dashboardPanels.addComponent(buildNotes());
-        dashboardPanels.addComponent(buildTop10TitlesByRevenue());
+        dashboardPanels.addComponent(buildTopGrossingMovies());
         dashboardPanels.addComponent(buildPopularMovies());
 
         return dashboardPanels;
@@ -186,8 +186,8 @@ public final class DashboardView extends Panel implements View,
     }
 
     private Component buildNotes() {
-        TextArea notes = new TextArea("Notes");
-        notes.setValue("Remember to:\n· Zoom in and out in the Sales view\n· Filter the transactions and drag a set of them to the Reports tab\n· Create a new report\n· Change the schedule of the movie theater");
+        TextArea notes = new TextArea("Notas");
+        notes.setValue("Esta semana deben considerar to:\n· Se esperan 5 tasaciones la proxima semana de itau\n· La Fran tienen pendiente 6 visaciones");
         notes.setSizeFull();
         notes.addStyleName(ValoTheme.TEXTAREA_BORDERLESS);
         Component panel = createContentWrapper(notes);
@@ -245,17 +245,17 @@ public final class DashboardView extends Panel implements View,
         });
         max.setStyleName("icon-only");
         MenuItem root = tools.addItem("", FontAwesome.COG, null);
-        root.addItem("Configure", new Command() {
+        root.addItem("Config", new Command() {
             @Override
             public void menuSelected(final MenuItem selectedItem) {
-                Notification.show("Not implemented in this demo");
+                Notification.show("No implementado");
             }
         });
         root.addSeparator();
-        root.addItem("Close", new Command() {
+        root.addItem("Cerrar", new Command() {
             @Override
             public void menuSelected(final MenuItem selectedItem) {
-                Notification.show("Not implemented in this demo");
+                Notification.show("No implementado");
             }
         });
 

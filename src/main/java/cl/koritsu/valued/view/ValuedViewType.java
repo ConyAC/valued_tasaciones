@@ -11,11 +11,11 @@ import cl.koritsu.valued.view.schedule.ScheduleView;
 import cl.koritsu.valued.view.transactions.TransactionsView;
 
 public enum ValuedViewType {
-    DASHBOARD("reportería", DashboardView.class, FontAwesome.BAR_CHART, true), SALES(
+    DASHBOARD("reportería", DashboardView.class, FontAwesome.PIE_CHART, true), SALES(
             "nueva solicitud", SalesView.class, FontAwesome.BUILDING, false), TRANSACTIONS(
-            "transacciones en curso", TransactionsView.class, FontAwesome.TABLE, false), REPORTS(
-            "Buscar Tasación", ReportsView.class, FontAwesome.FILE_TEXT_O, true), SCHEDULE(
-            "Administración", ScheduleView.class, FontAwesome.CALENDAR_O, false);
+            "tasaciones en curso", TransactionsView.class, FontAwesome.TABLE, false), REPORTS(
+            "Buscar Tasación", ReportsView.class, FontAwesome.SEARCH, true), SCHEDULE(
+            "Administración", ScheduleView.class, FontAwesome.GEAR, false);
 
     private final String viewName;
     private final Class<? extends View> viewClass;
