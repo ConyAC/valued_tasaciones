@@ -1,10 +1,11 @@
-package cl.koritsu.valued.view.sales;
+package cl.koritsu.valued.view.nuevatasacion;
 
 import org.vaadin.teemu.wizards.Wizard;
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -13,12 +14,14 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
+import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+
 public class HonorarioClienteStep implements WizardStep {
 	
 	final String montoFijo = "Por monto fijo";
 	final String montoKM = "Por KM de desplazamiento";
 	
-	public HonorarioClienteStep(Wizard wizard){
+	public HonorarioClienteStep(Wizard wizard, BeanFieldGroup<NuevaSolicitudVO> fg){
 		
 	}
 
@@ -31,6 +34,7 @@ public class HonorarioClienteStep implements WizardStep {
 	public Component getContent() {
 		VerticalLayout vl = new VerticalLayout();
 		vl.setMargin(true);
+		vl.setSpacing(true);
 		vl.setWidth("100%");
 		
 		GridLayout glIngresoSolicitud = new GridLayout(2,2);
@@ -43,9 +47,25 @@ public class HonorarioClienteStep implements WizardStep {
 		CheckBox cb = new CheckBox("Tendrá desplazamiento?");
 		glIngresoSolicitud.addComponent(cb,0,1,1,1);
 		
-		final GridLayout glTipoMontoDesplazamiento = new GridLayout(2,10);
-		glTipoMontoDesplazamiento.setSpacing(true);
-		glTipoMontoDesplazamiento.setWidth("100%");
+		final GridLayout glMontoDesplazamientoFijo = new GridLayout(2,10);
+		glMontoDesplazamientoFijo.setSpacing(true);
+		glMontoDesplazamientoFijo.setWidth("100%");
+		glMontoDesplazamientoFijo.setVisible(false);
+		
+		final OptionGroup og = new OptionGroup("Como se ingresa el monto");
+		og.addItem(montoFijo);
+		og.addItem(montoKM);
+		og.select(montoFijo);
+		og.setVisible(false);
+
+		
+		glMontoDesplazamientoFijo.addComponents(new Label("Ingreso monto por desplazamiento"));
+		glMontoDesplazamientoFijo.addComponents(new TextField());
+		
+		final GridLayout glPorDesplazamiento = new GridLayout(2,8);
+		glPorDesplazamiento.setWidth("100%");
+		glPorDesplazamiento.setSpacing(true);
+		glPorDesplazamiento.setVisible(false);
 		
 		//muestra el panel de calculo de desplazamiento sólo si se selecciona que si
 		cb.addValueChangeListener(new ValueChangeListener() {
@@ -53,47 +73,83 @@ public class HonorarioClienteStep implements WizardStep {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				Boolean isSelected = (Boolean)event.getProperty().getValue();
-				glTipoMontoDesplazamiento.setVisible(isSelected);
+				og.setVisible(isSelected);
+				if(isSelected) {
+					String opcion= (String)og.getValue();
+					mostrarOcultarPanel(opcion,glMontoDesplazamientoFijo,glPorDesplazamiento);
+				}else {
+					glMontoDesplazamientoFijo.setVisible(isSelected);
+					glPorDesplazamiento.setVisible(isSelected);
+				}
 			}
 		});
 		
-		OptionGroup og = new OptionGroup("Como se ingresa el monto");
-		og.addItem(montoFijo);
-		og.addItem(montoKM);
-		og.select(montoFijo);
+		og.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				String opcion= (String)event.getProperty().getValue();
+				mostrarOcultarPanel(opcion,glMontoDesplazamientoFijo,glPorDesplazamiento);
+			}
+		});
 		
-		glTipoMontoDesplazamiento.addComponent(og,0,2,1,2);
+		final Label lbFactorEmpresa = new Label("Factor UF/KM - Empresa");
+		final Label lb2FactorEmpresa = new Label("1.1");
 		
-		glTipoMontoDesplazamiento.addComponents(new Label("Ingreso monto por desplazamiento"));
-		glTipoMontoDesplazamiento.addComponents(new TextField());
+		CheckBox cb2 = new CheckBox("¿Utilizar otro Factor UF/KM?");
+		glPorDesplazamiento.addComponent(cb2,0,0,1,0);
 		
-		GridLayout gl = new GridLayout(2,8);
-		glIngresoSolicitud.setWidth("100%");
-		glIngresoSolicitud.setSpacing(true);
+		glPorDesplazamiento.addComponents(lbFactorEmpresa);
+		glPorDesplazamiento.addComponents(lb2FactorEmpresa);
+
+		final Label lbFactor = new Label("Factor UF/KM");
+		final TextField tfFactor = new TextField();
 		
-		gl.addComponents(new Label("Factor UF/KM"));
-		gl.addComponents(new Label("1.1"));
+		glPorDesplazamiento.addComponents(lbFactor);
+		glPorDesplazamiento.addComponents(tfFactor);
 		
-		CheckBox cb2 = new CheckBox("¿Utilizar otro Factor UF/Km?");
-		gl.addComponent(cb2,0,5,1,5);
+		cb2.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				Boolean isSelected = (Boolean)event.getProperty().getValue();
+				lbFactorEmpresa.setVisible(!isSelected);
+				lb2FactorEmpresa.setVisible(!isSelected);
+				
+				lbFactor.setVisible(isSelected);
+				tfFactor.setVisible(isSelected);
+				
+			}
+		});
 		
-		gl.addComponents(new Label("Factor UF/KM"));
-		gl.addComponents(new TextField());
+		glPorDesplazamiento.addComponents(new Label("Km Total"));
+		glPorDesplazamiento.addComponents(new TextField());
 		
-		gl.addComponents(new Label("Km Total"));
-		gl.addComponents(new TextField());
+		glPorDesplazamiento.addComponents(new Label("Monto por\nDesplazamiento UF"));
+		glPorDesplazamiento.addComponents(new TextField());
 		
-		gl.addComponents(new Label("Monto por\nDesplazamiento UF"));
-		gl.addComponents(new TextField());
-		
-		gl.addComponents(new Label("Monto por\nDesplazamiento $"));
-		gl.addComponents(new TextField(){{setEnabled(false);}});
+		glPorDesplazamiento.addComponents(new Label("Monto por\nDesplazamiento $"));
+		glPorDesplazamiento.addComponents(new TextField(){{setEnabled(false);}});
 		
 		//return gl;
 		vl.addComponent(glIngresoSolicitud);
-		vl.addComponent(gl);
+		vl.addComponent(og);
+		vl.addComponent(glMontoDesplazamientoFijo);
+		vl.addComponent(glPorDesplazamiento);
 		
 		return vl;
+	}
+
+	/**
+	 * Muestra u oculta los paneles dados segùn el criterio de monto fijo o por km al tener asociado desplazamiento
+	 * @param opcion
+	 * @param glMontoDesplazamientoFijo
+	 * @param glPorDesplazamiento
+	 */
+	protected void mostrarOcultarPanel(String opcion, GridLayout glMontoDesplazamientoFijo,
+			GridLayout glPorDesplazamiento) {
+		glMontoDesplazamientoFijo.setVisible(opcion.compareTo(montoFijo)==0);
+		glPorDesplazamiento.setVisible(opcion.compareTo(montoKM)==0);
 	}
 
 	@Override

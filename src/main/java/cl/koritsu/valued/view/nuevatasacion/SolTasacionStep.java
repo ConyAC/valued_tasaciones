@@ -1,9 +1,10 @@
-package cl.koritsu.valued.view.sales;
+package cl.koritsu.valued.view.nuevatasacion;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
@@ -15,9 +16,14 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
-import cl.koritsu.valued.domain.enums.TIPO_INFORME;
+import cl.koritsu.valued.domain.enums.TipoInforme;
+import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 
 public class SolTasacionStep implements WizardStep {
+
+	public SolTasacionStep(BeanFieldGroup<NuevaSolicitudVO> fg) {
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public String getCaption() {
@@ -38,7 +44,7 @@ public class SolTasacionStep implements WizardStep {
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
 				int i = 0;
-				for(TIPO_INFORME tipo : TIPO_INFORME.values()) {
+				for(TipoInforme tipo : TipoInforme.values()) {
 					tf.addItem(tipo);
 					if(i == 0)
 						tf.setValue(tipo);

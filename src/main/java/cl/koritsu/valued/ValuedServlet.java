@@ -2,10 +2,8 @@ package cl.koritsu.valued;
 
 import javax.servlet.ServletException;
 
-import com.vaadin.server.VaadinServlet;
-
 @SuppressWarnings("serial")
-public class ValuedServlet extends VaadinServlet {
+public class ValuedServlet extends ru.xpoft.vaadin.SpringVaadinServlet {
 
     @Override
     protected final void servletInitialized() throws ServletException {

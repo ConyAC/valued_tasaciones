@@ -1,6 +1,7 @@
-package cl.koritsu.valued.view.sales;
+package cl.koritsu.valued.view.nuevatasacion;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
@@ -10,27 +11,36 @@ import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.GridLayout.OutOfBoundsException;
 import com.vaadin.ui.GridLayout.OverlapsException;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import cl.koritsu.valued.domain.enums.ESTADO_TASACION;
-import cl.koritsu.valued.domain.enums.TIPO_BIEN;
+import cl.koritsu.valued.domain.Comuna;
+import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.enums.ClaseBien;
+import cl.koritsu.valued.domain.enums.EstadoTasacion;
+import cl.koritsu.valued.domain.enums.TipoBien;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+import cl.koritsu.valued.view.utils.Utils;
 
 public class BienStep implements WizardStep {
 	
@@ -39,7 +49,14 @@ public class BienStep implements WizardStep {
 	private ComboBox cbRegion,cbComuna;
 	private TextField tfCalle, tfNumero;
 	GoogleMap googleMap;
-	  
+	BeanFieldGroup<NuevaSolicitudVO> fg;
+	ValuedService service;
+	
+	public BienStep(BeanFieldGroup<NuevaSolicitudVO> fg, ValuedService service) {
+		this.fg =  fg;
+		this.service = service;
+	}
+
 	@Override
 	public String getCaption() {
 		return "Bien";
@@ -58,11 +75,16 @@ public class BienStep implements WizardStep {
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				OptionGroup tf = new OptionGroup();
-				tf.addItem("Inmueble");
-				tf.addItem("Mueble");
-				tf.setValue("Inmueble");
-				addComponents(tf);
+				OptionGroup option = new OptionGroup();
+				Utils.bind(fg,option,"bien.clase");
+				int i = 0;
+				for(ClaseBien cb : ClaseBien.values()) {
+					option.addItem(cb);
+					if(i == 0)
+						option.setValue(cb);
+					i++;
+				}
+				addComponents(option);
 			}
 		});
 		
@@ -82,8 +104,9 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				Utils.bind(fg,tf, "bien.tipo");
 				int i = 0;
-				for(TIPO_BIEN tipo : TIPO_BIEN.values()) {
+				for(TipoBien tipo : TipoBien.values()) {
 					tf.addItem(tipo);
 					if(i == 0)
 						tf.setValue(tipo);
@@ -99,27 +122,14 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				cbRegion = new ComboBox();
-				int i = 0;
-				for(String tipo : new String[] {
-						"Arica y Parinacota",
-						"Tarapacá",
-						"Antofagasta",
-						"Atacama",
-						"Coquimbo",
-						"Valparaíso",
-						"Santiago",
-						"Del Libertador Gral. Bernardo O'Higgins",
-						"Del Maule",
-						"Del Biobío",
-						"De La Araucanía",
-						"De Los Ríos",
-						"De Los Lagos",
-						"Aysén Del Gral. Carlos Ibañez Del Campo",
-						"Magallanes Y De La Antártica Chilena"}) {
-					cbRegion.addItem(tipo);
-					if(i == 0)
-						cbRegion.setValue(tipo);
-					i++;
+				cbRegion.setContainerDataSource(new BeanItemContainer<Region>(Region.class));
+				cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				cbRegion.setItemCaptionPropertyId("nombre");
+				
+				//obtiene la lista de regiones
+				List<Region> regiones = service.getRegiones();
+				for(Region region : regiones) {
+					cbRegion.addItem(region);
 				}
 				addComponents(cbRegion);
 			}
@@ -131,48 +141,35 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				cbComuna = new ComboBox();
-				int i = 0;
-				for(String tipo : new String[] {"Arica",
-						"Camarones",
-						"Putre",
-						"General Lagos",
-						"Iquique",
-						"Alto Hospicio",
-						"Pozo Almonte",
-						"Camiña",
-						"Colchane",
-						"Huara",
-						"Pica",
-						"Antofagasta",
-						"Mejillones",
-						"Sierra Gorda",
-						"Taltal",
-						"Calama",
-						"Ollagüe",
-						"San Pedro de Atacama",
-						"Tocopilla",
-						"María Elena",
-						"Copiapó",
-						"Caldera",
-						"Tierra Amarilla",
-						"Chañaral",
-						"Diego de Almagro",
-						"Vallenar",
-						"Alto del Carmen",
-						"Freirina",
-						"Huasco",
-						"La Serena",
-						"Coquimbo",
-						"Andacollo",
-						"Maipú"}) {
-					cbComuna.addItem(tipo);
-					if(i == 0)
-						cbComuna.setValue(tipo);
-					i++;
-				}
+				cbComuna.setContainerDataSource(new BeanItemContainer<Comuna>(Comuna.class));
+				cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				cbComuna.setItemCaptionPropertyId("nombre");
 				addComponents(cbComuna);
 			}
 		});
+		
+		cbRegion.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				
+				Region region = (Region) event.getProperty().getValue();
+				cbComuna.setEnabled(true);
+				//obtiene la lista de regiones
+				List<Comuna> regiones = service.getComunaPorRegion(region);
+				
+				cbComuna.removeAllItems();
+				int i = 0;
+				for(Comuna comuna : regiones) {
+					cbComuna.addItem(comuna);
+					if(i == 0)
+						cbComuna.setValue(comuna);
+					i++;
+				}
+			}
+		});
+		
+		cbRegion.select(new Region() {{setId(15l);}});
 		
 		//calle
 		gl.addComponents(new Label("Calle"));
@@ -199,9 +196,8 @@ public class BienStep implements WizardStep {
 					public void valueChange(ValueChangeEvent event) {
 						 try {
 							String calle = (tfCalle.getValue().toString() != null)?tfCalle.getValue().toString()+" ":"";
-							refreshMap(calle.concat(cbComuna.getValue().toString()+" ").concat(cbRegion.getValue().toString()), 12);
+							refreshMap(calle.concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 12);
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -293,8 +289,8 @@ public class BienStep implements WizardStep {
 		// contacto
 		gl.addComponent(new Label("Información sobre contacto"),0,10,3,10);
 		
-		//rut
-		gl.addComponents(new Label("RUT"));
+		//nombre
+		gl.addComponents(new Label("Nombre"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
@@ -313,8 +309,51 @@ public class BienStep implements WizardStep {
 			}
 		});
 		
+		//rut
+		gl.addComponents(new Label("Teléfono 2"));
+		gl.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				TextField tf = new TextField();
+				addComponents(tf);
+			}
+		});
+		
+		//correo
+		gl.addComponents(new Label("Correo"));
+		gl.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				TextField tf = new TextField();
+				addComponents(tf);
+			}
+		});
+		
+		// contacto
+		gl.addComponent(new Label("Información sobre contacto 2"),0,13,3,13);
+		
 		//nombre
 		gl.addComponents(new Label("Nombre"));
+		gl.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				TextField tf = new TextField();
+				addComponents(tf);
+			}
+		});
+		
+		//telefono
+		gl.addComponents(new Label("Teléfono"));
+		gl.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				TextField tf = new TextField();
+				addComponents(tf);
+			}
+		});
+		
+		//rut
+		gl.addComponents(new Label("Teléfono 2"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
@@ -428,7 +467,7 @@ public class BienStep implements WizardStep {
 		             break;
 				case OK:
 					for(GoogleMapMarker item : googleMap.getMarkers()){
-						if(item.getCaption().equals(ESTADO_TASACION.NUEVA_TASACION.toString())){
+						if(item.getCaption().equals(EstadoTasacion.NUEVA_TASACION.toString())){
 							googleMap.removeMarker(item);
 						}
 					}
@@ -438,7 +477,7 @@ public class BienStep implements WizardStep {
 					double lon = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLng().doubleValue();
 					
 					googleMap.setCenter(new LatLon(lat,lon));
-					googleMap.addMarker(ESTADO_TASACION.NUEVA_TASACION.toString(), new LatLon(
+					googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
 							lat, lon), true, "VAADIN/img/pin_tas_process.png");
 					googleMap.setZoom(zoom);					
 				default:

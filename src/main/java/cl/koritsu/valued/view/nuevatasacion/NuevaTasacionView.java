@@ -1,9 +1,13 @@
-package cl.koritsu.valued.view.sales;
+package cl.koritsu.valued.view.nuevatasacion;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.vaadin.maddon.ListContainer;
 import org.vaadin.teemu.wizards.Wizard;
 import org.vaadin.teemu.wizards.event.WizardCancelledEvent;
@@ -15,6 +19,7 @@ import org.vaadin.teemu.wizards.event.WizardStepSetChangedEvent;
 import com.vaadin.data.Container;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
@@ -38,15 +43,32 @@ import com.vaadin.ui.themes.ValoTheme;
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.MovieRevenue;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
-public class SalesView extends VerticalLayout implements View, WizardProgressListener {
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = NuevaTasacionView.NAME, cached = true)
+public class NuevaTasacionView extends VerticalLayout implements View, WizardProgressListener {
 
+	public static final String NAME = "nueva_solicitud";
+	
+	@Autowired
+	ValuedService service;
+	
     private ComboBox movieSelect;
     
     private Wizard wizard;
+    private BeanFieldGroup<NuevaSolicitudVO> fg = new BeanFieldGroup<NuevaSolicitudVO>(NuevaSolicitudVO.class);
 
-    public SalesView() {
+    public NuevaTasacionView() {
+
+    }
+    
+    @PostConstruct
+    public void init() {
         setSizeFull();
         addStyleName("sales");
 
@@ -55,26 +77,6 @@ public class SalesView extends VerticalLayout implements View, WizardProgressLis
         VerticalLayout vl = buildContent();
         addComponent(vl);
         setExpandRatio(vl, 1);
-/*
-        timeline = buildTimeline();
-        addComponent(timeline);
-        setExpandRatio(timeline, 1);
-
-        initMovieSelect();
-        // Add first 4 by default
-        List<Movie> subList = new ArrayList<Movie>(ValuedUI
-                .getDataProvider().getMovies()).subList(0, 4);
-        for (Movie m : subList) {
-            addDataSet(m);
-        }
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MONTH, -2);
-        
-        if (timeline.getGraphDatasources().size() > 0) {
-            timeline.setVisibleDateRange(calendar.getTime(), new Date());
-        }
-        */
     }
 
     private VerticalLayout buildContent() {
@@ -89,10 +91,12 @@ public class SalesView extends VerticalLayout implements View, WizardProgressLis
          wizard.getFinishButton().setCaption("Finalizar");
          wizard.getCancelButton().setCaption("Cancelar");
          
-         wizard.addStep(new ClienteStep(), "cliente");
-         wizard.addStep(new BienStep(), "bien");
-         wizard.addStep(new SolTasacionStep(), "solicitud");
-         wizard.addStep(new HonorarioClienteStep(wizard), "ingreso");
+         wizard.addStep(new ClienteStep(fg), "cliente");
+         if(service == null )
+        	 throw new RuntimeException("service null");
+         wizard.addStep(new BienStep(fg,service), "bien");
+         wizard.addStep(new SolTasacionStep(fg), "solicitud");
+         wizard.addStep(new HonorarioClienteStep(wizard,fg), "ingreso");
          wizard.setSizeFull();
 		return new VerticalLayout(){
 			{

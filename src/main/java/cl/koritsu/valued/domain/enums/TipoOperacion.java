@@ -1,6 +1,6 @@
 package cl.koritsu.valued.domain.enums;
 
-public enum TIPO_OPERACION {
+public enum TipoOperacion {
 	
 	AVANCE_OBRA("Avance de Obra"),
 	CREDITO_HIPOTECARIO("Crédito Hipotecario"),
@@ -12,7 +12,7 @@ public enum TIPO_OPERACION {
 	OTRO("Otro");
 	
 	String label;
-	TIPO_OPERACION(String label){
+	TipoOperacion(String label){
 		this.label = label;
 	}
 	

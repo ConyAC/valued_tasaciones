@@ -12,7 +12,7 @@ import cl.koritsu.valued.ValuedNavigator;
  */
 @SuppressWarnings("serial")
 public class MainView extends HorizontalLayout {
-
+	
     public MainView() {
         setSizeFull();
         addStyleName("mainview");

@@ -2,6 +2,8 @@ package cl.koritsu.valued;
 
 import java.util.Locale;
 
+import org.springframework.context.annotation.Scope;
+
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -19,14 +21,17 @@ import com.vaadin.ui.themes.ValoTheme;
 import cl.koritsu.valued.data.DataProvider;
 import cl.koritsu.valued.data.dummy.DummyDataProvider;
 import cl.koritsu.valued.domain.User;
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.UserLoggedOutEvent;
 import cl.koritsu.valued.event.ValuedEvent.UserLoginRequestedEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.LoginView;
 import cl.koritsu.valued.view.MainView;
+import cl.koritsu.valued.view.dashboard.DashboardView;
 
+@org.springframework.stereotype.Component
+@Scope("prototype")
 @Theme("dashboard")
 @Widgetset("cl.koritsu.valued.ValuedWidgetSet")
 @Title("Valued")
@@ -76,7 +81,11 @@ public final class ValuedUI extends UI {
             // Authenticated user
             setContent(new MainView());
             removeStyleName("loginview");
-            getNavigator().navigateTo(getNavigator().getState());
+            String state = getNavigator().getState();
+            if(state != null && state.trim().length() == 0 )
+            	getNavigator().navigateTo(DashboardView.NAME);
+            else
+            	getNavigator().navigateTo(getNavigator().getState());
         } else {
             setContent(new LoginView());
             addStyleName("loginview");

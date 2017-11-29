@@ -3,6 +3,8 @@ package cl.koritsu.valued.view.dashboard;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.springframework.context.annotation.Scope;
+
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
@@ -31,19 +33,22 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.SparklineChart;
-import cl.koritsu.valued.component.TopGrossingMoviesChart;
-import cl.koritsu.valued.component.TopSixTheatersChart;
 import cl.koritsu.valued.component.TopTenMoviesTable;
-import cl.koritsu.valued.data.dummy.DummyDataGenerator;
 import cl.koritsu.valued.domain.DashboardNotification;
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.dashboard.DashboardEdit.DashboardEditListener;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = DashboardView.NAME, cached = true)
 public final class DashboardView extends Panel implements View,
         DashboardEditListener {
+	
+	public static final String NAME = "dashboard";
 
     public static final String EDIT_ID = "dashboard-edit";
     public static final String TITLE_ID = "dashboard-title";

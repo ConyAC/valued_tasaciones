@@ -5,17 +5,17 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Resource;
 
 import cl.koritsu.valued.view.dashboard.DashboardView;
+import cl.koritsu.valued.view.nuevatasacion.NuevaTasacionView;
 import cl.koritsu.valued.view.reports.ReportsView;
-import cl.koritsu.valued.view.sales.SalesView;
 import cl.koritsu.valued.view.schedule.ScheduleView;
 import cl.koritsu.valued.view.transactions.TransactionsView;
 
 public enum ValuedViewType {
-    DASHBOARD("reportería", DashboardView.class, FontAwesome.PIE_CHART, true), SALES(
-            "nueva solicitud", SalesView.class, FontAwesome.BUILDING, false), TRANSACTIONS(
-            "tasaciones en curso", TransactionsView.class, FontAwesome.TABLE, false), REPORTS(
-            "Buscar Tasación", ReportsView.class, FontAwesome.SEARCH, true), SCHEDULE(
-            "Administración", ScheduleView.class, FontAwesome.GEAR, false);
+    DASHBOARD(DashboardView.NAME/*"reportería"*/, DashboardView.class, FontAwesome.PIE_CHART, true), 
+    SALES(NuevaTasacionView.NAME/*"nueva solicitud"*/, NuevaTasacionView.class, FontAwesome.BUILDING, false), 
+    TRANSACTIONS(TransactionsView.NAME/*"tasaciones en curso"*/, TransactionsView.class, FontAwesome.TABLE, false), 
+    REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SEARCH, true), 
+    SCHEDULE(ScheduleView.NAME/*"Administración"*/, ScheduleView.class, FontAwesome.GEAR, false);
 
     private final String viewName;
     private final Class<? extends View> viewClass;

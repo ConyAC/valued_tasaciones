@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.springframework.context.annotation.Scope;
+
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
@@ -34,11 +36,17 @@ import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.reports.ReportEditor.PaletteItemType;
 import cl.koritsu.valued.view.reports.ReportEditor.ReportEditorListener;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = ReportsView.NAME, cached = true)
 public final class ReportsView extends TabSheet implements View, CloseHandler,
         ReportEditorListener {
 
+	public static final String NAME = "reportes";
+	
     public static final String CONFIRM_DIALOG_ID = "confirm-dialog";
 
     public ReportsView() {

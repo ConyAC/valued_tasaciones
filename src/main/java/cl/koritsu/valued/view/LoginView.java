@@ -1,5 +1,7 @@
 package cl.koritsu.valued.view;
 
+import org.springframework.context.annotation.Scope;
+
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
@@ -21,10 +23,16 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.event.ValuedEvent.UserLoginRequestedEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = LoginView.NAME, cached = true)
 public class LoginView extends VerticalLayout {
 
+	public static final String NAME = "";
+	
     public LoginView() {
         setSizeFull();
 

@@ -2,21 +2,20 @@ package cl.koritsu.valued;
 
 import org.vaadin.googleanalytics.tracking.GoogleAnalyticsTracker;
 
-import com.vaadin.navigator.Navigator;
-import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.navigator.ViewProvider;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.UI;
 
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.PostViewChangeEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.ValuedViewType;
+import ru.xpoft.vaadin.DiscoveryNavigator;
 
 @SuppressWarnings("serial")
-public class ValuedNavigator extends Navigator {
+public class ValuedNavigator extends DiscoveryNavigator {
 
     // Provide a Google Analytics tracker id here
     private static final String TRACKER_ID = null;// "UA-658457-6";
@@ -33,7 +32,7 @@ public class ValuedNavigator extends Navigator {
             initGATracker(TRACKER_ID);
         }
         initViewChangeListener();
-        initViewProviders();
+//        initViewProviders();
 
     }
 
@@ -71,7 +70,7 @@ public class ValuedNavigator extends Navigator {
             }
         });
     }
-
+/*
     private void initViewProviders() {
         // A dedicated view provider is added for each separate view type
         for (final ValuedViewType viewType : ValuedViewType.values()) {
@@ -122,4 +121,5 @@ public class ValuedNavigator extends Navigator {
             }
         });
     }
+    */
 }

@@ -1,6 +1,6 @@
 package cl.koritsu.valued.domain.enums;
 
-public enum ESTADO_TASACION {
+public enum EstadoTasacion {
 	
 	ENVIADA_CLIENTE("Enviada a Cliente"),
 	FACTURADA("Facturada"),
@@ -9,7 +9,7 @@ public enum ESTADO_TASACION {
 	VISADA("Visada"),;
 	
 	String label;
-	ESTADO_TASACION(String label){
+	EstadoTasacion(String label){
 		this.label = label;
 	}
 	

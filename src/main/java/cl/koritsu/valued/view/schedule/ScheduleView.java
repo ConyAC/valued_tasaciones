@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.context.annotation.Scope;
+
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
@@ -44,10 +46,16 @@ import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = ScheduleView.NAME, cached = true)
 public final class ScheduleView extends CssLayout implements View {
 
+	public static final String NAME = "scheduler";
+	
     private Calendar calendar;
 
     public ScheduleView() {

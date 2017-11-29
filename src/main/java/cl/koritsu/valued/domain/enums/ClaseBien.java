@@ -1,14 +1,10 @@
 package cl.koritsu.valued.domain.enums;
 
-public enum TipoBien {
+public enum ClaseBien {
 	
-	CASA("Casa"),
-	DEPARTAMENTO("Departamento"),
-	FUNDO("Fundo"),
-	GALPON("Galpón"),;
-	
+	INMUEBLE("Inmueble"),MUEBLE("Mueble");
 	String label;
-	TipoBien(String label){
+	ClaseBien(String label){
 		this.label = label;
 	}
 	

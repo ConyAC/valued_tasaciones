@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Set;
 
+import org.springframework.context.annotation.Scope;
 import org.vaadin.maddon.FilterableListContainer;
 
 import com.google.common.eventbus.Subscribe;
@@ -16,8 +16,6 @@ import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
@@ -30,8 +28,6 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -48,13 +44,19 @@ import com.vaadin.ui.themes.ValoTheme;
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.MovieDetailsWindow;
 import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.ValuedViewType;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings({ "serial", "unchecked" })
+@org.springframework.stereotype.Component
+@Scope("prototype")
+@VaadinView(value = TransactionsView.NAME, cached = true)
 public final class TransactionsView extends VerticalLayout implements View {
+	
+	public static final String NAME = "transacciones";
 
     private final Table table;
     private Button createReport;

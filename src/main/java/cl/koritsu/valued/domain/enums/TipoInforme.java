@@ -1,13 +1,13 @@
 package cl.koritsu.valued.domain.enums;
 
-public enum TIPO_INFORME {
+public enum TipoInforme {
 	
 	TASACION("Tasación"),
 	RE_TASACION("Re Tasación"),
 	AVANCE_OBRA("Avance de Obra"),;
 	
 	String label;
-	TIPO_INFORME(String label){
+	TipoInforme(String label){
 		this.label = label;
 	}
 	

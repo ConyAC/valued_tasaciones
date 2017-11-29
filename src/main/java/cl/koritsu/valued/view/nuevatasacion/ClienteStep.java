@@ -1,7 +1,8 @@
-package cl.koritsu.valued.view.sales;
+package cl.koritsu.valued.view.nuevatasacion;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Alignment;
@@ -25,7 +26,9 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 
-import cl.koritsu.valued.domain.enums.TIPO_OPERACION;
+import cl.koritsu.valued.domain.enums.TipoOperacion;
+import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+import cl.koritsu.valued.view.utils.Utils;
 
 
 public class ClienteStep implements WizardStep {
@@ -34,7 +37,12 @@ public class ClienteStep implements WizardStep {
 	VerticalLayout generalDetailLayout, ejecutivoDetailLayout;
 	HorizontalSplitPanel hsp;
 	Button btnEjecutivo, btnSucursal;
+	BeanFieldGroup<NuevaSolicitudVO> fg;
 	
+	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg) {
+		this.fg = fg;
+	}
+
 	@Override
 	public String getCaption() {
 		return "Cliente";
@@ -235,7 +243,7 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
-				
+				Utils.bind(fg,tf, "cliente");
 				final Cliente cliente = getCurrentCliente();
 				Button btnAgregarCliente = new Button(null,FontAwesome.PLUS_CIRCLE);				  
 				btnAgregarCliente.addClickListener(
@@ -260,6 +268,7 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf, "sucursal");
 				btnSucursal = new Button(FontAwesome.PLUS_CIRCLE);
 				btnSucursal.addClickListener(
 						new Button.ClickListener() {
@@ -285,6 +294,7 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf, "ejecutivo");
 				btnEjecutivo = new Button(FontAwesome.PLUS_CIRCLE);
 				btnEjecutivo.addClickListener(
 						new Button.ClickListener() {
@@ -308,6 +318,7 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf, "solicitante");
 				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
 				addComponents(tf,btn);
 			}
@@ -321,8 +332,9 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				Utils.bind(fg,tf, "solicitudTasacion.tipoOperacion");
 				int i = 0;
-				for(TIPO_OPERACION tipo : TIPO_OPERACION.values()) {
+				for(TipoOperacion tipo : TipoOperacion.values()) {
 					tf.addItem(tipo);
 					if(i == 0)
 						tf.setValue(tipo);
