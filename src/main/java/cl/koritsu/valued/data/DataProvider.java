@@ -7,7 +7,7 @@ import cl.koritsu.valued.domain.DashboardNotification;
 import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.MovieRevenue;
 import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.User;
+import cl.koritsu.valued.domain.Usuario;
 
 /**
  * QuickTickets Dashboard backend API.
@@ -37,7 +37,7 @@ public interface DataProvider {
      * @param password
      * @return Authenticated used.
      */
-    User authenticate(String userName, String password);
+    Usuario authenticate(String userName, String password);
 
     /**
      * @return The number of unread notifications for the current user.

@@ -1,11 +1,19 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+
+@Entity
 public class Sucursal {
 	
+	@Id
 	Long id;
 	String nombre;
 	String direccion;
+	@JoinColumn(name="comunaId")
 	Comuna comuna;
+	@JoinColumn(name="clienteId")
 	Cliente cliente;
 	public Long getId() {
 		return id;

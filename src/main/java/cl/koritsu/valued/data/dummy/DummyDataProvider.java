@@ -42,7 +42,7 @@ import cl.koritsu.valued.domain.DashboardNotification;
 import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.MovieRevenue;
 import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.User;
+import cl.koritsu.valued.domain.Usuario;
 
 /**
  * A dummy implementation for the backend API.
@@ -385,8 +385,8 @@ public class DummyDataProvider implements DataProvider {
     }
 
     @Override
-    public User authenticate(String userName, String password) {
-        User user = new User();
+    public Usuario authenticate(String userName, String password) {
+        Usuario user = new Usuario();
         user.setFirstName(DummyDataGenerator.randomFirstName());
         user.setLastName(DummyDataGenerator.randomLastName());
         user.setRole("admin");

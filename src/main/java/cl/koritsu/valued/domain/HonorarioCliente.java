@@ -1,7 +1,14 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="honorario_cliente")
 public class HonorarioCliente {
 	
+	@Id
 	Long id;
 	float factorKmUf;
 	float kmTotal;

@@ -20,7 +20,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.data.DataProvider;
 import cl.koritsu.valued.data.dummy.DummyDataProvider;
-import cl.koritsu.valued.domain.User;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.UserLoggedOutEvent;
@@ -75,8 +75,8 @@ public final class ValuedUI extends UI {
      * Otherwise login view is shown.
      */
     private void updateContent() {
-        User user = (User) VaadinSession.getCurrent().getAttribute(
-                User.class.getName());
+        Usuario user = (Usuario) VaadinSession.getCurrent().getAttribute(
+                Usuario.class.getName());
         if (user != null && "admin".equals(user.getRole())) {
             // Authenticated user
             setContent(new MainView());
@@ -94,9 +94,9 @@ public final class ValuedUI extends UI {
 
     @Subscribe
     public void userLoginRequested(final UserLoginRequestedEvent event) {
-        User user = getDataProvider().authenticate(event.getUserName(),
+        Usuario user = getDataProvider().authenticate(event.getUserName(),
                 event.getPassword());
-        VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
+        VaadinSession.getCurrent().setAttribute(Usuario.class.getName(), user);
         updateContent();
     }
 

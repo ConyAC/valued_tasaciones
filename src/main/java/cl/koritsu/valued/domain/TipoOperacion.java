@@ -1,23 +1,58 @@
-package cl.koritsu.valued.domain.enums;
+package cl.koritsu.valued.domain;
 
-public enum TipoOperacion {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="tipo_operacion")
+public class TipoOperacion {
 	
-	AVANCE_OBRA("Avance de Obra"),
-	CREDITO_HIPOTECARIO("Crédito Hipotecario"),
-	DACION_PAGO("Dación en Pago"),
-	GARANTIA_GENERAL("Garantía General"),
-	LEASEBACK_LEASING("Leaseback Leasing"),
-	REMATE("Remate"),
-	VENTA_ACTIVOS("Venta de Activos"),
-	OTRO("Otro");
+	@Id
+	Long id;
+	String nombre;
+	String descripcion;
 	
-	String label;
-	TipoOperacion(String label){
-		this.label = label;
+	public Long getId() {
+		return id;
 	}
-	
-	public String toString() {
-		return label;
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getNombre() {
+		return nombre;
+	}
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+	public String getDescripcion() {
+		return descripcion;
+	}
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TipoOperacion other = (TipoOperacion) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 
 }

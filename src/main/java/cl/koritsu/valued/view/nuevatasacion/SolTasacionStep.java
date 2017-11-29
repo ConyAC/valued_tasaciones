@@ -1,11 +1,15 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.util.List;
+
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
@@ -16,13 +20,18 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
-import cl.koritsu.valued.domain.enums.TipoInforme;
+import cl.koritsu.valued.domain.TipoInforme;
+import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 
 public class SolTasacionStep implements WizardStep {
+	
+	BeanFieldGroup<NuevaSolicitudVO> fg;
+	ValuedService service;
 
-	public SolTasacionStep(BeanFieldGroup<NuevaSolicitudVO> fg) {
-		// TODO Auto-generated constructor stub
+	public SolTasacionStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
+		this.fg = fg;
+		this.service = service;
 	}
 
 	@Override
@@ -43,8 +52,13 @@ public class SolTasacionStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				tf.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				tf.setItemCaptionPropertyId("nombre");
+				tf.setContainerDataSource(new BeanItemContainer<TipoInforme>(TipoInforme.class));
+				
+				List<TipoInforme> informes = service.getTipoInformes();
 				int i = 0;
-				for(TipoInforme tipo : TipoInforme.values()) {
+				for(TipoInforme tipo : informes) {
 					tf.addItem(tipo);
 					if(i == 0)
 						tf.setValue(tipo);

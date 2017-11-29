@@ -141,6 +141,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				cbComuna = new ComboBox();
+				Utils.bind(fg,cbRegion,"bien.comuna");
 				cbComuna.setContainerDataSource(new BeanItemContainer<Comuna>(Comuna.class));
 				cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 				cbComuna.setItemCaptionPropertyId("nombre");
@@ -189,6 +190,7 @@ public class BienStep implements WizardStep {
 				
 				setSpacing(true);
 				tfCalle = new TextField();
+				Utils.bind(fg,tfCalle,"bien.direccion");
 				
 				tfCalle.addValueChangeListener(new ValueChangeListener() {
 					
@@ -213,6 +215,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				tfNumero = new TextField();
+				Utils.bind(fg,tfNumero,"bien.numeroManzana");
 				
 				tfNumero.addValueChangeListener(new ValueChangeListener() {
 					
@@ -221,7 +224,7 @@ public class BienStep implements WizardStep {
 						 try {
 							 String nm = (tfNumero.getValue().toString() != null)?tfNumero.getValue().toString()+" ":"";
 							 String calle = (tfCalle.getValue().toString() != null)?tfCalle.getValue().toString()+" ":"";
-							 refreshMap(calle.concat(nm).concat(cbComuna.getValue().toString()+" ").concat(cbRegion.getValue().toString()), 20);
+							 refreshMap(calle.concat(nm).concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 20);
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -239,12 +242,13 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"bien.numeroPredial");
 				addComponents(tf);
 			}
 		});
 		
 		// propietario
-		gl.addComponent(new Label("Información sobre propietario"),0,7,3,7);
+		gl.addComponent(new Label("Información sobre propietario") {{setStyleName("h2");}},0,7,3,7);
 		
 		//rut
 		gl.addComponents(new Label("RUT"));
@@ -287,7 +291,7 @@ public class BienStep implements WizardStep {
 		});
 		
 		// contacto
-		gl.addComponent(new Label("Información sobre contacto"),0,10,3,10);
+		gl.addComponent(new Label("Información sobre contacto") {{setStyleName("h2");}},0,10,3,10);
 		
 		//nombre
 		gl.addComponents(new Label("Nombre"));
@@ -330,7 +334,7 @@ public class BienStep implements WizardStep {
 		});
 		
 		// contacto
-		gl.addComponent(new Label("Información sobre contacto 2"),0,13,3,13);
+		gl.addComponent(new Label("Información sobre contacto 2") {{setStyleName("h2");}},0,13,3,13);
 		
 		//nombre
 		gl.addComponents(new Label("Nombre"));
@@ -393,7 +397,7 @@ public class BienStep implements WizardStep {
 		vl.setCaption("Mapa");
 		
 		final Panel console = new Panel();
-        console.setHeight("100px");
+        console.setHeight("30px");
         final CssLayout consoleLayout = new CssLayout();
         console.setContent(consoleLayout);
         		

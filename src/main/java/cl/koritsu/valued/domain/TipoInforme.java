@@ -1,18 +1,35 @@
-package cl.koritsu.valued.domain.enums;
+package cl.koritsu.valued.domain;
 
-public enum TipoInforme {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name="tipo_informe")
+public class TipoInforme {
 	
-	TASACION("Tasación"),
-	RE_TASACION("Re Tasación"),
-	AVANCE_OBRA("Avance de Obra"),;
+	@Id
+	Long id;
+	String nombre;
+	String descripcion;
 	
-	String label;
-	TipoInforme(String label){
-		this.label = label;
+	public Long getId() {
+		return id;
 	}
-	
-	public String toString() {
-		return label;
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getNombre() {
+		return nombre;
+	}
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+	public String getDescripcion() {
+		return descripcion;
+	}
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
 	}
 
 }

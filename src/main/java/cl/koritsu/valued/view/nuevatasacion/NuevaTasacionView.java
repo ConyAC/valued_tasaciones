@@ -91,11 +91,9 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
          wizard.getFinishButton().setCaption("Finalizar");
          wizard.getCancelButton().setCaption("Cancelar");
          
-         wizard.addStep(new ClienteStep(fg), "cliente");
-         if(service == null )
-        	 throw new RuntimeException("service null");
+         wizard.addStep(new ClienteStep(fg,service), "cliente");
          wizard.addStep(new BienStep(fg,service), "bien");
-         wizard.addStep(new SolTasacionStep(fg), "solicitud");
+         wizard.addStep(new SolTasacionStep(fg,service), "solicitud");
          wizard.addStep(new HonorarioClienteStep(wizard,fg), "ingreso");
          wizard.setSizeFull();
 		return new VerticalLayout(){

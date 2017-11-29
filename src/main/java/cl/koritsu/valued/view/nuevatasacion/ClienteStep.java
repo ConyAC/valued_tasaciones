@@ -1,14 +1,17 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.util.List;
+
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
@@ -17,16 +20,16 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 
 import cl.koritsu.valued.component.ClienteWindow;
 import cl.koritsu.valued.domain.Cliente;
-
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
-
-import cl.koritsu.valued.domain.enums.TipoOperacion;
+import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.TipoOperacion;
+import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 import cl.koritsu.valued.view.utils.Utils;
 
@@ -38,9 +41,11 @@ public class ClienteStep implements WizardStep {
 	HorizontalSplitPanel hsp;
 	Button btnEjecutivo, btnSucursal;
 	BeanFieldGroup<NuevaSolicitudVO> fg;
+	ValuedService service;
 	
-	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg) {
+	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
 		this.fg = fg;
+		this.service = service;
 	}
 
 	@Override
@@ -332,9 +337,14 @@ public class ClienteStep implements WizardStep {
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
+				tf.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				tf.setItemCaptionPropertyId("nombre");
+				tf.setContainerDataSource(new BeanItemContainer<TipoOperacion>(TipoOperacion.class));
+				
 				Utils.bind(fg,tf, "solicitudTasacion.tipoOperacion");
+				List<TipoOperacion> operaciones = service.getOperaciones();
 				int i = 0;
-				for(TipoOperacion tipo : TipoOperacion.values()) {
+				for(TipoOperacion tipo : operaciones) {
 					tf.addItem(tipo);
 					if(i == 0)
 						tf.setValue(tipo);

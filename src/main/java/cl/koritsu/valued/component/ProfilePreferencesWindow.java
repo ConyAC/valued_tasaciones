@@ -32,7 +32,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
-import cl.koritsu.valued.domain.User;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.ProfileUpdatedEvent;
@@ -42,7 +42,7 @@ public class ProfilePreferencesWindow extends Window {
 
     public static final String ID = "profilepreferenceswindow";
 
-    private final BeanFieldGroup<User> fieldGroup;
+    private final BeanFieldGroup<Usuario> fieldGroup;
     /*
      * Fields for editing the User object are defined here as class members.
      * They are later bound to a FieldGroup by calling
@@ -71,7 +71,7 @@ public class ProfilePreferencesWindow extends Window {
     @PropertyId("bio")
     private TextArea bioField;
 
-    private ProfilePreferencesWindow(final User user,
+    private ProfilePreferencesWindow(final Usuario user,
             final boolean preferencesTabOpen) {
         addStyleName("profile-window");
         setId(ID);
@@ -105,7 +105,7 @@ public class ProfilePreferencesWindow extends Window {
 
         content.addComponent(buildFooter());
 
-        fieldGroup = new BeanFieldGroup<User>(User.class);
+        fieldGroup = new BeanFieldGroup<Usuario>(Usuario.class);
         fieldGroup.bindMemberFields(this);
         fieldGroup.setItemDataSource(user);
     }
@@ -267,7 +267,7 @@ public class ProfilePreferencesWindow extends Window {
         return footer;
     }
 
-    public static void open(final User user, final boolean preferencesTabActive) {
+    public static void open(final Usuario user, final boolean preferencesTabActive) {
         ValuedEventBus.post(new CloseOpenWindowsEvent());
         Window w = new ProfilePreferencesWindow(user, preferencesTabActive);
         UI.getCurrent().addWindow(w);

@@ -2,46 +2,77 @@ package cl.koritsu.valued.domain;
 
 import java.util.Date;
 
-import cl.koritsu.valued.domain.enums.EstadoSolicitud;
-import cl.koritsu.valued.domain.enums.TipoInforme;
-import cl.koritsu.valued.domain.enums.TipoOperacion;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+
+@Entity
+@Table(name="solicitud_tasacion")
 public class SolicitudTasacion {
-	
+	@Id
 	Long id;
+	@Temporal(TemporalType.DATE)
 	Date fechaEncargo;
+	@Temporal(TemporalType.DATE)
 	Date fechaTasacion;
+	@Temporal(TemporalType.DATE)
 	Date fechaVisado;
+	@Temporal(TemporalType.DATE)
 	Date fechaEnvioCliente;
 	
-	int montoCompraEstimado;
-	int montoTasacionPesos;
-	int montoTasacionUF;
+	float montoCompraEstimado;
+	float montoTasacionPesos;
+	float montoTasacionUF;
+	
 	String nombrePropietario;
 	String rutPropietario;
 	String telefonoPropietario;
+	String emailPropietario;
+	
 	String nombreContacto;
-	String telefonoContacto;
+	String telefonoFijoContacto;
+	String telefonoMovilContacto;
 	String emailContacto;
+	
 	String nombreContacto2;
-	String telefonoContacto2;
+	String telefonoFijoContacto2;
+	String telefonoMovilContacto2;
 	String emailContacto2;
+	
 	String numeroTasacionCliente;
 	String numeroTasacion;
 	boolean requiereTasador;
 	
+	@Enumerated(EnumType.STRING)
 	EstadoSolicitud estado;
+	
+	@JoinColumn(name="tipoInformeId")
 	TipoInforme tipoInforme;
+	@JoinColumn(name="tipoOperacionId")
 	TipoOperacion tipoOperacion;
+	
+	@JoinColumn(name="sucursalId")
 	Sucursal sucursal;
+	@JoinColumn(name="solicitanteId")
 	Solicitante solicitante;
-	User usuario;
+	@JoinColumn(name="usuarioId")
+	Usuario usuario;
+	@JoinColumn(name="bienId")
 	Bien bien;
+	@JoinColumn(name="honorarioClienteId")
 	HonorarioCliente honorarioCliente;
 	
 	String observaciones;
-	int norteY;
-	int esteX;
+	float norteY;
+	float esteX;
+	
 	public Long getId() {
 		return id;
 	}
@@ -72,22 +103,22 @@ public class SolicitudTasacion {
 	public void setFechaEnvioCliente(Date fechaEnvioCliente) {
 		this.fechaEnvioCliente = fechaEnvioCliente;
 	}
-	public int getMontoCompraEstimado() {
+	public float getMontoCompraEstimado() {
 		return montoCompraEstimado;
 	}
-	public void setMontoCompraEstimado(int montoCompraEstimado) {
+	public void setMontoCompraEstimado(float montoCompraEstimado) {
 		this.montoCompraEstimado = montoCompraEstimado;
 	}
-	public int getMontoTasacionPesos() {
+	public float getMontoTasacionPesos() {
 		return montoTasacionPesos;
 	}
-	public void setMontoTasacionPesos(int montoTasacionPesos) {
+	public void setMontoTasacionPesos(float montoTasacionPesos) {
 		this.montoTasacionPesos = montoTasacionPesos;
 	}
-	public int getMontoTasacionUF() {
+	public float getMontoTasacionUF() {
 		return montoTasacionUF;
 	}
-	public void setMontoTasacionUF(int montoTasacionUF) {
+	public void setMontoTasacionUF(float montoTasacionUF) {
 		this.montoTasacionUF = montoTasacionUF;
 	}
 	public String getNombrePropietario() {
@@ -114,12 +145,7 @@ public class SolicitudTasacion {
 	public void setNombreContacto(String nombreContacto) {
 		this.nombreContacto = nombreContacto;
 	}
-	public String getTelefonoContacto() {
-		return telefonoContacto;
-	}
-	public void setTelefonoContacto(String telefonoContacto) {
-		this.telefonoContacto = telefonoContacto;
-	}
+
 	public String getEmailContacto() {
 		return emailContacto;
 	}
@@ -131,12 +157,6 @@ public class SolicitudTasacion {
 	}
 	public void setNombreContacto2(String nombreContacto2) {
 		this.nombreContacto2 = nombreContacto2;
-	}
-	public String getTelefonoContacto2() {
-		return telefonoContacto2;
-	}
-	public void setTelefonoContacto2(String telefonoContacto2) {
-		this.telefonoContacto2 = telefonoContacto2;
 	}
 	public String getEmailContacto2() {
 		return emailContacto2;
@@ -192,10 +212,10 @@ public class SolicitudTasacion {
 	public void setSolicitante(Solicitante solicitante) {
 		this.solicitante = solicitante;
 	}
-	public User getUsuario() {
+	public Usuario getUsuario() {
 		return usuario;
 	}
-	public void setUsuario(User usuario) {
+	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
 	}
 	public Bien getBien() {
@@ -210,16 +230,16 @@ public class SolicitudTasacion {
 	public void setObservaciones(String observaciones) {
 		this.observaciones = observaciones;
 	}
-	public int getNorteY() {
+	public float getNorteY() {
 		return norteY;
 	}
-	public void setNorteY(int norteY) {
+	public void setNorteY(float norteY) {
 		this.norteY = norteY;
 	}
-	public int getEsteX() {
+	public float getEsteX() {
 		return esteX;
 	}
-	public void setEsteX(int esteX) {
+	public void setEsteX(float esteX) {
 		this.esteX = esteX;
 	}
 	public HonorarioCliente getHonorarioCliente() {
@@ -228,4 +248,35 @@ public class SolicitudTasacion {
 	public void setHonorarioCliente(HonorarioCliente honorarioCliente) {
 		this.honorarioCliente = honorarioCliente;
 	}
+	public String getEmailPropietario() {
+		return emailPropietario;
+	}
+	public void setEmailPropietario(String emailPropietario) {
+		this.emailPropietario = emailPropietario;
+	}
+	public String getTelefonoFijoContacto() {
+		return telefonoFijoContacto;
+	}
+	public void setTelefonoFijoContacto(String telefonoFijoContacto) {
+		this.telefonoFijoContacto = telefonoFijoContacto;
+	}
+	public String getTelefonoMovilContacto() {
+		return telefonoMovilContacto;
+	}
+	public void setTelefonoMovilContacto(String telefonoMovilContacto) {
+		this.telefonoMovilContacto = telefonoMovilContacto;
+	}
+	public String getTelefonoFijoContacto2() {
+		return telefonoFijoContacto2;
+	}
+	public void setTelefonoFijoContacto2(String telefonoFijoContacto2) {
+		this.telefonoFijoContacto2 = telefonoFijoContacto2;
+	}
+	public String getTelefonoMovilContacto2() {
+		return telefonoMovilContacto2;
+	}
+	public void setTelefonoMovilContacto2(String telefonoMovilContacto2) {
+		this.telefonoMovilContacto2 = telefonoMovilContacto2;
+	}
+	
 }

@@ -1,19 +1,37 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+
+import cl.koritsu.valued.domain.enums.TipoPersona;
+
+@Entity
 public final class Cliente {
 	
+	@Id
+	private Long id;
     private String rut;
     private String nombres;
     private String apellidoPaterno;
     private String apellidoMaterno;
     private String razonSocial;
     private String telefonoFijo;
-    private boolean tipoPersona;
+    @Enumerated(EnumType.STRING)
+    private TipoPersona tipoPersona;
     private String factorKm;
     private String direccion;
     private String tipo;
-    private String multiRut;
+    private boolean multiRut;
     
+    
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 	public String getRut() {
 		return rut;
 	}
@@ -50,10 +68,10 @@ public final class Cliente {
 	public void setTelefonoFijo(final String telefonoFijo) {
 		this.telefonoFijo = telefonoFijo;
 	}
-	public boolean isTipoPersona() {
+	public TipoPersona getTipoPersona() {
 		return tipoPersona;
 	}
-	public void setTipoPersona(final boolean tipoPersona) {
+	public void setTipoPersona(final TipoPersona tipoPersona) {
 		this.tipoPersona = tipoPersona;
 	}
 	public String getFactorKm() {
@@ -74,10 +92,10 @@ public final class Cliente {
 	public void setTipo(final String tipo) {
 		this.tipo = tipo;
 	}
-	public String getMultiRut() {
+	public boolean isMultiRut() {
 		return multiRut;
 	}
-	public void setMultiRut(final String multiRut) {
+	public void setMultiRut(final boolean multiRut) {
 		this.multiRut = multiRut;
 	}
     

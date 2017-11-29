@@ -32,7 +32,7 @@ import com.vaadin.ui.themes.ValoTheme;
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.ProfilePreferencesWindow;
 import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.User;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
 import cl.koritsu.valued.event.ValuedEvent.PostViewChangeEvent;
@@ -95,15 +95,15 @@ public final class ValuedMenu extends CustomComponent {
         return logoWrapper;
     }
 
-    private User getCurrentUser() {
-        return (User) VaadinSession.getCurrent().getAttribute(
-                User.class.getName());
+    private Usuario getCurrentUser() {
+        return (Usuario) VaadinSession.getCurrent().getAttribute(
+                Usuario.class.getName());
     }
 
     private Component buildUserMenu() {
         final MenuBar settings = new MenuBar();
         settings.addStyleName("user-menu");
-        final User user = getCurrentUser();
+        final Usuario user = getCurrentUser();
         settingsItem = settings.addItem("", new ThemeResource(
                 "img/profile-pic-300px.jpg"), null);
         updateUserName(null);
@@ -243,7 +243,7 @@ public final class ValuedMenu extends CustomComponent {
 
     @Subscribe
     public void updateUserName(final ProfileUpdatedEvent event) {
-        User user = getCurrentUser();
+        Usuario user = getCurrentUser();
         settingsItem.setText(user.getFirstName() + " " + user.getLastName());
     }
 

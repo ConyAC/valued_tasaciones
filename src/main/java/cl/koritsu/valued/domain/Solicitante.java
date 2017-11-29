@@ -1,7 +1,12 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Solicitante {
 
+	@Id
 	Long id;
 	String rut;
 	String nombres;

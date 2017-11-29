@@ -1,20 +1,32 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+
 import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.TipoBien;
 
+@Entity
 public class Bien {
-	
+	@Id
 	Long id;
+	@Enumerated(EnumType.STRING)
 	ClaseBien clase;
+	@Enumerated(EnumType.STRING)
 	TipoBien tipo;
+	
 	String numeroManzana;
 	String numeroPredial;
 	String direccion;
-	int superficieTerreno;
-	int superficiConstruida;
+	float superficieTerreno;
+	float superficieConstruida;
 	String antecedentes;
+	@JoinColumn(name="comunaId")
 	Comuna comuna;
+	
 	public Long getId() {
 		return id;
 	}
@@ -51,17 +63,17 @@ public class Bien {
 	public void setDireccion(String direccion) {
 		this.direccion = direccion;
 	}
-	public int getSuperficieTerreno() {
+	public float getSuperficieTerreno() {
 		return superficieTerreno;
 	}
-	public void setSuperficieTerreno(int superficieTerreno) {
+	public void setSuperficieTerreno(float superficieTerreno) {
 		this.superficieTerreno = superficieTerreno;
 	}
-	public int getSuperficiConstruida() {
-		return superficiConstruida;
+	public float getSuperficieConstruida() {
+		return superficieConstruida;
 	}
-	public void setSuperficiConstruida(int superficiConstruida) {
-		this.superficiConstruida = superficiConstruida;
+	public void setSuperficieConstruida(float superficieConstruida) {
+		this.superficieConstruida = superficieConstruida;
 	}
 	public String getAntecedentes() {
 		return antecedentes;

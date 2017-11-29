@@ -1,7 +1,14 @@
 package cl.koritsu.valued.domain;
 
-public final class User {
-    private String role;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public final class Usuario {
+	
+	@Id
+	private Long id;
+    private String rol;
     private String firstName;
     private String lastName;
     private String title;
@@ -78,11 +85,11 @@ public final class User {
     }
 
     public String getRole() {
-        return role;
+        return rol;
     }
 
     public void setRole(final String role) {
-        this.role = role;
+        this.rol = role;
     }
 
     public String getFirstName() {
