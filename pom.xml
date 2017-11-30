@@ -125,6 +125,14 @@
 	</profiles>
 
 	<dependencies>
+	
+	    <!-- autocomplete -->
+	    <dependency>
+		   <groupId>eu.maxschuster</groupId>
+		   <artifactId>vaadin-autocompletetextfield</artifactId>
+		   <version>1.0-alpha-4</version>
+		</dependency>
+		<!-- integracion vaadin spring -->
 		<dependency>
 			<groupId>ru.xpoft.vaadin</groupId>
 			<artifactId>spring-vaadin-integration</artifactId>

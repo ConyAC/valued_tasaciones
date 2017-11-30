@@ -2,6 +2,7 @@ package cl.koritsu.valued.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 
 @Entity
 public class Solicitante {
@@ -16,6 +17,8 @@ public class Solicitante {
 	String telefonoFijo;
 	String telefonoMovil;
 	String email;
+	@JoinColumn(name="clienteId")
+	Cliente cliente;
 	public Long getId() {
 		return id;
 	}
@@ -69,6 +72,12 @@ public class Solicitante {
 	}
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	public Cliente getCliente() {
+		return cliente;
+	}
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
 	}
 	
 }

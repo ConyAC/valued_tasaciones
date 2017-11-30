@@ -98,6 +98,13 @@ public final class Cliente {
 	public void setMultiRut(final boolean multiRut) {
 		this.multiRut = multiRut;
 	}
+	
+	public String getNombreCliente() {
+		if(tipoPersona == TipoPersona.NATURAL )
+			return getNombres() + " " + getApellidoPaterno() + " " + getApellidoMaterno();
+		else 
+			return getRazonSocial();
+	}
     
 	
 }

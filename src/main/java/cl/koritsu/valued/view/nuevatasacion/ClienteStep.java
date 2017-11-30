@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
@@ -27,7 +29,9 @@ import com.vaadin.ui.VerticalLayout;
 
 import cl.koritsu.valued.component.ClienteWindow;
 import cl.koritsu.valued.domain.Cliente;
-import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.Contacto;
+import cl.koritsu.valued.domain.Solicitante;
+import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
@@ -42,7 +46,14 @@ public class ClienteStep implements WizardStep {
 	Button btnEjecutivo, btnSucursal;
 	BeanFieldGroup<NuevaSolicitudVO> fg;
 	ValuedService service;
-	
+	/*
+	Collection<String> theJavas = Arrays.asList(new String[] {
+		    "Java",
+		    "JavaScript",
+		    "Join Java",
+		    "JavaFX Script"
+		});
+	*/
 	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
 		this.fg = fg;
 		this.service = service;
@@ -242,13 +253,36 @@ public class ClienteStep implements WizardStep {
 		gl.setSpacing(true);
 		gl.setMargin(true);
                 
+		final ComboBox cbCliente = new ComboBox();
+		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbCliente.setItemCaptionPropertyId("nombreCliente");
+		BeanItemContainer<Cliente> ds = new BeanItemContainer<Cliente>(Cliente.class);
+		List<Cliente> clientes = service.getClientes();
+		ds.addAll(clientes);
+		cbCliente.setContainerDataSource(ds);
+		
+		Utils.bind(fg,cbCliente, "cliente");
+		
 		// cliente
 		gl.addComponents(new Label("Nombre Cliente"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				TextField tf = new TextField();
-				Utils.bind(fg,tf, "cliente");
+				/*
+				 * ejemplo de textfield autocomplete
+				AutocompleteTextField  tf = new AutocompleteTextField ();
+				
+				tf.setCache(true); // Client side should cache suggestions
+				tf.setDelay(150) ;// Delay before sending a query to the server
+				tf.setItemAsHtml(false); // Suggestions contain html formating. If true, make sure that the html is save to use!
+				tf.setMinChars(1); // The required value length to trigger a query
+				tf.setScrollBehavior(ScrollBehavior.NONE); // The method that should be used to compensate scrolling of the page
+				tf.setSuggestionLimit(5); // The max amount of suggestions send to the client. If the limit is >= 0 no limit is applied
+
+				
+				tf.setSuggestionProvider(new CollectionSuggestionProvider(theJavas, MatchMode.CONTAINS, true, Locale.US));
+				*/
+
 				final Cliente cliente = getCurrentCliente();
 				Button btnAgregarCliente = new Button(null,FontAwesome.PLUS_CIRCLE);				  
 				btnAgregarCliente.addClickListener(
@@ -260,20 +294,28 @@ public class ClienteStep implements WizardStep {
 							}
 						});				
 						
-				addComponents(tf,btnAgregarCliente);
+				addComponents(cbCliente,btnAgregarCliente);
 			}
 		});
 		
 		Label clienteSel = new Label();
 		gl.addComponent(clienteSel);
 		
+		
+		final ComboBox cbSucursal = new ComboBox();
+		cbSucursal.setEnabled(false);
+		cbSucursal.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbSucursal.setItemCaptionPropertyId("nombre");
+		BeanItemContainer<Sucursal> ds2 = new BeanItemContainer<Sucursal>(Sucursal.class);
+		cbSucursal.setContainerDataSource(ds2);
+		
+		Utils.bind(fg,cbSucursal, "sucursal");
 		//sucursal
 		gl.addComponents(new Label("Nombre Sucursal"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				TextField tf = new TextField();
-				Utils.bind(fg,tf, "sucursal");
+				
 				btnSucursal = new Button(FontAwesome.PLUS_CIRCLE);
 				btnSucursal.addClickListener(
 						new Button.ClickListener() {
@@ -286,20 +328,29 @@ public class ClienteStep implements WizardStep {
 							}
 						});	
 			        
-				addComponents(tf,btnSucursal);
+				addComponents(cbSucursal,btnSucursal);
 			}
 		});
 		Label sucursalSel = new Label();
 		gl.addComponent(sucursalSel);
 		
 		
+
+		final ComboBox cbEjecutivo = new ComboBox();
+		cbEjecutivo.setEnabled(false);
+		cbEjecutivo.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbEjecutivo.setItemCaptionPropertyId("nombre");
+		BeanItemContainer<Contacto> ds3 = new BeanItemContainer<Contacto>(Contacto.class);
+		cbEjecutivo.setContainerDataSource(ds3);
+		Utils.bind(fg,cbEjecutivo, "ejecutivo");
+		
+
 		//ejecutivo
 		gl.addComponents(new Label("Nombre Ejecutivo"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				TextField tf = new TextField();
-				Utils.bind(fg,tf, "ejecutivo");
+
 				btnEjecutivo = new Button(FontAwesome.PLUS_CIRCLE);
 				btnEjecutivo.addClickListener(
 						new Button.ClickListener() {
@@ -311,23 +362,59 @@ public class ClienteStep implements WizardStep {
 								btnEjecutivo.setEnabled(false);
 							}
 						});	
-				addComponents(tf,btnEjecutivo);
+				addComponents(cbEjecutivo,btnEjecutivo);
 			}
 		});
 		Label ejecutivoSel = new Label();
 		gl.addComponent(ejecutivoSel);
+		
+		
+		final ComboBox cbSolicitante = new ComboBox();
+		cbSolicitante.setEnabled(false);
+		cbSolicitante.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbSolicitante.setItemCaptionPropertyId("nombre");
+		BeanItemContainer<Solicitante> ds4 = new BeanItemContainer<Solicitante>(Solicitante.class);
+		cbEjecutivo.setContainerDataSource(ds4);
+		Utils.bind(fg,cbSolicitante, "solicitante");
 		
 		//solicitante
 		gl.addComponents(new Label("Nombre Solicitante"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				TextField tf = new TextField();
-				Utils.bind(fg,tf, "solicitante");
 				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
-				addComponents(tf,btn);
+				addComponents(cbSolicitante,btn);
 			}
 		});
+		
+
+		cbCliente.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				Cliente cliente = (Cliente)event.getProperty().getValue();
+				
+				//carga las sucursales del cliente
+				List<Sucursal> sucursal = service.getSucursalByCliente(cliente);
+				cbSucursal.getContainerDataSource().removeAllItems();
+				((BeanItemContainer<Sucursal>)cbSucursal.getContainerDataSource()).addAll(sucursal);
+				cbSucursal.setEnabled(true);
+				
+				// carga el combobox de ejecutivos
+				List<Contacto> ejecutivos = service.getEjecutivosByCliente(cliente);
+				cbEjecutivo.getContainerDataSource().removeAllItems();
+				((BeanItemContainer<Contacto>)cbEjecutivo.getContainerDataSource()).addAll(ejecutivos);
+				cbEjecutivo.setEnabled(true);
+				
+				//carga el combo de solicitantes
+				List<Solicitante> solicitantes = service.getSolicitantesByCliente(cliente);				
+				cbSolicitante.getContainerDataSource().removeAllItems();
+				((BeanItemContainer<Solicitante>)cbSolicitante.getContainerDataSource()).addAll(solicitantes);
+				cbSolicitante.setEnabled(true);
+			}
+		});
+		
+		
 		Label solicitanteSel = new Label();
 		gl.addComponent(solicitanteSel);
 		
