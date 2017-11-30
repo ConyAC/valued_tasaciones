@@ -8,6 +8,7 @@ import org.vaadin.teemu.wizards.WizardStep;
 import com.google.code.geocoder.Geocoder;
 import com.google.code.geocoder.GeocoderRequestBuilder;
 import com.google.code.geocoder.model.GeocodeResponse;
+import com.google.code.geocoder.model.GeocoderComponent;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -397,7 +398,7 @@ public class BienStep implements WizardStep {
 		vl.setCaption("Mapa");
 		
 		final Panel console = new Panel();
-        console.setHeight("30px");
+        console.setHeight("100px");
         final CssLayout consoleLayout = new CssLayout();
         console.setContent(consoleLayout);
         		
@@ -446,8 +447,9 @@ public class BienStep implements WizardStep {
 	 */
 	private void refreshMap(String direccion, int zoom) throws IOException {
 		Geocoder geo = new Geocoder();
-		GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(direccion).setLanguage("en")
+		GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(direccion)
 				.getGeocoderRequest();
+		geocoderRequest.addComponent(GeocoderComponent.COUNTRY, "cl");
 		GeocodeResponse geocoderResponse = geo.geocode(geocoderRequest);
 		if(geocoderResponse.getStatus() != null) {
 		    switch (geocoderResponse.getStatus()) {
