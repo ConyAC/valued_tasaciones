@@ -74,4 +74,12 @@ public class ValuedService {
 		return (List<Solicitante>) solicitanteRepo.findByCliente(cliente);
 	}
 
+	public void saveSucursal(Sucursal bean) {
+		sucursalRepo.save(bean);
+	}
+
+	public void saveCliente(Cliente bean) {
+		clienteRepo.save(bean);
+	}
+
 }

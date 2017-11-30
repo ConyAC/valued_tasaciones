@@ -5,7 +5,6 @@ import java.util.Date;
 
 import cl.koritsu.valued.domain.DashboardNotification;
 import cl.koritsu.valued.domain.Movie;
-import cl.koritsu.valued.domain.MovieRevenue;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.domain.Usuario;
 
@@ -19,18 +18,6 @@ public interface DataProvider {
      * @return A Collection of most recent transactions.
      */
     Collection<Transaction> getRecentTransactions(int count);
-
-    /**
-     * @param id
-     *            Movie identifier.
-     * @return A Collection of daily revenues for the movie.
-     */
-    Collection<MovieRevenue> getDailyRevenuesByMovie(long id);
-
-    /**
-     * @return Total revenues for each listed movie.
-     */
-    Collection<MovieRevenue> getTotalMovieRevenues();
 
     /**
      * @param userName

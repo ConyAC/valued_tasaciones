@@ -15,7 +15,8 @@ public class Contacto {
 	String telefonoFijo;
 	String telefonoMovil;
 	String email;
-	String cargo;
+	@JoinColumn(name="cargoId")
+	Cargo cargo;
 	@JoinColumn(name="clienteId")
 	Cliente cliente;
 	
@@ -61,10 +62,10 @@ public class Contacto {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public String getCargo() {
+	public Cargo getCargo() {
 		return cargo;
 	}
-	public void setCargo(String cargo) {
+	public void setCargo(Cargo cargo) {
 		this.cargo = cargo;
 	}
 	public Cliente getCliente() {

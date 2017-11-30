@@ -128,9 +128,8 @@ public class BienStep implements WizardStep {
 				
 				//obtiene la lista de regiones
 				List<Region> regiones = service.getRegiones();
-				for(Region region : regiones) {
-					cbRegion.addItem(region);
-				}
+				((BeanItemContainer<Region>)cbRegion.getContainerDataSource()).addAll(regiones);
+
 				addComponents(cbRegion);
 			}
 		});
@@ -157,19 +156,13 @@ public class BienStep implements WizardStep {
 				Region region = (Region) event.getProperty().getValue();
 				cbComuna.setEnabled(true);
 				//obtiene la lista de regiones
-				List<Comuna> regiones = service.getComunaPorRegion(region);
-				
+				List<Comuna> comunas = service.getComunaPorRegion(region);
 				cbComuna.removeAllItems();
-				int i = 0;
-				for(Comuna comuna : regiones) {
-					cbComuna.addItem(comuna);
-					if(i == 0)
-						cbComuna.setValue(comuna);
-					i++;
-				}
+				((BeanItemContainer<Comuna>)cbComuna.getContainerDataSource()).addAll(comunas);
+
 			}
 		});
-		
+		//deja seleccionada la region metropolitana
 		cbRegion.select(new Region() {{setId(15l);}});
 		
 		//calle

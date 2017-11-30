@@ -7,6 +7,7 @@ import org.vaadin.teemu.wizards.WizardStep;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinSession;
@@ -14,6 +15,7 @@ import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
@@ -27,9 +29,10 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import cl.koritsu.valued.component.ClienteWindow;
 import cl.koritsu.valued.domain.Cliente;
+import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
+import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Solicitante;
 import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoOperacion;
@@ -43,17 +46,10 @@ public class ClienteStep implements WizardStep {
 	FormLayout testLayout, form;
 	VerticalLayout generalDetailLayout, ejecutivoDetailLayout;
 	HorizontalSplitPanel hsp;
-	Button btnEjecutivo, btnSucursal;
+	Button btnEjecutivo, btnSucursal,btnAgregarCliente;
 	BeanFieldGroup<NuevaSolicitudVO> fg;
 	ValuedService service;
-	/*
-	Collection<String> theJavas = Arrays.asList(new String[] {
-		    "Java",
-		    "JavaScript",
-		    "Join Java",
-		    "JavaFX Script"
-		});
-	*/
+
 	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
 		this.fg = fg;
 		this.service = service;
@@ -64,11 +60,6 @@ public class ClienteStep implements WizardStep {
 		return "Cliente";
 	}
 	
-    private Cliente getCurrentCliente() {
-        return (Cliente) VaadinSession.getCurrent().getAttribute(
-        		Cliente.class.getName());
-    }
-
 	@Override
 	public Component getContent() {
 		
@@ -79,6 +70,39 @@ public class ClienteStep implements WizardStep {
 		hsp.addComponent(usersListLayout);
 				
 		return hsp;
+	}
+	
+	private VerticalLayout drawFormAddCliente() {
+
+		final ClienteEditor editor = new ClienteEditor();
+		editor.getBtnCancelar().addClickListener(new ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				hsp.removeComponent(generalDetailLayout);	
+				btnAgregarCliente.setEnabled(true);   
+				editor.fieldGroup.discard();
+			}
+		});
+		
+		editor.getBtnGuadar().addClickListener(new ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				try {
+					hsp.removeComponent(generalDetailLayout);	
+					editor.fieldGroup.commit();
+	        		service.saveCliente(editor.fieldGroup.getItemDataSource().getBean());
+	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+				} catch (CommitException e) {
+
+					e.printStackTrace();
+	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.TRAY_NOTIFICATION);
+				}
+			}
+		});
+		
+		return editor;
 	}
 
 	/*
@@ -100,28 +124,55 @@ public class ClienteStep implements WizardStep {
 		p.setSizeFull();
 		vl.addComponent(p);
 		vl.setExpandRatio(p, 1.0f);
+		
+		final BeanFieldGroup<Sucursal> fgSucursal = new BeanFieldGroup<Sucursal>(Sucursal.class);
+		fgSucursal.setItemDataSource(new Sucursal());
 
 		// Loop through the properties, build fields for them and add the fields
         // to this UI 
 		TextField tfNombre = new TextField("Nombre");
+		Utils.bind(fgSucursal, tfNombre, "nombre");
 		tfNombre.setNullRepresentation("");
 		detailLayout.addComponent(tfNombre);
+
+		final ComboBox cbRegion = new ComboBox("Región");
+		cbRegion.setContainerDataSource(new BeanItemContainer<Region>(Region.class));
+		cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbRegion.setItemCaptionPropertyId("nombre");
+		List<Region> regiones = service.getRegiones();
+		((BeanItemContainer<Region>)cbRegion.getContainerDataSource()).addAll(regiones);
 		
-		TextField tfDireccion = new TextField("Dirección");
-		tfDireccion.setNullRepresentation("");
-		detailLayout.addComponent(tfDireccion);
+		cbRegion.setWidth("100%");
+		detailLayout.addComponent(cbRegion);
 		
-		ComboBox cbComuna = new ComboBox("Comuna");
+		final ComboBox cbComuna = new ComboBox("Comuna");
 		cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbComuna.setItemCaptionPropertyId("name");
+		cbComuna.setItemCaptionPropertyId("nombre");
+		Utils.bind(fgSucursal, cbComuna, "comuna");
+		cbComuna.setEnabled(false);
+		
+		cbRegion.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				
+				Region region = (Region) event.getProperty().getValue();
+				cbComuna.setEnabled(true);
+				//obtiene la lista de regiones
+				List<Comuna> comunas = service.getComunaPorRegion(region);
+				cbComuna.removeAllItems();
+				((BeanItemContainer<Comuna>)cbComuna.getContainerDataSource()).addAll(comunas);
+
+			}
+		});
+		
 		cbComuna.setWidth("100%");
 		detailLayout.addComponent(cbComuna);
 		
-		ComboBox cbRegion = new ComboBox("Región");
-		cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbRegion.setItemCaptionPropertyId("name");
-		cbRegion.setWidth("100%");
-		detailLayout.addComponent(cbRegion);
+		TextField tfDireccion = new TextField("Dirección");
+		Utils.bind(fgSucursal, tfDireccion, "direccion");
+		tfDireccion.setNullRepresentation("");
+		detailLayout.addComponent(tfDireccion);
 
 		HorizontalLayout botones = new HorizontalLayout();
 		botones.setHeight("60px");
@@ -132,7 +183,16 @@ public class ClienteStep implements WizardStep {
 
         	@Override
         	public void buttonClick(ClickEvent event) {
-        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+
+        		try {
+					fgSucursal.commit();
+	        		service.saveSucursal(fgSucursal.getItemDataSource().getBean());
+	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+				} catch (CommitException e) {
+
+					e.printStackTrace();
+	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.TRAY_NOTIFICATION);
+				}
         	}
         }){{
         	setIcon(FontAwesome.SAVE);
@@ -147,7 +207,8 @@ public class ClienteStep implements WizardStep {
         	@Override
         	public void buttonClick(ClickEvent event) {
         		hsp.removeComponent(generalDetailLayout);	
-        		btnSucursal.setEnabled(true);        		
+        		btnSucursal.setEnabled(true);   
+        		fgSucursal.discard();
         	}
         }){{
         	addStyleName("link");
@@ -283,15 +344,19 @@ public class ClienteStep implements WizardStep {
 				tf.setSuggestionProvider(new CollectionSuggestionProvider(theJavas, MatchMode.CONTAINS, true, Locale.US));
 				*/
 
-				final Cliente cliente = getCurrentCliente();
-				Button btnAgregarCliente = new Button(null,FontAwesome.PLUS_CIRCLE);				  
+				//final Cliente cliente = getCurrentCliente();
+				btnAgregarCliente = new Button(null,FontAwesome.PLUS_CIRCLE);				  
 				btnAgregarCliente.addClickListener(
 						new Button.ClickListener() {
 
 							@Override
 							public void buttonClick(ClickEvent event) {
-								ClienteWindow.open(cliente);								
+								//ClienteWindow.open(cliente);								
+								generalDetailLayout = drawFormAddCliente();	
+								hsp.addComponent(generalDetailLayout);
+								btnAgregarCliente.setEnabled(false);
 							}
+
 						});				
 						
 				addComponents(cbCliente,btnAgregarCliente);
