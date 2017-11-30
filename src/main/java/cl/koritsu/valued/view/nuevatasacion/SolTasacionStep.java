@@ -1,5 +1,6 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.util.Date;
 import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
@@ -20,16 +21,18 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
+import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.TipoInforme;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+import cl.koritsu.valued.view.utils.Utils;
 
 public class SolTasacionStep implements WizardStep {
 	
-	BeanFieldGroup<NuevaSolicitudVO> fg;
+	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
 
-	public SolTasacionStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
+	public SolTasacionStep(BeanFieldGroup<SolicitudTasacion> fg,ValuedService service) {
 		this.fg = fg;
 		this.service = service;
 	}
@@ -54,16 +57,14 @@ public class SolTasacionStep implements WizardStep {
 				ComboBox tf = new ComboBox();
 				tf.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 				tf.setItemCaptionPropertyId("nombre");
-				tf.setContainerDataSource(new BeanItemContainer<TipoInforme>(TipoInforme.class));
+				BeanItemContainer<TipoInforme> tipoInformeDS = new BeanItemContainer<TipoInforme>(TipoInforme.class);
+				tf.setContainerDataSource(tipoInformeDS);
+				
+				Utils.bind(fg, tf, "tipoInforme");
 				
 				List<TipoInforme> informes = service.getTipoInformes();
-				int i = 0;
-				for(TipoInforme tipo : informes) {
-					tf.addItem(tipo);
-					if(i == 0)
-						tf.setValue(tipo);
-					i++;
-				}
+				tipoInformeDS.addAll(informes);
+				
 				addComponents(tf);
 			}
 		});
@@ -105,7 +106,16 @@ public class SolTasacionStep implements WizardStep {
 		final HorizontalLayout hlNombreTasador =  new HorizontalLayout(){
 			{
 				setSpacing(true);
-				TextField tf = new TextField();
+				ComboBox tf = new ComboBox();
+				tf.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				tf.setItemCaptionPropertyId("nombres");
+				Utils.bind(fg, tf, "tasador");
+				BeanItemContainer<Usuario> ds = new BeanItemContainer<Usuario>(Usuario.class);
+				tf.setContainerDataSource(ds);
+				
+				List<Usuario> usuarios = service.getTasadores();
+				ds.addAll(usuarios);
+				
 				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
 				addComponents(tf,btn);
 			}
@@ -131,6 +141,10 @@ public class SolTasacionStep implements WizardStep {
 			{
 				setSpacing(true);
 				DateField tf = new DateField();
+				tf.setDateFormat("dd/MM/yyyy");
+				Utils.bind(fg, tf, "fechaEncargo");
+				//setea la fecha de hoy
+				tf.setValue(new Date());
 				addComponents(tf);
 			}
 		});

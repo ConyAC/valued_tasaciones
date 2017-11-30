@@ -10,7 +10,6 @@ import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -29,15 +28,16 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
+import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Solicitante;
+import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 import cl.koritsu.valued.view.utils.Utils;
 
 
@@ -46,11 +46,11 @@ public class ClienteStep implements WizardStep {
 	FormLayout testLayout, form;
 	VerticalLayout generalDetailLayout, ejecutivoDetailLayout;
 	HorizontalSplitPanel hsp;
-	Button btnEjecutivo, btnSucursal,btnAgregarCliente;
-	BeanFieldGroup<NuevaSolicitudVO> fg;
+	Button btnEjecutivo, btnSucursal,btnAgregarCliente,btnSolicitante;
+	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
 
-	public ClienteStep(BeanFieldGroup<NuevaSolicitudVO> fg,ValuedService service) {
+	public ClienteStep(BeanFieldGroup<SolicitudTasacion> fg,ValuedService service) {
 		this.fg = fg;
 		this.service = service;
 	}
@@ -97,7 +97,7 @@ public class ClienteStep implements WizardStep {
 				} catch (CommitException e) {
 
 					e.printStackTrace();
-	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.TRAY_NOTIFICATION);
+	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -148,6 +148,7 @@ public class ClienteStep implements WizardStep {
 		final ComboBox cbComuna = new ComboBox("Comuna");
 		cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbComuna.setItemCaptionPropertyId("nombre");
+		cbComuna.setContainerDataSource(new BeanItemContainer<Comuna>(Comuna.class));
 		Utils.bind(fgSucursal, cbComuna, "comuna");
 		cbComuna.setEnabled(false);
 		
@@ -186,8 +187,13 @@ public class ClienteStep implements WizardStep {
 
         		try {
 					fgSucursal.commit();
-	        		service.saveSucursal(fgSucursal.getItemDataSource().getBean());
+					//setea
+					Sucursal sucursal = fgSucursal.getItemDataSource().getBean();
+					sucursal.setCliente((Cliente) cbCliente.getValue());
+	        		service.saveSucursal(sucursal);
 	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+	        		hsp.removeComponent(generalDetailLayout);	
+	        		btnSucursal.setEnabled(true);
 				} catch (CommitException e) {
 
 					e.printStackTrace();
@@ -231,6 +237,12 @@ public class ClienteStep implements WizardStep {
 		vl.setMargin(true);
 		vl.setSizeFull();
 		
+		final BeanFieldGroup<Contacto> fgEjecutivo = new BeanFieldGroup<Contacto>(Contacto.class);
+		Contacto ejecutivo = new Contacto();
+		ejecutivo.setCargo(new Cargo() {{setId(1L);}});
+		ejecutivo.setCliente((Cliente) cbCliente.getValue());
+		fgEjecutivo.setItemDataSource(ejecutivo);
+		
 		FormLayout detailLayout = new FormLayout();
 		detailLayout.setMargin(true);
 		detailLayout.setSpacing(true);
@@ -245,21 +257,31 @@ public class ClienteStep implements WizardStep {
         // to this UI 
 		TextField tfNombre = new TextField("Nombre");
 		tfNombre.setNullRepresentation("");
+		Utils.bind(fgEjecutivo, tfNombre,"nombre" );
 		detailLayout.addComponent(tfNombre);
 		
-		TextField tfApellidos = new TextField("Apellidos");
-		tfApellidos.setNullRepresentation("");
-		detailLayout.addComponent(tfApellidos);
+		TextField tfApellidoPaterno = new TextField("Apellido Paterno");
+		Utils.bind(fgEjecutivo, tfApellidoPaterno,"apellidoPaterno" );
+		tfApellidoPaterno.setNullRepresentation("");
+		detailLayout.addComponent(tfApellidoPaterno);
+		
+		TextField tfApellidoMaterno = new TextField("Apellido Materno");
+		Utils.bind(fgEjecutivo, tfApellidoMaterno,"apellidoMaterno" );
+		tfApellidoMaterno.setNullRepresentation("");
+		detailLayout.addComponent(tfApellidoMaterno);
 		
 		TextField tfFono = new TextField("Teléfono Fijo");
+		Utils.bind(fgEjecutivo, tfFono,"telefonoFijo" );
 		tfFono.setNullRepresentation("");
 		detailLayout.addComponent(tfFono);
 		
 		TextField tfMovil= new TextField("Teléfono Móvil");
+		Utils.bind(fgEjecutivo, tfMovil,"telefonoMovil" );
 		tfMovil.setNullRepresentation("");
 		detailLayout.addComponent(tfMovil);		
 
-		TextField tfEmail = new TextField("Teléfono Email");
+		TextField tfEmail = new TextField("Email");
+		Utils.bind(fgEjecutivo, tfEmail,"email" );
 		tfEmail.setNullRepresentation("");
 		detailLayout.addComponent(tfEmail);
 
@@ -272,7 +294,21 @@ public class ClienteStep implements WizardStep {
 
         	@Override
         	public void buttonClick(ClickEvent event) {
-        		Notification.show("Ejecutivo guardado correctamente",Type.TRAY_NOTIFICATION);
+        		try {
+        			fgEjecutivo.commit();
+        			
+	        		service.saveContacto(fgEjecutivo.getItemDataSource().getBean());
+	        		
+        			Notification.show("Ejecutivo guardado correctamente",Type.TRAY_NOTIFICATION);
+        			
+        			hsp.removeComponent(generalDetailLayout);	
+            		btnEjecutivo.setEnabled(true);
+            		
+        		}catch(CommitException ce) {
+
+					ce.printStackTrace();
+	        		Notification.show("Error al guardar el ejecutivo debido a "+ce.getMessage(),Type.TRAY_NOTIFICATION);
+        		}
         	}
         }){{
         	setIcon(FontAwesome.SAVE);
@@ -299,6 +335,123 @@ public class ClienteStep implements WizardStep {
         
 		return vl;
 	}
+	
+	/*
+	 * Permite dibujar el formulario de nuevo ingreso para ejecutivo
+	 */
+	private VerticalLayout drawFormAddSolicitante() {
+		
+		VerticalLayout vl = new VerticalLayout();
+		vl.setSpacing(true);
+		vl.setMargin(true);
+		vl.setSizeFull();
+		
+		final BeanFieldGroup<Solicitante> fgSolicitante = new BeanFieldGroup<Solicitante>(Solicitante.class);
+		Solicitante solicitante = new Solicitante();
+		solicitante.setCliente((Cliente) cbCliente.getValue());
+		fgSolicitante.setItemDataSource(solicitante);
+		
+		FormLayout detailLayout = new FormLayout();
+		detailLayout.setMargin(true);
+		detailLayout.setSpacing(true);
+		
+		Panel p = new Panel(detailLayout);
+		p.setCaption("Creando nuevo ejecutivo");
+		p.setSizeFull();
+		vl.addComponent(p);
+		vl.setExpandRatio(p, 1.0f);
+		
+		// Loop through the properties, build fields for them and add the fields
+        // to this UI 
+		TextField tfRut = new TextField("Rut");
+		tfRut.setNullRepresentation("");
+		Utils.bind(fgSolicitante, tfRut,"rut" );
+		detailLayout.addComponent(tfRut);
+
+		// Loop through the properties, build fields for them and add the fields
+        // to this UI 
+		TextField tfNombre = new TextField("Nombre");
+		tfNombre.setNullRepresentation("");
+		Utils.bind(fgSolicitante, tfNombre,"nombres" );
+		detailLayout.addComponent(tfNombre);
+		
+		TextField tfApellidoPaterno = new TextField("Apellido Paterno");
+		Utils.bind(fgSolicitante, tfApellidoPaterno,"apellidoPaterno" );
+		tfApellidoPaterno.setNullRepresentation("");
+		detailLayout.addComponent(tfApellidoPaterno);
+		
+		TextField tfApellidoMaterno = new TextField("Apellido Materno");
+		Utils.bind(fgSolicitante, tfApellidoMaterno,"apellidoMaterno" );
+		tfApellidoMaterno.setNullRepresentation("");
+		detailLayout.addComponent(tfApellidoMaterno);
+		
+		TextField tfFono = new TextField("Teléfono Fijo");
+		Utils.bind(fgSolicitante, tfFono,"telefonoFijo" );
+		tfFono.setNullRepresentation("");
+		detailLayout.addComponent(tfFono);
+		
+		TextField tfMovil= new TextField("Teléfono Móvil");
+		Utils.bind(fgSolicitante, tfMovil,"telefonoMovil" );
+		tfMovil.setNullRepresentation("");
+		detailLayout.addComponent(tfMovil);		
+
+		TextField tfEmail = new TextField("Email");
+		Utils.bind(fgSolicitante, tfEmail,"email" );
+		tfEmail.setNullRepresentation("");
+		detailLayout.addComponent(tfEmail);
+
+		HorizontalLayout botones = new HorizontalLayout();
+		botones.setHeight("60px");
+		botones.setSpacing(true);
+		
+		//agrega un boton que hace el commit
+        Button btnSave = new Button("Guardar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		try {
+        			fgSolicitante.commit();
+        			
+	        		service.saveSolicitante(fgSolicitante.getItemDataSource().getBean());
+	        		
+        			Notification.show("Solicitante guardado correctamente",Type.TRAY_NOTIFICATION);
+        			
+        			hsp.removeComponent(generalDetailLayout);	
+            		btnSolicitante.setEnabled(true);
+            		
+        		}catch(CommitException ce) {
+
+					ce.printStackTrace();
+	        		Notification.show("Error al guardar el ejecutivo debido a "+ce.getMessage(),Type.TRAY_NOTIFICATION);
+        		}
+        	}
+        }){{
+        	setIcon(FontAwesome.SAVE);
+        }};
+        
+        botones.addComponent(btnSave);
+        botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
+        
+      //agrega un boton que cencela acción
+        Button btnCancel = new Button("Cancelar",new Button.ClickListener() {
+
+        	@Override
+        	public void buttonClick(ClickEvent event) {
+        		hsp.removeComponent(generalDetailLayout);	
+        		btnEjecutivo.setEnabled(true); 
+        	}
+        }){{
+        	addStyleName("link");
+        }};
+        
+        botones.addComponent(btnCancel);
+        botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
+        detailLayout.addComponent(botones);
+        
+		return vl;
+	}
+	
+	final ComboBox cbCliente = new ComboBox();
 
 	/*
 	 * Permite dibujar el formulario de ingreso
@@ -314,7 +467,7 @@ public class ClienteStep implements WizardStep {
 		gl.setSpacing(true);
 		gl.setMargin(true);
                 
-		final ComboBox cbCliente = new ComboBox();
+		
 		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbCliente.setItemCaptionPropertyId("nombreCliente");
 		BeanItemContainer<Cliente> ds = new BeanItemContainer<Cliente>(Cliente.class);
@@ -408,7 +561,6 @@ public class ClienteStep implements WizardStep {
 		BeanItemContainer<Contacto> ds3 = new BeanItemContainer<Contacto>(Contacto.class);
 		cbEjecutivo.setContainerDataSource(ds3);
 		Utils.bind(fg,cbEjecutivo, "ejecutivo");
-		
 
 		//ejecutivo
 		gl.addComponents(new Label("Nombre Ejecutivo"));
@@ -437,9 +589,9 @@ public class ClienteStep implements WizardStep {
 		final ComboBox cbSolicitante = new ComboBox();
 		cbSolicitante.setEnabled(false);
 		cbSolicitante.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbSolicitante.setItemCaptionPropertyId("nombre");
+		cbSolicitante.setItemCaptionPropertyId("nombres");
 		BeanItemContainer<Solicitante> ds4 = new BeanItemContainer<Solicitante>(Solicitante.class);
-		cbEjecutivo.setContainerDataSource(ds4);
+		cbSolicitante.setContainerDataSource(ds4);
 		Utils.bind(fg,cbSolicitante, "solicitante");
 		
 		//solicitante
@@ -447,8 +599,18 @@ public class ClienteStep implements WizardStep {
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				Button btn = new Button(FontAwesome.PLUS_CIRCLE);
-				addComponents(cbSolicitante,btn);
+				btnSolicitante = new Button(FontAwesome.PLUS_CIRCLE);
+				btnSolicitante.addClickListener(
+						new Button.ClickListener() {
+
+							@Override
+							public void buttonClick(ClickEvent event) {
+								generalDetailLayout = drawFormAddSolicitante();	
+								hsp.addComponent(generalDetailLayout);
+								btnSolicitante.setEnabled(false);
+							}
+						});	
+				addComponents(cbSolicitante,btnSolicitante);
 			}
 		});
 		
@@ -483,26 +645,39 @@ public class ClienteStep implements WizardStep {
 		Label solicitanteSel = new Label();
 		gl.addComponent(solicitanteSel);
 		
+		//solicitante
+		gl.addComponents(new Label("Número Tasación Cliente:"));
+		gl.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				TextField tf = new TextField();
+				Utils.bind(fg, tf, "numeroTasacionCliente");
+				addComponents(tf);
+			}
+		});
+		Label solicitanteSel2 = new Label();
+		gl.addComponent(solicitanteSel2);
+		
 		//tipo de operacion
 		gl.addComponents(new Label("Tipo de Operación"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				ComboBox tf = new ComboBox();
-				tf.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-				tf.setItemCaptionPropertyId("nombre");
-				tf.setContainerDataSource(new BeanItemContainer<TipoOperacion>(TipoOperacion.class));
+				ComboBox cbTipoOperacion = new ComboBox();
+				cbTipoOperacion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+				cbTipoOperacion.setItemCaptionPropertyId("nombre");
+				cbTipoOperacion.setContainerDataSource(new BeanItemContainer<TipoOperacion>(TipoOperacion.class));
 				
-				Utils.bind(fg,tf, "solicitudTasacion.tipoOperacion");
+				Utils.bind(fg,cbTipoOperacion, "tipoOperacion");
 				List<TipoOperacion> operaciones = service.getOperaciones();
 				int i = 0;
 				for(TipoOperacion tipo : operaciones) {
-					tf.addItem(tipo);
+					cbTipoOperacion.addItem(tipo);
 					if(i == 0)
-						tf.setValue(tipo);
+						cbTipoOperacion.setValue(tipo);
 					i++;
 				}
-				addComponents(tf);
+				addComponents(cbTipoOperacion);
 			}
 		});
 		

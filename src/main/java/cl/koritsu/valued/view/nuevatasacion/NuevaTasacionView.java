@@ -1,6 +1,7 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -16,26 +17,28 @@ import org.vaadin.teemu.wizards.event.WizardStepSetChangedEvent;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.HonorarioCliente;
 import cl.koritsu.valued.domain.Movie;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
@@ -52,7 +55,7 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
     private ComboBox movieSelect;
     
     private Wizard wizard;
-    private BeanFieldGroup<NuevaSolicitudVO> fg = new BeanFieldGroup<NuevaSolicitudVO>(NuevaSolicitudVO.class);
+    private BeanFieldGroup<SolicitudTasacion> fg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
 
     public NuevaTasacionView() {
 
@@ -82,10 +85,16 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
          wizard.getFinishButton().setCaption("Finalizar");
          wizard.getCancelButton().setCaption("Cancelar");
          
+         SolicitudTasacion nuevaTasacion = new SolicitudTasacion();
+         nuevaTasacion.setBien(new Bien());
+         nuevaTasacion.setHonorarioCliente(new HonorarioCliente());
+         nuevaTasacion.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+         fg.setItemDataSource(nuevaTasacion);
+         
          wizard.addStep(new ClienteStep(fg,service), "cliente");
          wizard.addStep(new BienStep(fg,service), "bien");
          wizard.addStep(new SolTasacionStep(fg,service), "solicitud");
-         wizard.addStep(new HonorarioClienteStep(wizard,fg), "ingreso");
+         wizard.addStep(new HonorarioClienteStep(wizard,fg,service), "ingreso");
          wizard.setSizeFull();
 		return new VerticalLayout(){
 			{
@@ -120,6 +129,23 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 
     @Override
     public void enter(final ViewChangeEvent event) {
+    	if(fg.isModified()) {
+    		reset() ;
+    	}
+    	wizard.setVisible(true);
+    }
+    
+    private void reset() {
+    	fg.discard();
+		//TODO confimar que se perderán los cambios
+        SolicitudTasacion nuevaTasacion = new SolicitudTasacion();
+        nuevaTasacion.setBien(new Bien());
+        nuevaTasacion.setHonorarioCliente(new HonorarioCliente());
+        nuevaTasacion.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+        fg.setItemDataSource(nuevaTasacion);
+        //retorna a la primera etapa
+        while(!wizard.isActive(wizard.getSteps().get(0)))
+        	wizard.back();
     }
 
 	@Override
@@ -135,28 +161,38 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 
 	@Override
 	public void wizardCompleted(WizardCompletedEvent event) {
-		endWizard("Wizard Completed!");
+		
+		//intenta guardar
+		try {
+			fg.commit();
+			//realiza todas las validaciones que puedan falta
+			//TODO
+			//crea el objeto de solicitud tasacion
+			String nroValued = service.saveSolicitud(fg.getItemDataSource().getBean());
+			endWizard("Se ha ingresado la solicitud con el siguiente número asociado "+nroValued);
+			
+			reset();
+		}catch(CommitException ce) {
+			ce.printStackTrace();
+			Notification.show("Error al guardar la nueva solicitud debido : "+ce.getMessage(),Type.ERROR_MESSAGE);
+		}
+		
 	}
+
+
 
 	@Override
 	public void wizardCancelled(WizardCancelledEvent event) {
-		endWizard("Wizard Cancelled!");
+		endWizard("Wizard Cancelado");
 	}
 	
     private void endWizard(String message) {
         wizard.setVisible(false);
-        Notification.show(message);
+        Notification notification = new Notification( message, Type.HUMANIZED_MESSAGE );
+        notification.setDelayMsec(( int ) TimeUnit.SECONDS.toMillis( 7 ));
+        notification.show(Page.getCurrent());
+        
         Page.getCurrent().setTitle(message);
-        Button startOverButton = new Button("Run the demo again",
-                new Button.ClickListener() {
-                    public void buttonClick(ClickEvent event) {
-                        // Close the session and reload the page.
-                        VaadinSession.getCurrent().close();
-                        Page.getCurrent().setLocation("");
-                    }
-                });
-        addComponent(startOverButton);
-        setComponentAlignment(startOverButton,
-                Alignment.MIDDLE_CENTER);
+
     }
 }

@@ -1,5 +1,6 @@
 package cl.koritsu.valued.view.transactions;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -7,7 +8,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.vaadin.maddon.FilterableListContainer;
 
@@ -16,6 +19,8 @@ import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
+import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
@@ -24,12 +29,15 @@ import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
@@ -43,10 +51,12 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.MovieDetailsWindow;
+import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.ValuedViewType;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -65,6 +75,9 @@ public final class TransactionsView extends VerticalLayout implements View {
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
     private static final String[] DEFAULT_COLLAPSIBLE = { "country", "city",
             "theater", "room", "title", "seats" };
+    
+    @Autowired
+    ValuedService service;
 
     public TransactionsView() {
         setSizeFull();
@@ -83,7 +96,7 @@ public final class TransactionsView extends VerticalLayout implements View {
         super.detach();
         // A new instance of TransactionsView is created every time it's
         // navigated to so we'll need to clean up references to it on detach.
-        ValuedEventBus.unregister(this);
+        //ValuedEventBus.unregister(this);
     }
 
     private Component buildToolbar() {
@@ -167,7 +180,7 @@ public final class TransactionsView extends VerticalLayout implements View {
                     final Object colId, final Property<?> property) {
                 String result = super.formatPropertyValue(rowId, colId,
                         property);
-                if (colId.equals("time")) {
+                if (colId.equals("fechaEncargo")) {
                     result = DATEFORMAT.format(((Date) property.getValue()));
                 } else if (colId.equals("price")) {
                     if (property != null && property.getValue() != null) {
@@ -185,21 +198,42 @@ public final class TransactionsView extends VerticalLayout implements View {
         table.addStyleName(ValoTheme.TABLE_COMPACT);
         table.setSelectable(true);
 
-        table.setColumnCollapsingAllowed(true);
-        table.setColumnCollapsible("time", false);
-        table.setColumnCollapsible("price", false);
 
         table.setColumnReorderingAllowed(true);
-        table.setContainerDataSource(new TempTransactionsContainer(ValuedUI
-                .getDataProvider().getRecentTransactions(200)));
+        table.setContainerDataSource(new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class));
         table.setSortContainerPropertyId("time");
         table.setSortAscending(false);
 
         table.setColumnAlignment("seats", Align.RIGHT);
         table.setColumnAlignment("price", Align.RIGHT);
+        
+        table.addGeneratedColumn("vacio", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+		
+				// Find the application directory
+				String basepath = VaadinService.getCurrent()
+				                  .getBaseDirectory().getAbsolutePath();
 
-        table.setVisibleColumns("vacio","room","time", "country");
-        table.setColumnHeaders("","N° Tasación", "Fecha visita", "Observacion");
+				// Image as a file resource
+				FileResource resource = new FileResource(new File(basepath +
+				                        "/VAADIN/img/pin_tas_ing.png"));
+				return new Image(null,resource);
+			}
+		});
+        
+        table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
+				return sol.getCliente() != null ? sol.getCliente().getNombreCliente() : "";
+			}
+		});
+
+        table.setVisibleColumns("vacio","numeroTasacion","fechaEncargo", "nombrecliente");
+        table.setColumnHeaders("","N° Tasación", "Fecha visita", "Cliente");
         
         table.addGeneratedColumn("Acciones", new ColumnGenerator() {
 			
@@ -265,6 +299,11 @@ public final class TransactionsView extends VerticalLayout implements View {
 
     @Override
     public void enter(final ViewChangeEvent event) {
+    	//limpia la tabla
+    	table.removeAllItems();
+    	//llena con las tasaciones
+    	List<SolicitudTasacion> solicitudes = service.getTasaciones();
+    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);
     }
 
     private class TransactionsActionHandler implements Handler {

@@ -1,111 +1,147 @@
 package cl.koritsu.valued.domain;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public final class Usuario {
+public class Usuario {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-    private String rol;
-    private String firstName;
-    private String lastName;
-    private String title;
+	private boolean tasador;
+    private String nombres;
+    private String apellidoPaterno;
+    private String apellidoMaterno;
     private boolean male;
     private String email;
-    private String location;
-    private String phone;
-    private Integer newsletterSubscription;
-    private String website;
-    private String bio;
+    private boolean habilitado;
+    private String contrasena;
+    private String telefonoFijo;
+    private String telefonoMovil;
+    private String nroCuentaBancaria;
+    private String banco;
+    
+    /**
+     * @deprecated se cambiará por perfil
+     */
+    private String rol;
 
-    public String getEmail() {
-        return email;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setEmail(final String email) {
-        this.email = email;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public String getLocation() {
-        return location;
-    }
+	public boolean isTasador() {
+		return tasador;
+	}
 
-    public void setLocation(final String location) {
-        this.location = location;
-    }
+	public void setTasador(boolean tasador) {
+		this.tasador = tasador;
+	}
 
-    public String getPhone() {
-        return phone;
-    }
+	public String getNombres() {
+		return nombres;
+	}
 
-    public void setPhone(final String phone) {
-        this.phone = phone;
-    }
+	public void setNombres(String nombres) {
+		this.nombres = nombres;
+	}
 
-    public Integer getNewsletterSubscription() {
-        return newsletterSubscription;
-    }
+	public String getApellidoPaterno() {
+		return apellidoPaterno;
+	}
 
-    public void setNewsletterSubscription(final Integer newsletterSubscription) {
-        this.newsletterSubscription = newsletterSubscription;
-    }
+	public void setApellidoPaterno(String apellidoPaterno) {
+		this.apellidoPaterno = apellidoPaterno;
+	}
 
-    public String getWebsite() {
-        return website;
-    }
+	public String getApellidoMaterno() {
+		return apellidoMaterno;
+	}
 
-    public void setWebsite(final String website) {
-        this.website = website;
-    }
+	public void setApellidoMaterno(String apellidoMaterno) {
+		this.apellidoMaterno = apellidoMaterno;
+	}
 
-    public String getBio() {
-        return bio;
-    }
+	public boolean isMale() {
+		return male;
+	}
 
-    public void setBio(final String bio) {
-        this.bio = bio;
-    }
+	public void setMale(boolean male) {
+		this.male = male;
+	}
 
-    public boolean isMale() {
-        return male;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setMale(final boolean male) {
-        this.male = male;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public boolean isHabilitado() {
+		return habilitado;
+	}
 
-    public void setTitle(final String title) {
-        this.title = title;
-    }
+	public void setHabilitado(boolean habilitado) {
+		this.habilitado = habilitado;
+	}
 
-    public String getRole() {
-        return rol;
-    }
+	public String getContrasena() {
+		return contrasena;
+	}
 
-    public void setRole(final String role) {
-        this.rol = role;
-    }
+	public void setContrasena(String contrasena) {
+		this.contrasena = contrasena;
+	}
 
-    public String getFirstName() {
-        return firstName;
-    }
+	public String getTelefonoFijo() {
+		return telefonoFijo;
+	}
 
-    public void setFirstName(final String firstName) {
-        this.firstName = firstName;
-    }
+	public void setTelefonoFijo(String telefonoFijo) {
+		this.telefonoFijo = telefonoFijo;
+	}
 
-    public String getLastName() {
-        return lastName;
-    }
+	public String getTelefonoMovil() {
+		return telefonoMovil;
+	}
 
-    public void setLastName(final String lastName) {
-        this.lastName = lastName;
-    }
+	public void setTelefonoMovil(String telefonoMovil) {
+		this.telefonoMovil = telefonoMovil;
+	}
 
+	public String getNroCuentaBancaria() {
+		return nroCuentaBancaria;
+	}
+
+	public void setNroCuentaBancaria(String nroCuentaBancaria) {
+		this.nroCuentaBancaria = nroCuentaBancaria;
+	}
+
+	public String getBanco() {
+		return banco;
+	}
+
+	public void setBanco(String banco) {
+		this.banco = banco;
+	}
+
+	public String getRol() {
+		return rol;
+	}
+
+	public void setRol(String rol) {
+		this.rol = rol;
+	}
+
+    
+    
+    
 }

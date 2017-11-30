@@ -244,7 +244,7 @@ public final class ValuedMenu extends CustomComponent {
     @Subscribe
     public void updateUserName(final ProfileUpdatedEvent event) {
         Usuario user = getCurrentUser();
-        settingsItem.setText(user.getFirstName() + " " + user.getLastName());
+        settingsItem.setText(user.getNombres() + " " + user.getApellidoPaterno());
     }
 
     public final class ValoMenuItemButton extends Button {

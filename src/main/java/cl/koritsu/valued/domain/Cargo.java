@@ -1,15 +1,18 @@
 package cl.koritsu.valued.domain;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class Cargo {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	String nombre;
-	String key;
+	String llave;
 	String descripcion;
 	public Long getId() {
 		return id;
@@ -23,11 +26,12 @@ public class Cargo {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-	public String getKey() {
-		return key;
+	
+	public String getLlave() {
+		return llave;
 	}
-	public void setKey(String key) {
-		this.key = key;
+	public void setLlave(String llave) {
+		this.llave = llave;
 	}
 	public String getDescripcion() {
 		return descripcion;
