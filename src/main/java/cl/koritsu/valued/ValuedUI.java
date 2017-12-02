@@ -49,7 +49,7 @@ public final class ValuedUI extends UI {
 
     @Override
     protected void init(final VaadinRequest request) {
-        setLocale(Locale.US);
+        setLocale(Locale.GERMAN);
 
         ValuedEventBus.register(this);
         Responsive.makeResponsive(this);
@@ -77,7 +77,7 @@ public final class ValuedUI extends UI {
     private void updateContent() {
         Usuario user = (Usuario) VaadinSession.getCurrent().getAttribute(
                 Usuario.class.getName());
-        if (user != null && "admin".equals(user.getRole())) {
+        if (user != null && "admin".equals(user.getRol())) {
             // Authenticated user
             setContent(new MainView());
             removeStyleName("loginview");

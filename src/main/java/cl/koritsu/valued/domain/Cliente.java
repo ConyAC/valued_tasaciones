@@ -3,27 +3,30 @@ package cl.koritsu.valued.domain;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import cl.koritsu.valued.domain.enums.TipoPersona;
 
 @Entity
-public final class Cliente {
+public class Cliente {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-    private String rut;
-    private String nombres;
-    private String apellidoPaterno;
-    private String apellidoMaterno;
-    private String razonSocial;
-    private String telefonoFijo;
+    private String rut = "";
+    private String nombres = "";
+    private String apellidoPaterno = "";
+    private String apellidoMaterno = "";
+    private String razonSocial = "";
+    private String telefonoFijo = "";
     @Enumerated(EnumType.STRING)
-    private TipoPersona tipoPersona;
-    private String factorKm;
-    private String direccion;
-    private String tipo;
-    private boolean multiRut;
+    private TipoPersona tipoPersona = TipoPersona.JURIDICA;
+    private String factorKm = "";
+    private String direccion = "";
+    private String tipo = "";
+    private boolean multiRut = false;
     
     
 	public Long getId() {

@@ -1,5 +1,6 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.server.FileResource;
+import com.vaadin.server.VaadinService;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
@@ -36,11 +39,11 @@ import com.vaadin.ui.VerticalLayout;
 
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
 import cl.koritsu.valued.domain.enums.TipoBien;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 import cl.koritsu.valued.view.utils.Utils;
 
 public class BienStep implements WizardStep {
@@ -50,10 +53,10 @@ public class BienStep implements WizardStep {
 	private ComboBox cbRegion,cbComuna;
 	private TextField tfCalle, tfNumero;
 	GoogleMap googleMap;
-	BeanFieldGroup<NuevaSolicitudVO> fg;
+	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
 	
-	public BienStep(BeanFieldGroup<NuevaSolicitudVO> fg, ValuedService service) {
+	public BienStep(BeanFieldGroup<SolicitudTasacion> fg, ValuedService service) {
 		this.fg =  fg;
 		this.service = service;
 	}
@@ -129,10 +132,12 @@ public class BienStep implements WizardStep {
 				
 				//obtiene la lista de regiones
 				List<Region> regiones = service.getRegiones();
-				for(Region region : regiones) {
-					cbRegion.addItem(region);
-				}
+				((BeanItemContainer<Region>)cbRegion.getContainerDataSource()).addAll(regiones);
+
 				addComponents(cbRegion);
+				
+				//deja seleccionada la region metropolitana
+				cbRegion.select(new Region() {{setId(15l);}});
 			}
 		});
 		
@@ -142,7 +147,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				cbComuna = new ComboBox();
-				Utils.bind(fg,cbRegion,"bien.comuna");
+				Utils.bind(fg,cbComuna,"bien.comuna");
 				cbComuna.setContainerDataSource(new BeanItemContainer<Comuna>(Comuna.class));
 				cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 				cbComuna.setItemCaptionPropertyId("nombre");
@@ -158,20 +163,12 @@ public class BienStep implements WizardStep {
 				Region region = (Region) event.getProperty().getValue();
 				cbComuna.setEnabled(true);
 				//obtiene la lista de regiones
-				List<Comuna> regiones = service.getComunaPorRegion(region);
-				
+				List<Comuna> comunas = service.getComunaPorRegion(region);
 				cbComuna.removeAllItems();
-				int i = 0;
-				for(Comuna comuna : regiones) {
-					cbComuna.addItem(comuna);
-					if(i == 0)
-						cbComuna.setValue(comuna);
-					i++;
-				}
+				((BeanItemContainer<Comuna>)cbComuna.getContainerDataSource()).addAll(comunas);
+
 			}
 		});
-		
-		cbRegion.select(new Region() {{setId(15l);}});
 		
 		//calle
 		gl.addComponents(new Label("Calle"));
@@ -199,7 +196,8 @@ public class BienStep implements WizardStep {
 					public void valueChange(ValueChangeEvent event) {
 						 try {
 							String calle = (tfCalle.getValue().toString() != null)?tfCalle.getValue().toString()+" ":"";
-							refreshMap(calle.concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 12);
+							if(cbComuna.getValue()!= null && cbRegion.getValue() != null )
+								refreshMap(calle.concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 12);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -225,7 +223,8 @@ public class BienStep implements WizardStep {
 						 try {
 							 String nm = (tfNumero.getValue().toString() != null)?tfNumero.getValue().toString()+" ":"";
 							 String calle = (tfCalle.getValue().toString() != null)?tfCalle.getValue().toString()+" ":"";
-							 refreshMap(calle.concat(nm).concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 20);
+							 if(cbComuna.getValue()!= null && cbRegion.getValue() != null )
+								 refreshMap(calle.concat(nm).concat(((Comuna)cbComuna.getValue()).getNombre().toString()+" ").concat(((Region)cbRegion.getValue()).getNombre().toString()), 20);
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -257,6 +256,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"rutPropietario");
 				addComponents(tf);
 			}
 		});
@@ -267,6 +267,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"telefonoPropietario");
 				addComponents(tf);
 			}
 		});
@@ -277,6 +278,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"nombrePropietario");
 				addComponents(tf);
 			}
 		});
@@ -287,6 +289,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"emailPropietario");
 				addComponents(tf);
 			}
 		});
@@ -300,26 +303,29 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"nombreContacto");
 				addComponents(tf);
 			}
 		});
 		
 		//telefono
-		gl.addComponents(new Label("Teléfono"));
+		gl.addComponents(new Label("Teléfono Fijo"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"telefonoFijoContacto");
 				addComponents(tf);
 			}
 		});
 		
 		//rut
-		gl.addComponents(new Label("Teléfono 2"));
+		gl.addComponents(new Label("Teléfono Movil"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"telefonoMovilContacto");
 				addComponents(tf);
 			}
 		});
@@ -330,6 +336,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"emailContacto");
 				addComponents(tf);
 			}
 		});
@@ -343,26 +350,29 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"nombreContacto2");
 				addComponents(tf);
 			}
 		});
 		
 		//telefono
-		gl.addComponents(new Label("Teléfono"));
+		gl.addComponents(new Label("Teléfono Fijo"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"telefonoFijoContacto2");
 				addComponents(tf);
 			}
 		});
 		
 		//rut
-		gl.addComponents(new Label("Teléfono 2"));
+		gl.addComponents(new Label("Teléfono Movil"));
 		gl.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"telefonoMovilContacto2");
 				addComponents(tf);
 			}
 		});
@@ -373,6 +383,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				Utils.bind(fg,tf,"emailContacto2");
 				addComponents(tf);
 			}
 		});
@@ -408,14 +419,25 @@ public class BienStep implements WizardStep {
 		googleMap.setSizeFull();	
 		
 		//rescatamos las tasaciones realizadas desde la base...
-		googleMap.addMarker("Tasación Visada: Inmobiliaria1 S.A.", new LatLon(
-				-33.484747, -70.739321), false, "VAADIN/img/pin_tas_ing.png");	
-		googleMap.addMarker("Tasación Visada: Inmobiliaria2 S.A.", new LatLon(
-				-33.429363, -70.615143), false, "VAADIN/img/pin_tas_ing.png");	
-		googleMap.addMarker("Tasación Visada: Inmobiliaria3 S.A.", new LatLon(
-				-33.397766, -70.597899), false, "VAADIN/img/pin_tas_ing.png");	
-		googleMap.addMarker("Tasación Visada: Inmobiliaria4 S.A.", new LatLon(
-				-33.610913, -70.879582), false, "VAADIN/img/pin_tas_ing.png");	
+//		googleMap.addMarker("Tasación Visada: Inmobiliaria1 S.A.", new LatLon(
+//				-33.484747, -70.739321), false, "VAADIN/img/pin_tas_ing.png");	
+//		googleMap.addMarker("Tasación Visada: Inmobiliaria2 S.A.", new LatLon(
+//				-33.429363, -70.615143), false, "VAADIN/img/pin_tas_ing.png");	
+//		googleMap.addMarker("Tasación Visada: Inmobiliaria3 S.A.", new LatLon(
+//				-33.397766, -70.597899), false, "VAADIN/img/pin_tas_ing.png");	
+//		googleMap.addMarker("Tasación Visada: Inmobiliaria4 S.A.", new LatLon(
+//				-33.610913, -70.879582), false, "VAADIN/img/pin_tas_ing.png");
+		//obtiene las solicitud pasadas
+		List<SolicitudTasacion> tasaciones = service.getTasaciones();
+
+		//agrega las tasaciones realizadas
+		for(SolicitudTasacion tasacion : tasaciones) {
+			//lo agrega solo si tiene sentido
+			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
+				googleMap.addMarker("Tasación "+tasacion.getEstado()+": "+tasacion.getCliente().getNombreCliente(), new LatLon(
+						tasacion.getNorteY(),tasacion.getEsteX()), false, "VAADIN/img/pin_tas_ing.png");
+			}
+		}
 		
 		googleMap.setMinZoom(4);
 		googleMap.setMaxZoom(16);
@@ -481,6 +503,10 @@ public class BienStep implements WizardStep {
 					System.out.println("Ver Respuesta :"+geocoderResponse);					
 					double lat = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLat().doubleValue();
 					double lon = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLng().doubleValue();
+					
+					//setea las coordenadas en el objeto
+					fg.getItemDataSource().getBean().setNorteY((float) lat);
+					fg.getItemDataSource().getBean().setEsteX((float) lon);
 					
 					googleMap.setCenter(new LatLon(lat,lon));
 					googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(

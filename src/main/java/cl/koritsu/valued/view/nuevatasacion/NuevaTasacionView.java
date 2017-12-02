@@ -1,8 +1,7 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -17,34 +16,29 @@ import org.vaadin.teemu.wizards.event.WizardStepActivationEvent;
 import org.vaadin.teemu.wizards.event.WizardStepSetChangedEvent;
 
 import com.vaadin.data.Container;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutListener;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.HonorarioCliente;
 import cl.koritsu.valued.domain.Movie;
-import cl.koritsu.valued.domain.MovieRevenue;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
 import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
@@ -61,7 +55,7 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
     private ComboBox movieSelect;
     
     private Wizard wizard;
-    private BeanFieldGroup<NuevaSolicitudVO> fg = new BeanFieldGroup<NuevaSolicitudVO>(NuevaSolicitudVO.class);
+    private BeanFieldGroup<SolicitudTasacion> fg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
 
     public NuevaTasacionView() {
 
@@ -91,10 +85,16 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
          wizard.getFinishButton().setCaption("Finalizar");
          wizard.getCancelButton().setCaption("Cancelar");
          
+         SolicitudTasacion nuevaTasacion = new SolicitudTasacion();
+         nuevaTasacion.setBien(new Bien());
+         nuevaTasacion.setHonorarioCliente(new HonorarioCliente());
+         nuevaTasacion.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+         fg.setItemDataSource(nuevaTasacion);
+         
          wizard.addStep(new ClienteStep(fg,service), "cliente");
          wizard.addStep(new BienStep(fg,service), "bien");
          wizard.addStep(new SolTasacionStep(fg,service), "solicitud");
-         wizard.addStep(new HonorarioClienteStep(wizard,fg), "ingreso");
+         wizard.addStep(new HonorarioClienteStep(wizard,fg,service), "ingreso");
          wizard.setSizeFull();
 		return new VerticalLayout(){
 			{
@@ -125,126 +125,27 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
         return header;
     }
 
-    private Component buildToolbar() {
-        HorizontalLayout toolbar = new HorizontalLayout();
-        toolbar.addStyleName("toolbar");
-        toolbar.setSpacing(true);
 
-        movieSelect = new ComboBox();
-        movieSelect.setItemCaptionPropertyId("title");
-        movieSelect.addShortcutListener(new ShortcutListener("Add",
-                KeyCode.ENTER, null) {
-            @Override
-            public void handleAction(final Object sender, final Object target) {
-                addDataSet((Movie) movieSelect.getValue());
-            }
-        });
-
-        final Button add = new Button("Add");
-        add.setEnabled(false);
-        add.addStyleName(ValoTheme.BUTTON_PRIMARY);
-
-        CssLayout group = new CssLayout(movieSelect, add);
-        group.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
-        toolbar.addComponent(group);
-
-        movieSelect.addValueChangeListener(new ValueChangeListener() {
-            @Override
-            public void valueChange(final ValueChangeEvent event) {
-                add.setEnabled(event.getProperty().getValue() != null);
-            }
-        });
-
-        final Button clear = new Button("Clear");
-        clear.addStyleName("clearbutton");
-        clear.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                //timeline.removeAllGraphDataSources();
-                initMovieSelect();
-                clear.setEnabled(false);
-            }
-        });
-        toolbar.addComponent(clear);
-
-        add.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                addDataSet((Movie) movieSelect.getValue());
-                clear.setEnabled(true);
-            }
-        });
-
-        return toolbar;
-    }
-/*
-    private Timeline buildTimeline() {
-        Timeline result = new Timeline();
-        result.setDateSelectVisible(false);
-        result.setChartModesVisible(false);
-        result.setGraphShadowsEnabled(false);
-        result.setZoomLevelsVisible(false);
-        result.setSizeFull();
-        result.setNoDataSourceCaption("<span class=\"v-label h2 light\">Add a data set from the dropdown above</span>");
-        return result;
-    }
-*/
-    private void addDataSet(final Movie movie) {
-        movieSelect.removeItem(movie);
-        movieSelect.setValue(null);
-
-        Collection<MovieRevenue> dailyRevenue = ValuedUI.getDataProvider()
-                .getDailyRevenuesByMovie(movie.getId());
-
-        ListContainer<MovieRevenue> dailyRevenueContainer = new TempMovieRevenuesContainer(
-                dailyRevenue);
-
-        dailyRevenueContainer.sort(new Object[] { "timestamp" },
-                new boolean[] { true });
-/*
-        timeline.addGraphDataSource(dailyRevenueContainer, "timestamp",
-                "revenue");
-        colorIndex = (colorIndex >= COLORS.length - 1 ? 0 : ++colorIndex);
-        timeline.setGraphOutlineColor(dailyRevenueContainer, COLORS[colorIndex]);
-        timeline.setBrowserOutlineColor(dailyRevenueContainer,
-                COLORS[colorIndex]);
-        timeline.setBrowserFillColor(dailyRevenueContainer,
-                COLORS_ALPHA[colorIndex]);
-        timeline.setGraphCaption(dailyRevenueContainer, movie.getTitle());
-        timeline.setEventCaptionPropertyId("date");
-        timeline.setVerticalAxisLegendUnit(dailyRevenueContainer, "$");
-        */
-    }
 
     @Override
     public void enter(final ViewChangeEvent event) {
+    	if(fg.isModified()) {
+    		reset() ;
+    	}
+    	wizard.setVisible(true);
     }
-
-    private class TempMovieRevenuesContainer extends
-            ListContainer<MovieRevenue> {
-
-        public TempMovieRevenuesContainer(
-                final Collection<MovieRevenue> collection) {
-            super(MovieRevenue.class, collection);
-        }
-
-        // This is only temporarily overridden until issues with
-        // BeanComparator get resolved.
-        @Override
-        public void sort(final Object[] propertyId, final boolean[] ascending) {
-            final boolean sortAscending = ascending[0];
-            Collections.sort(getBackingList(), new Comparator<MovieRevenue>() {
-                @Override
-                public int compare(final MovieRevenue o1, final MovieRevenue o2) {
-                    int result = o1.getTimestamp().compareTo(o2.getTimestamp());
-                    if (!sortAscending) {
-                        result *= -1;
-                    }
-                    return result;
-                }
-            });
-        }
-
+    
+    private void reset() {
+    	fg.discard();
+		//TODO confimar que se perderán los cambios
+        SolicitudTasacion nuevaTasacion = new SolicitudTasacion();
+        nuevaTasacion.setBien(new Bien());
+        nuevaTasacion.setHonorarioCliente(new HonorarioCliente());
+        nuevaTasacion.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+        fg.setItemDataSource(nuevaTasacion);
+        //retorna a la primera etapa
+        while(!wizard.isActive(wizard.getSteps().get(0)))
+        	wizard.back();
     }
 
 	@Override
@@ -260,28 +161,38 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 
 	@Override
 	public void wizardCompleted(WizardCompletedEvent event) {
-		endWizard("Wizard Completed!");
+		
+		//intenta guardar
+		try {
+			fg.commit();
+			//realiza todas las validaciones que puedan falta
+			//TODO
+			//crea el objeto de solicitud tasacion
+			String nroValued = service.saveSolicitud(fg.getItemDataSource().getBean());
+			endWizard("Se ha ingresado la solicitud con el siguiente número asociado "+nroValued);
+			
+			reset();
+		}catch(CommitException ce) {
+			ce.printStackTrace();
+			Notification.show("Error al guardar la nueva solicitud debido : "+ce.getMessage(),Type.ERROR_MESSAGE);
+		}
+		
 	}
+
+
 
 	@Override
 	public void wizardCancelled(WizardCancelledEvent event) {
-		endWizard("Wizard Cancelled!");
+		endWizard("Wizard Cancelado");
 	}
 	
     private void endWizard(String message) {
         wizard.setVisible(false);
-        Notification.show(message);
+        Notification notification = new Notification( message, Type.HUMANIZED_MESSAGE );
+        notification.setDelayMsec(( int ) TimeUnit.SECONDS.toMillis( 7 ));
+        notification.show(Page.getCurrent());
+        
         Page.getCurrent().setTitle(message);
-        Button startOverButton = new Button("Run the demo again",
-                new Button.ClickListener() {
-                    public void buttonClick(ClickEvent event) {
-                        // Close the session and reload the page.
-                        VaadinSession.getCurrent().close();
-                        Page.getCurrent().setLocation("");
-                    }
-                });
-        addComponent(startOverButton);
-        setComponentAlignment(startOverButton,
-                Alignment.MIDDLE_CENTER);
+
     }
 }

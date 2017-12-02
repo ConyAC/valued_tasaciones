@@ -14,15 +14,20 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import cl.koritsu.valued.view.nuevatasacion.vo.NuevaSolicitudVO;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Utils;
 
 public class HonorarioClienteStep implements WizardStep {
 	
 	final String montoFijo = "Por monto fijo";
 	final String montoKM = "Por KM de desplazamiento";
+	BeanFieldGroup<SolicitudTasacion> fg;
+	ValuedService service;
 	
-	public HonorarioClienteStep(Wizard wizard, BeanFieldGroup<NuevaSolicitudVO> fg){
-		
+	public HonorarioClienteStep(Wizard wizard, BeanFieldGroup<SolicitudTasacion> fg,ValuedService service){
+		this.fg = fg;
+		this.service = service;
 	}
 
 	@Override
@@ -42,7 +47,9 @@ public class HonorarioClienteStep implements WizardStep {
 		glIngresoSolicitud.setSpacing(true);
 		
 		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicitud(UF)"));
-		glIngresoSolicitud.addComponents(new TextField());
+		TextField ingresoCliente = new TextField();
+		Utils.bind(fg, ingresoCliente, "honorarioCliente.montoHonorarioUF");
+		glIngresoSolicitud.addComponents(ingresoCliente);
 		
 		CheckBox cb = new CheckBox("Tendrá desplazamiento?");
 		glIngresoSolicitud.addComponent(cb,0,1,1,1);
@@ -154,7 +161,7 @@ public class HonorarioClienteStep implements WizardStep {
 
 	@Override
 	public boolean onAdvance() {
-		return false;
+		return true;
 	}
 
 	@Override

@@ -1,6 +1,8 @@
 package cl.koritsu.valued.domain;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
@@ -8,6 +10,7 @@ import javax.persistence.JoinColumn;
 public class Sucursal {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	String nombre;
 	String direccion;

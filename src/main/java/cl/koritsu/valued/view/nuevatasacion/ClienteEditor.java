@@ -1,12 +1,14 @@
-package cl.koritsu.valued.component;
+package cl.koritsu.valued.view.nuevatasacion;
+
+import java.util.Locale;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
+import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.fieldgroup.PropertyId;
-import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
@@ -26,21 +28,17 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Cliente;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
-import cl.koritsu.valued.event.ValuedEvent.ClienteUpdatedEvent;
+import cl.koritsu.valued.domain.enums.TipoPersona;
 
-@SuppressWarnings("serial")
-public class ClienteWindow extends Window {
+public class ClienteEditor extends VerticalLayout {
+
 
     public static final String ID = "clientewindow";
-    private final BeanFieldGroup<Cliente> fieldGroup;
+    protected BeanFieldGroup<Cliente> fieldGroup = new BeanFieldGroup<Cliente>(Cliente.class);
     
     /*
      * Fields for editing the User object are defined here as class members.
@@ -57,34 +55,37 @@ public class ClienteWindow extends Window {
     private TextField apellidoPaternoField;
     @PropertyId("apellidoMaterno")
     private TextField apellidoMaternoField;
+    @PropertyId("razonSocial")
+    private TextField razonSocialField;
     @PropertyId("direccion")
     private TextField direccionField;
     @PropertyId("telefonoFijo")
     private TextField telefonoFijoField;
     @PropertyId("factorKm")
     private TextField factorKmField;
-    @PropertyId("tipo")
+    @PropertyId("tipoPersona")
     private OptionGroup tipoPersonaField;
     @PropertyId("multiRut")
     private OptionGroup multirutField;
     
     private HorizontalLayout tbMultirut, tbContactos;
       
-    private ClienteWindow(final Cliente cliente) {
+    public ClienteEditor(final Cliente cliente) {
+    	init(cliente);
+    }
+    
+    ClienteEditor() {
+    	init(new Cliente());
+    }
+    
+    public void init(Cliente cliente) {
         addStyleName("profile-window");
         setId(ID);
         Responsive.makeResponsive(this);
 
-        setModal(true);
-        setCloseShortcut(KeyCode.ESCAPE, null);
-        setResizable(false);
-        setClosable(false);
-        setHeight(90.0f, Unit.PERCENTAGE);
-
-        VerticalLayout content = new VerticalLayout();
-        content.setSizeFull();
-        content.setMargin(new MarginInfo(true, false, false, false));
-        setContent(content);
+        setSpacing(true);
+		setMargin(true);
+		setSizeFull();
         
 		FormLayout detailLayout = new FormLayout();
 		detailLayout.setMargin(true);
@@ -93,8 +94,8 @@ public class ClienteWindow extends Window {
 		Panel p = new Panel(detailLayout);
 		p.setCaption("Crear Nuevo Cliente");
 		p.setSizeFull();
-		content.addComponent(p);
-		content.setExpandRatio(p, 1.0f);
+		addComponent(p);
+		setExpandRatio(p, 1.0f);
 
 		detailLayout.addComponent(buildFormCliente());
               
@@ -106,53 +107,31 @@ public class ClienteWindow extends Window {
         detailLayout.addComponent(tbMultirut);
         tbMultirut.setVisible(false);
         
-        content.addComponent(buildFooter());
+        detailLayout.addComponent(buildFooter());
         
-        fieldGroup = new BeanFieldGroup<Cliente>(Cliente.class);
         fieldGroup.bindMemberFields(this);
+        cliente.setTipoPersona(TipoPersona.JURIDICA);
         fieldGroup.setItemDataSource(cliente);
+        
+        addListeners();
     }
     
-    private Component buildFormCliente() {
-        HorizontalLayout root = new HorizontalLayout();
-        
-        FormLayout details = new FormLayout();
-        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-        root.addComponent(details);
-        root.setExpandRatio(details, 1);
-               
-        tipoPersonaField = new OptionGroup("Tipo Persona");
-        tipoPersonaField.addItem(1);
-        tipoPersonaField.addItem(2);
-        tipoPersonaField.setItemCaption(1, "Persona Juridica");
-        tipoPersonaField.setItemCaption(2, "Persona Natural");
-        tipoPersonaField.setValue(1);
-        tipoPersonaField.addStyleName("horizontal");
-        tipoPersonaField.setRequired(true);
-
+    private void addListeners() {
         tipoPersonaField.addValueChangeListener(new ValueChangeListener() {
 
             @Override
             public void valueChange(ValueChangeEvent event) {
-                if (tipoPersonaField.isSelected(1)) {
-                	tbContactos.setVisible(true);
-                	multirutField.setVisible(true);
-                } else if (tipoPersonaField.isSelected(2)) {
-                	tbContactos.setVisible(false);
-                	multirutField.setVisible(false);
-                }
+            	tbContactos.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+            	multirutField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+            	
+            	//oculta los nombres
+            	nombresField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
+            	apellidoPaternoField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
+            	apellidoMaternoField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
+            	//muestra la razon social
+            	razonSocialField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
             }
         });
-        details.addComponent(tipoPersonaField);
-        tipoPersonaField.focus();        
-        
-        multirutField = new OptionGroup("¿MultiRut?");
-        multirutField.addItem(1);
-        multirutField.addItem(2);
-        multirutField.setItemCaption(1, "Si");
-        multirutField.setItemCaption(2, "No");
-        multirutField.addStyleName("horizontal");
-        multirutField.setImmediate(true);
 
         multirutField.addValueChangeListener(new ValueChangeListener() {
 
@@ -165,6 +144,75 @@ public class ClienteWindow extends Window {
                 }
             }
         });
+	}
+
+	private Component buildFormCliente() {
+//        HorizontalLayout root = new HorizontalLayout();
+        
+        FormLayout details = new FormLayout();
+        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+//        root.addComponent(details);
+//        root.setExpandRatio(details, 1);
+               
+        tipoPersonaField = new OptionGroup("Tipo Persona");
+        
+        for(TipoPersona tipoPersona : TipoPersona.values()) {
+        	tipoPersonaField.addItem(tipoPersona);
+        }
+        tipoPersonaField.addStyleName("horizontal");
+        tipoPersonaField.setRequired(true);
+
+        details.addComponent(tipoPersonaField);
+        tipoPersonaField.focus();        
+        
+        multirutField = new OptionGroup("¿MultiRut?");
+        multirutField.addItem(1);
+        multirutField.addItem(2);
+        multirutField.setItemCaption(1, "Si");
+        multirutField.setItemCaption(2, "No");
+        
+        multirutField.setConverter(new Converter() {
+
+			@Override
+			public Object convertToModel(Object value, Class targetType, Locale locale) throws ConversionException {
+				if(value == null ) return null;
+				
+				Integer numero = (Integer)value;
+				if(numero == 1)
+					return true;
+				else if(numero == 2 )
+					return false;
+				else
+					throw new ConversionException("Error al transformar el valor "+value+" a boolean");
+			}
+
+			@Override
+			public Object convertToPresentation(Object value, Class targetType, Locale locale)
+					throws ConversionException {
+				
+				if(value == null ) return null;
+				
+				Boolean condicion = (Boolean)value;
+				if(condicion)
+					return 1;
+				else
+					return 2;
+			}
+
+			@Override
+			public Class getModelType() {
+				return Boolean.class;
+			}
+
+			@Override
+			public Class getPresentationType() {
+				return Integer.class;
+			}
+		});
+        
+        multirutField.setImmediate(true);
+        multirutField.addStyleName("horizontal");
+
         details.addComponent(multirutField);
         multirutField.focus();    
         multirutField.setVisible(false);
@@ -182,6 +230,9 @@ public class ClienteWindow extends Window {
         apellidoMaternoField = new TextField("Apellido Materno");
         details.addComponent(apellidoMaternoField);
         
+        razonSocialField = new TextField("Razón Social");
+        details.addComponent(razonSocialField);
+        
         direccionField = new TextField("Dirección");
         details.addComponent(direccionField);
         
@@ -191,7 +242,7 @@ public class ClienteWindow extends Window {
         factorKmField = new TextField("Factor Km/UF");
         details.addComponent(factorKmField);
        
-        return root;
+        return details;
     }
 
     private HorizontalLayout buildTableContact() {
@@ -253,12 +304,14 @@ public class ClienteWindow extends Window {
 
     }    
     
+    Button btnCancelar = new Button("Cancelar");
+    Button btnGuadar = new Button("Aceptar");
+    
     private Component buildFooter() {
         HorizontalLayout footer = new HorizontalLayout();
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
 
-        Button btnGuadar = new Button("Aceptar");
         btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);
         btnGuadar.addClickListener(new ClickListener() {
             @Override
@@ -275,8 +328,6 @@ public class ClienteWindow extends Window {
                     success.setPosition(Position.BOTTOM_CENTER);
                     success.show(Page.getCurrent());
 
-                    ValuedEventBus.post(new ClienteUpdatedEvent());
-                    close();
                 } catch (CommitException e) {
                     Notification.show(e.getMessage(),
                             Type.ERROR_MESSAGE);
@@ -285,15 +336,7 @@ public class ClienteWindow extends Window {
             }
         });
         btnGuadar.focus();
-        
-		Button btnCancelar = new Button("Cancelar");
-		btnCancelar.addClickListener(new Button.ClickListener() {
-
-			@Override
-			public void buttonClick(ClickEvent event) {
-				close();
-			}
-		});
+		
 		btnCancelar.addStyleName("link");
         
         footer.addComponent(btnGuadar);
@@ -303,10 +346,15 @@ public class ClienteWindow extends Window {
         return footer;
     }
 
-    public static void open(final Cliente ciente) {
-        ValuedEventBus.post(new CloseOpenWindowsEvent());
-        Window w = new ClienteWindow(ciente);
-        UI.getCurrent().addWindow(w);
-        w.focus();
-    }
+	public Button getBtnCancelar() {
+		return btnCancelar;
+	}
+
+
+	public Button getBtnGuadar() {
+		return btnGuadar;
+	}
+
+
+    
 }

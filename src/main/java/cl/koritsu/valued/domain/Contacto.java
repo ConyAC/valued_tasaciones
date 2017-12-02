@@ -1,6 +1,8 @@
 package cl.koritsu.valued.domain;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
@@ -8,14 +10,16 @@ import javax.persistence.JoinColumn;
 public class Contacto {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
-	String nombre;
-	String apellidoPaterno;
-	String apellidoMaterno;
-	String telefonoFijo;
-	String telefonoMovil;
-	String email;
-	String cargo;
+	String nombre = "";
+	String apellidoPaterno = "";
+	String apellidoMaterno = "";
+	String telefonoFijo = "";
+	String telefonoMovil = "";
+	String email = "";
+	@JoinColumn(name="cargoId")
+	Cargo cargo;
 	@JoinColumn(name="clienteId")
 	Cliente cliente;
 	
@@ -61,10 +65,10 @@ public class Contacto {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public String getCargo() {
+	public Cargo getCargo() {
 		return cargo;
 	}
-	public void setCargo(String cargo) {
+	public void setCargo(Cargo cargo) {
 		this.cargo = cargo;
 	}
 	public Cliente getCliente() {

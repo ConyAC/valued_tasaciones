@@ -3,6 +3,8 @@ package cl.koritsu.valued.domain;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
@@ -12,18 +14,19 @@ import cl.koritsu.valued.domain.enums.TipoBien;
 @Entity
 public class Bien {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	@Enumerated(EnumType.STRING)
 	ClaseBien clase;
 	@Enumerated(EnumType.STRING)
 	TipoBien tipo;
 	
-	String numeroManzana;
-	String numeroPredial;
-	String direccion;
+	String numeroManzana = "";
+	String numeroPredial = "";
+	String direccion = "";
 	float superficieTerreno;
 	float superficieConstruida;
-	String antecedentes;
+	String antecedentes = "";
 	@JoinColumn(name="comunaId")
 	Comuna comuna;
 	

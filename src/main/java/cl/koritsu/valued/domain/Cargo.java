@@ -4,18 +4,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Entity
-@Table(name="tipo_operacion")
-public class TipoOperacion {
-	
+public class Cargo {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	String nombre;
+	String llave;
 	String descripcion;
-	
 	public Long getId() {
 		return id;
 	}
@@ -28,34 +26,18 @@ public class TipoOperacion {
 	public void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
+	
+	public String getLlave() {
+		return llave;
+	}
+	public void setLlave(String llave) {
+		this.llave = llave;
+	}
 	public String getDescripcion() {
 		return descripcion;
 	}
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
 	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		TipoOperacion other = (TipoOperacion) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
-
+	
 }

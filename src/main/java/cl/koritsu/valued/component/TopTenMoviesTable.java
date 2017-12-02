@@ -1,18 +1,10 @@
 package cl.koritsu.valued.component;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.themes.ValoTheme;
-
-import cl.koritsu.valued.ValuedUI;
-import cl.koritsu.valued.domain.MovieRevenue;
 
 @SuppressWarnings("serial")
 public final class TopTenMoviesTable extends Table {
@@ -45,18 +37,6 @@ public final class TopTenMoviesTable extends Table {
         setRowHeaderMode(RowHeaderMode.INDEX);
         setColumnHeaderMode(ColumnHeaderMode.HIDDEN);
         setSizeFull();
-
-        List<MovieRevenue> movieRevenues = new ArrayList<MovieRevenue>(
-                ValuedUI.getDataProvider().getTotalMovieRevenues());
-        Collections.sort(movieRevenues, new Comparator<MovieRevenue>() {
-            @Override
-            public int compare(final MovieRevenue o1, final MovieRevenue o2) {
-                return o2.getRevenue().compareTo(o1.getRevenue());
-            }
-        });
-
-        setContainerDataSource(new BeanItemContainer<MovieRevenue>(
-                MovieRevenue.class, movieRevenues.subList(0, 10)));
 
         setVisibleColumns("title", "revenue");
         setColumnHeaders("Title", "Revenue");

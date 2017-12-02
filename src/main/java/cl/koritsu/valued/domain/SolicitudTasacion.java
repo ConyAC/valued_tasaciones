@@ -5,6 +5,8 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
@@ -17,6 +19,7 @@ import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 @Table(name="solicitud_tasacion")
 public class SolicitudTasacion {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 	@Temporal(TemporalType.DATE)
 	Date fechaEncargo;
@@ -31,27 +34,27 @@ public class SolicitudTasacion {
 	float montoTasacionPesos;
 	float montoTasacionUF;
 	
-	String nombrePropietario;
-	String rutPropietario;
-	String telefonoPropietario;
-	String emailPropietario;
+	String nombrePropietario = "";
+	String rutPropietario = "";
+	String telefonoPropietario = "";
+	String emailPropietario = "";
 	
-	String nombreContacto;
-	String telefonoFijoContacto;
-	String telefonoMovilContacto;
-	String emailContacto;
+	String nombreContacto = "";
+	String telefonoFijoContacto = "";
+	String telefonoMovilContacto = "";
+	String emailContacto = "";
 	
-	String nombreContacto2;
-	String telefonoFijoContacto2;
-	String telefonoMovilContacto2;
-	String emailContacto2;
+	String nombreContacto2 = "";
+	String telefonoFijoContacto2 = "";
+	String telefonoMovilContacto2 = "";
+	String emailContacto2 = "";
 	
-	String numeroTasacionCliente;
-	String numeroTasacion;
+	String numeroTasacionCliente = "";
+	String numeroTasacion = "";
 	boolean requiereTasador;
 	
 	@Enumerated(EnumType.STRING)
-	EstadoSolicitud estado;
+	EstadoSolicitud estado = EstadoSolicitud.CREADA;
 	
 	@JoinColumn(name="tipoInformeId")
 	TipoInforme tipoInforme;
@@ -68,8 +71,15 @@ public class SolicitudTasacion {
 	Bien bien;
 	@JoinColumn(name="honorarioClienteId")
 	HonorarioCliente honorarioCliente;
+	@JoinColumn(name="clienteId")
+	Cliente cliente;
+	@JoinColumn(name="ejecutivoId")
+	Contacto ejecutivo;
+	@JoinColumn(name="tasadorId")
+	Usuario tasador;
 	
-	String observaciones;
+	
+	String observaciones = "";
 	float norteY;
 	float esteX;
 	
@@ -277,6 +287,24 @@ public class SolicitudTasacion {
 	}
 	public void setTelefonoMovilContacto2(String telefonoMovilContacto2) {
 		this.telefonoMovilContacto2 = telefonoMovilContacto2;
+	}
+	public Cliente getCliente() {
+		return cliente;
+	}
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+	public Contacto getEjecutivo() {
+		return ejecutivo;
+	}
+	public void setEjecutivo(Contacto ejecutivo) {
+		this.ejecutivo = ejecutivo;
+	}
+	public Usuario getTasador() {
+		return tasador;
+	}
+	public void setTasador(Usuario tasador) {
+		this.tasador = tasador;
 	}
 	
 }
