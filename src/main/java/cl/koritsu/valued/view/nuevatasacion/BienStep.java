@@ -1,6 +1,5 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,11 +14,10 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.server.FileResource;
-import com.vaadin.server.VaadinService;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.ComboBox;
@@ -49,12 +47,17 @@ import cl.koritsu.valued.view.utils.Utils;
 public class BienStep implements WizardStep {
 	
 	//@Value("${google.maps.api.key}")
-	private String apiKey = "AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
+	private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
 	private ComboBox cbRegion,cbComuna;
 	private TextField tfCalle, tfNumero;
 	GoogleMap googleMap;
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
+	private GoogleMapMarker kakolaMarker = new GoogleMapMarker(
+	        "DRAGGABLE: Kakolan vankila", new LatLon(60.44291, 22.242415),
+	        true, null);
+	 private GoogleMapInfoWindow kakolaInfoWindow = new GoogleMapInfoWindow(
+		        "Kakola used to be a provincial prison.", kakolaMarker);
 	
 	public BienStep(BeanFieldGroup<SolicitudTasacion> fg, ValuedService service) {
 		this.fg =  fg;
@@ -173,19 +176,7 @@ public class BienStep implements WizardStep {
 		//calle
 		gl.addComponents(new Label("Calle"));
 		gl.addComponent(new HorizontalLayout(){
-			{
-//				final LocationTextField<GeocodedLocation> ltf = LocationTextField.<GeocodedLocation>newBuilder()
-//			    .withCaption("Address:")
-//			    .withDelayMillis(1200)
-//			    .withType(GeocodedLocation.class)
-//			    .withInitialValue(null)
-//			    .withLocationProvider(OpenStreetMapGeocoder.getInstance())
-//			    .withMinimumQueryCharacters(5)
-//			    .withWidth("100%")
-//			    .withHeight("40px")
-//			    .withImmediate(true)
-//			    .build();
-				
+			{				
 				setSpacing(true);
 				tfCalle = new TextField();
 				Utils.bind(fg,tfCalle,"bien.direccion");
@@ -407,11 +398,7 @@ public class BienStep implements WizardStep {
 	private VerticalLayout mapaInicial(){		
 		VerticalLayout vl = new VerticalLayout();
 		vl.setCaption("Mapa");
-		
-		final Panel console = new Panel();
-        console.setHeight("100px");
-        final CssLayout consoleLayout = new CssLayout();
-        console.setContent(consoleLayout);
+		vl.setSizeFull();
         		
 		googleMap = new GoogleMap(apiKey, null, "english");
 		//situamos, inicialmente, el mapa en Santiago.
@@ -436,6 +423,8 @@ public class BienStep implements WizardStep {
 			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
 				googleMap.addMarker("Tasación "+tasacion.getEstado()+": "+tasacion.getCliente().getNombreCliente(), new LatLon(
 						tasacion.getNorteY(),tasacion.getEsteX()), false, "VAADIN/img/pin_tas_ing.png");
+				
+				 googleMap.openInfoWindow(kakolaInfoWindow);
 			}
 		}
 		
@@ -446,7 +435,7 @@ public class BienStep implements WizardStep {
 		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
 		 * se arrastraron los puntos (draggable)
 		 */
-		googleMap.addMarkerDragListener(new MarkerDragListener() {
+		/*googleMap.addMarkerDragListener(new MarkerDragListener() {
 			@Override
 			public void markerDragged(GoogleMapMarker draggedMarker,
                 LatLon oldPosition) {
@@ -456,10 +445,9 @@ public class BienStep implements WizardStep {
                     + ", " + draggedMarker.getPosition().getLon() + ")");
                 consoleLayout.addComponent(consoleEntry);
             }
-        });
+        });*/
 		
 		vl.addComponent(googleMap);
-		vl.addComponent(console);
 		
 		return vl;
 	}

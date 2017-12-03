@@ -81,6 +81,5 @@
 	    <property name="maxPoolSize" value="10" />
 	    <property name="queueCapacity" value="25" />
 	</bean>
-	 
 
 </beans>

@@ -93,7 +93,7 @@ public class ClienteStep implements WizardStep {
 					hsp.removeComponent(generalDetailLayout);	
 					editor.fieldGroup.commit();
 	        		service.saveCliente(editor.fieldGroup.getItemDataSource().getBean());
-	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+	        		Notification.show("Cliente guardado correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
 
 					e.printStackTrace();
@@ -438,7 +438,7 @@ public class ClienteStep implements WizardStep {
         	@Override
         	public void buttonClick(ClickEvent event) {
         		hsp.removeComponent(generalDetailLayout);	
-        		btnEjecutivo.setEnabled(true); 
+        		btnSolicitante.setEnabled(true);
         	}
         }){{
         	addStyleName("link");

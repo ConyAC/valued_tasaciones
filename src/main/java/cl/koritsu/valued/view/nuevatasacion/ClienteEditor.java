@@ -13,7 +13,6 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.shared.Position;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -101,7 +100,6 @@ public class ClienteEditor extends VerticalLayout {
               
         tbContactos = buildTableContact();
         detailLayout.addComponent(tbContactos);
-        tbContactos.setVisible(false);
         
         tbMultirut = buildTableMultiRut();
         detailLayout.addComponent(tbMultirut);
@@ -123,6 +121,7 @@ public class ClienteEditor extends VerticalLayout {
             public void valueChange(ValueChangeEvent event) {
             	tbContactos.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
             	multirutField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+            	factorKmField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
             	
             	//oculta los nombres
             	nombresField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
