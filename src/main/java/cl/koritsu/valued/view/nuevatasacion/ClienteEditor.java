@@ -1,12 +1,17 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.vaadin.dialogs.ConfirmDialog;
+
+import com.vaadin.data.Container;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.fieldgroup.PropertyId;
 import com.vaadin.server.FontAwesome;
@@ -15,9 +20,12 @@ import com.vaadin.server.Responsive;
 import com.vaadin.shared.Position;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.DefaultFieldFactory;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -26,12 +34,25 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TableFieldFactory;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.themes.ValoTheme;
 
+import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
+import cl.koritsu.valued.domain.Contacto;
+import cl.koritsu.valued.domain.RazonSocial;
+import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.Solicitante;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.domain.enums.TipoPersona;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Utils;
+
 
 public class ClienteEditor extends VerticalLayout {
 
@@ -68,6 +89,10 @@ public class ClienteEditor extends VerticalLayout {
     private OptionGroup multirutField;
     
     private HorizontalLayout tbMultirut, tbContactos;
+    BeanItemContainer<Contacto> beanItemContacto = new BeanItemContainer<Contacto>(Contacto.class);
+    BeanItemContainer<RazonSocial> beanItemRazon = new BeanItemContainer<RazonSocial>(RazonSocial.class);
+    BeanFieldGroup<Contacto> fg;
+    ValuedService service;
       
     public ClienteEditor(final Cliente cliente) {
     	init(cliente);
@@ -78,21 +103,22 @@ public class ClienteEditor extends VerticalLayout {
     }
     
     public void init(Cliente cliente) {
-        addStyleName("profile-window");
+        //addStyleName("profile-window");
         setId(ID);
         Responsive.makeResponsive(this);
 
         setSpacing(true);
 		setMargin(true);
 		setSizeFull();
-        
+		
 		FormLayout detailLayout = new FormLayout();
-		detailLayout.setMargin(true);
+		//detailLayout.setMargin(true);
 		detailLayout.setSpacing(true);
 		
 		Panel p = new Panel(detailLayout);
 		p.setCaption("Crear Nuevo Cliente");
 		p.setSizeFull();
+		p.setScrollTop(100);
 		addComponent(p);
 		setExpandRatio(p, 1.0f);
 
@@ -214,7 +240,6 @@ public class ClienteEditor extends VerticalLayout {
 
         details.addComponent(multirutField);
         multirutField.focus();    
-        multirutField.setVisible(false);
 
         rutField = new TextField("RUT");
         rutField.setRequired(true);
@@ -248,7 +273,7 @@ public class ClienteEditor extends VerticalLayout {
         HorizontalLayout root = new HorizontalLayout();
         
         FormLayout details = new FormLayout();
-        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        //details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         root.addComponent(details);
         root.setExpandRatio(details, 1);
     	
@@ -257,23 +282,86 @@ public class ClienteEditor extends VerticalLayout {
         section.addStyleName(ValoTheme.LABEL_COLORED);
         details.addComponent(section);
         
-        Table table = new Table();
-        table.addContainerProperty("Nombre", String.class, null);
-	    table.addContainerProperty("Rut",  String.class, null);
-	    table.addContainerProperty("Cargo",  String.class, null);
-	    table.addContainerProperty("Telefono",  String.class, null);
-	    table.addContainerProperty("Acciones",  Button.class, null);
-	    
-	    Object newItemId = table.addItem();
-	    Item row1 = table.getItem(newItemId);
-	    table.addItem(new Object[]{"Ramon Herrera", "10.564.343-k","Ejecutivo","2233443",new Button(FontAwesome.REMOVE)}, 1);
-	    table.addItem(new Object[]{"Pedro Soto", "9.234.322-2","Contador","2233443",new Button(FontAwesome.REMOVE)}, 2);
-	    table.setPageLength(table.size());
-	    details.addComponent(table);
+		Button btnAddContacto = new Button(null,FontAwesome.PLUS);
+		details.addComponent(btnAddContacto);
+		details.setComponentAlignment(btnAddContacto, Alignment.TOP_RIGHT);
+
+		btnAddContacto.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				
+				Contacto contacto = new Contacto();
+				beanItemContacto.addBean(contacto);
+			}
+		});	
+		
+		final Table tableContacto = new Table(null,beanItemContacto);
+		tableContacto.setPageLength(3);
+		tableContacto.setWidth("100%");
+		tableContacto.setImmediate(true);
+		tableContacto.setTableFieldFactory(new TableFieldFactory() {
+			
+			@Override
+			public Field<?> createField(Container container, Object itemId,
+					Object propertyId, Component uiContext) {
+				Field<?> field = null; 
+				if(propertyId.equals("apellidoPaterno") || propertyId.equals("telefonoMovil")){
+					field = new TextField();
+					((TextField)field).setImmediate(true);
+				} else if(  propertyId.equals("cargo") ){
+						field = new ComboBox();
+						field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
+						
+						ComboBox cbCargo = new ComboBox();
+						cbCargo.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+						cbCargo.setItemCaptionPropertyId("nombre");
+						BeanItemContainer<Cargo> ds = new BeanItemContainer<Cargo>(Cargo.class);
+						List<Cargo> cargos = service.getCargos();
+						ds.addAll(cargos);
+						cbCargo.setContainerDataSource(ds);
+				}else
+					return null;
+					
+				return field;
+			}
+		});				
+
+		tableContacto.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, final Object itemId, Object columnId) {
+				return new Button(null,new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el contacto seleccionado?",
+								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
+
+							public void onClose(ConfirmDialog dialog) {
+								if (dialog.isConfirmed()) {
+									beanItemContacto.removeItem(itemId);
+								}
+							}
+						});
+					}
+				}){{setIcon(FontAwesome.TRASH_O);}};
+			}
+		});
+		
+		tableContacto.setContainerDataSource(beanItemContacto);
+		tableContacto.setVisibleColumns("apellidoPaterno","cargo","telefonoMovil","eliminar");
+		tableContacto.setColumnHeaders("Apellido","Cargo","Telefono","Acciones");
+		tableContacto.setEditable(true);				
+		details.addComponent(tableContacto);
+		//details.setComponentAlignment(root, Alignment.TOP_RIGHT);
 	    
 	    return root;
     }
     
+    /*
+     * 
+     */
     private HorizontalLayout buildTableMultiRut() {
     	HorizontalLayout root = new HorizontalLayout();
          
@@ -287,17 +375,67 @@ public class ClienteEditor extends VerticalLayout {
 	    section.addStyleName(ValoTheme.LABEL_COLORED);
 	    details.addComponent(section);
 	     
-	    Table table2 = new Table();
-	    table2.addContainerProperty("Razón Social", String.class, null);
- 	    table2.addContainerProperty("Rut",  String.class, null);
- 	    table2.addContainerProperty("Dirección",  String.class, null);
- 	    table2.addContainerProperty("Telefono",  String.class, null);
- 	    table2.addContainerProperty("Acciones",  Button.class, null);
- 	    
- 	    table2.addItem(new Object[]{"Banco A", "90.234.322-2","Las Parcelas 343","2233443",new Button(FontAwesome.REMOVE)}, 1);
- 	    table2.addItem(new Object[]{"Banco B", "90.234.322-2","Las Parcelas 343","2233443",new Button(FontAwesome.REMOVE)}, 2);
- 	    table2.setPageLength(table2.size());
- 	    details.addComponent(table2);
+		Button btnAddRazon = new Button(null,FontAwesome.PLUS);
+		details.addComponent(btnAddRazon);
+		details.setComponentAlignment(btnAddRazon, Alignment.TOP_RIGHT);
+
+		btnAddRazon.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				
+				RazonSocial razonSocial = new RazonSocial();
+				beanItemRazon.addBean(razonSocial);
+			}
+		});	
+		
+		final Table tableRazonSocial = new Table(null,beanItemRazon);
+		tableRazonSocial.setPageLength(3);
+		tableRazonSocial.setWidth("100%");
+		tableRazonSocial.setImmediate(true);
+		tableRazonSocial.setTableFieldFactory(new TableFieldFactory() {
+			
+			@Override
+			public Field<?> createField(Container container, Object itemId,
+					Object propertyId, Component uiContext) {
+				Field<?> field = null; 
+				if(propertyId.equals("nombre") || propertyId.equals("rut")){
+					field = new TextField();
+					((TextField)field).setImmediate(true);
+				}else
+					return null;
+					
+				return field;
+			}
+		});				
+
+		tableRazonSocial.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, final Object itemId, Object columnId) {
+				return new Button(null,new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar la razon social seleccionada?",
+								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
+
+							public void onClose(ConfirmDialog dialog) {
+								if (dialog.isConfirmed()) {
+									beanItemRazon.removeItem(itemId);
+								}
+							}
+						});
+					}
+				}){{setIcon(FontAwesome.TRASH_O);}};
+			}
+		});
+		
+		tableRazonSocial.setContainerDataSource(beanItemRazon);
+		tableRazonSocial.setVisibleColumns("nombre","rut","eliminar");
+		tableRazonSocial.setColumnHeaders("Razón Social","RUT","Acciones");
+		tableRazonSocial.setEditable(true);				
+		details.addComponent(tableRazonSocial);
  	    
  	    return root;
 
@@ -308,7 +446,7 @@ public class ClienteEditor extends VerticalLayout {
     
     private Component buildFooter() {
         HorizontalLayout footer = new HorizontalLayout();
-        footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
 
         btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);

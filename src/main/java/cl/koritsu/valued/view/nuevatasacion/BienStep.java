@@ -16,13 +16,10 @@ import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
-import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.GridLayout.OutOfBoundsException;
 import com.vaadin.ui.GridLayout.OverlapsException;
@@ -31,7 +28,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
-import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
@@ -53,11 +49,6 @@ public class BienStep implements WizardStep {
 	GoogleMap googleMap;
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
-	private GoogleMapMarker kakolaMarker = new GoogleMapMarker(
-	        "DRAGGABLE: Kakolan vankila", new LatLon(60.44291, 22.242415),
-	        true, null);
-	 private GoogleMapInfoWindow kakolaInfoWindow = new GoogleMapInfoWindow(
-		        "Kakola used to be a provincial prison.", kakolaMarker);
 	
 	public BienStep(BeanFieldGroup<SolicitudTasacion> fg, ValuedService service) {
 		this.fg =  fg;
@@ -423,8 +414,6 @@ public class BienStep implements WizardStep {
 			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
 				googleMap.addMarker("Tasación "+tasacion.getEstado()+": "+tasacion.getCliente().getNombreCliente(), new LatLon(
 						tasacion.getNorteY(),tasacion.getEsteX()), false, "VAADIN/img/pin_tas_ing.png");
-				
-				 googleMap.openInfoWindow(kakolaInfoWindow);
 			}
 		}
 		

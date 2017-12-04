@@ -153,4 +153,7 @@ public class ValuedService {
 		solicitanteRepo.save(bean);
 	}
 
+	public List<Cargo> getCargos() {
+		return (List<Cargo>) cargoRepo.findAll();
+	}
 }

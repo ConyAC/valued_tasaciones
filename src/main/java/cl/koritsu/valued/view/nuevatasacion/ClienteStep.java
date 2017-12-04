@@ -80,7 +80,10 @@ public class ClienteStep implements WizardStep {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				hsp.removeComponent(generalDetailLayout);	
-				btnAgregarCliente.setEnabled(true);   
+				btnSucursal.setEnabled(true);
+				btnAgregarCliente.setEnabled(true);
+				btnEjecutivo.setEnabled(true);
+				btnSolicitante.setEnabled(true);
 				editor.fieldGroup.discard();
 			}
 		});
@@ -193,7 +196,10 @@ public class ClienteStep implements WizardStep {
 	        		service.saveSucursal(sucursal);
 	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
 	        		hsp.removeComponent(generalDetailLayout);	
-	        		btnSucursal.setEnabled(true);
+					btnSucursal.setEnabled(true);
+					btnAgregarCliente.setEnabled(true);
+					btnEjecutivo.setEnabled(true);
+					btnSolicitante.setEnabled(true);
 				} catch (CommitException e) {
 
 					e.printStackTrace();
@@ -213,7 +219,10 @@ public class ClienteStep implements WizardStep {
         	@Override
         	public void buttonClick(ClickEvent event) {
         		hsp.removeComponent(generalDetailLayout);	
-        		btnSucursal.setEnabled(true);   
+    			btnSucursal.setEnabled(true);
+				btnAgregarCliente.setEnabled(true);
+				btnEjecutivo.setEnabled(true);
+				btnSolicitante.setEnabled(true);
         		fgSucursal.discard();
         	}
         }){{
@@ -302,7 +311,10 @@ public class ClienteStep implements WizardStep {
         			Notification.show("Ejecutivo guardado correctamente",Type.TRAY_NOTIFICATION);
         			
         			hsp.removeComponent(generalDetailLayout);	
-            		btnEjecutivo.setEnabled(true);
+        			btnSucursal.setEnabled(true);
+					btnAgregarCliente.setEnabled(true);
+					btnEjecutivo.setEnabled(true);
+					btnSolicitante.setEnabled(true);
             		
         		}catch(CommitException ce) {
 
@@ -323,7 +335,10 @@ public class ClienteStep implements WizardStep {
         	@Override
         	public void buttonClick(ClickEvent event) {
         		hsp.removeComponent(generalDetailLayout);	
-        		btnEjecutivo.setEnabled(true); 
+    			btnSucursal.setEnabled(true);
+				btnAgregarCliente.setEnabled(true);
+				btnEjecutivo.setEnabled(true);
+				btnSolicitante.setEnabled(true);
         	}
         }){{
         	addStyleName("link");
@@ -417,7 +432,10 @@ public class ClienteStep implements WizardStep {
         			Notification.show("Solicitante guardado correctamente",Type.TRAY_NOTIFICATION);
         			
         			hsp.removeComponent(generalDetailLayout);	
-            		btnSolicitante.setEnabled(true);
+        			btnSucursal.setEnabled(true);
+					btnAgregarCliente.setEnabled(true);
+					btnEjecutivo.setEnabled(true);
+					btnSolicitante.setEnabled(true);
             		
         		}catch(CommitException ce) {
 
@@ -438,7 +456,10 @@ public class ClienteStep implements WizardStep {
         	@Override
         	public void buttonClick(ClickEvent event) {
         		hsp.removeComponent(generalDetailLayout);	
-        		btnSolicitante.setEnabled(true);
+    			btnSucursal.setEnabled(true);
+				btnAgregarCliente.setEnabled(true);
+				btnEjecutivo.setEnabled(true);
+				btnSolicitante.setEnabled(true);
         	}
         }){{
         	addStyleName("link");
@@ -507,7 +528,10 @@ public class ClienteStep implements WizardStep {
 								//ClienteWindow.open(cliente);								
 								generalDetailLayout = drawFormAddCliente();	
 								hsp.addComponent(generalDetailLayout);
+								btnSucursal.setEnabled(false);
 								btnAgregarCliente.setEnabled(false);
+								btnEjecutivo.setEnabled(false);
+								btnSolicitante.setEnabled(false);
 							}
 
 						});				
@@ -543,6 +567,9 @@ public class ClienteStep implements WizardStep {
 								generalDetailLayout = drawFormAddSucursal();	
 								hsp.addComponent(generalDetailLayout);
 								btnSucursal.setEnabled(false);
+								btnAgregarCliente.setEnabled(false);
+								btnEjecutivo.setEnabled(false);
+								btnSolicitante.setEnabled(false);
 							}
 						});	
 			        
@@ -576,7 +603,10 @@ public class ClienteStep implements WizardStep {
 							public void buttonClick(ClickEvent event) {
 								generalDetailLayout = drawFormAddEjecutivo();	
 								hsp.addComponent(generalDetailLayout);
+								btnSucursal.setEnabled(false);
+								btnAgregarCliente.setEnabled(false);
 								btnEjecutivo.setEnabled(false);
+								btnSolicitante.setEnabled(false);
 							}
 						});	
 				addComponents(cbEjecutivo,btnEjecutivo);
@@ -607,6 +637,9 @@ public class ClienteStep implements WizardStep {
 							public void buttonClick(ClickEvent event) {
 								generalDetailLayout = drawFormAddSolicitante();	
 								hsp.addComponent(generalDetailLayout);
+								btnSucursal.setEnabled(false);
+								btnAgregarCliente.setEnabled(false);
+								btnEjecutivo.setEnabled(false);
 								btnSolicitante.setEnabled(false);
 							}
 						});	
