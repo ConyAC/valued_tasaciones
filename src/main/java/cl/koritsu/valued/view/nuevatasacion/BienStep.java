@@ -49,28 +49,24 @@ public class BienStep implements WizardStep {
 	GoogleMap googleMap;
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
+	GridLayout glRoot = new GridLayout(4,20);
 	
 	public BienStep(BeanFieldGroup<SolicitudTasacion> fg, ValuedService service) {
 		this.fg =  fg;
 		this.service = service;
+		
+		initView();
 	}
 
-	@Override
-	public String getCaption() {
-		return "Bien";
-	}
-
-	@Override
-	public Component getContent() {
-		final GridLayout gl = new GridLayout(4,20);
-		gl.setSpacing(true);
-		gl.setMargin(true);
+	private void initView() {
+		glRoot.setSpacing(true);
+		glRoot.setMargin(true);
 		//gl.setSizeFull();
-		gl.setWidth("100%");
+		glRoot.setWidth("100%");
 		
 		// clase de bien
-		gl.addComponents(new Label("Clase Bien"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Clase Bien"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				OptionGroup option = new OptionGroup();
@@ -87,7 +83,7 @@ public class BienStep implements WizardStep {
 		});
 		
 		try {
-			gl.addComponent(mapaInicial(),2,0,3,6);				
+			glRoot.addComponent(mapaInicial(),2,0,3,6);				
 		} catch (OverlapsException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -97,8 +93,8 @@ public class BienStep implements WizardStep {
 		}
 		
 		//tipo de bien
-		gl.addComponents(new Label("Tipo de Bien"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Tipo de Bien"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				ComboBox tf = new ComboBox();
@@ -115,8 +111,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//region
-		gl.addComponents(new Label("Región"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Región"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				cbRegion = new ComboBox();
@@ -136,8 +132,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//comuna
-		gl.addComponents(new Label("Comuna"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Comuna"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				cbComuna = new ComboBox();
@@ -165,8 +161,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//calle
-		gl.addComponents(new Label("Calle"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Calle"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{				
 				setSpacing(true);
 				tfCalle = new TextField();
@@ -191,8 +187,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//solicitante
-		gl.addComponents(new Label("Número"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Número"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				tfNumero = new TextField();
@@ -219,8 +215,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//solicitante
-		gl.addComponents(new Label("Unidad"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Unidad"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -230,11 +226,11 @@ public class BienStep implements WizardStep {
 		});
 		
 		// propietario
-		gl.addComponent(new Label("Información sobre propietario") {{setStyleName("h2");}},0,7,3,7);
+		glRoot.addComponent(new Label("Información sobre propietario") {{setStyleName("h2");}},0,7,3,7);
 		
 		//rut
-		gl.addComponents(new Label("RUT"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("RUT"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -244,8 +240,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//telefono
-		gl.addComponents(new Label("Teléfono"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Teléfono"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -255,8 +251,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//nombre
-		gl.addComponents(new Label("Nombre"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Nombre"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -266,8 +262,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//correo
-		gl.addComponents(new Label("Correo"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Correo"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -277,11 +273,11 @@ public class BienStep implements WizardStep {
 		});
 		
 		// contacto
-		gl.addComponent(new Label("Información sobre contacto") {{setStyleName("h2");}},0,10,3,10);
+		glRoot.addComponent(new Label("Información sobre contacto") {{setStyleName("h2");}},0,10,3,10);
 		
 		//nombre
-		gl.addComponents(new Label("Nombre"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Nombre"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -291,8 +287,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//telefono
-		gl.addComponents(new Label("Teléfono Fijo"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Teléfono Fijo"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -302,8 +298,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//rut
-		gl.addComponents(new Label("Teléfono Movil"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Teléfono Movil"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -313,8 +309,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//correo
-		gl.addComponents(new Label("Correo"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Correo"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -324,11 +320,11 @@ public class BienStep implements WizardStep {
 		});
 		
 		// contacto
-		gl.addComponent(new Label("Información sobre contacto 2") {{setStyleName("h2");}},0,13,3,13);
+		glRoot.addComponent(new Label("Información sobre contacto 2") {{setStyleName("h2");}},0,13,3,13);
 		
 		//nombre
-		gl.addComponents(new Label("Nombre"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Nombre"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -338,8 +334,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//telefono
-		gl.addComponents(new Label("Teléfono Fijo"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Teléfono Fijo"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -349,8 +345,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//rut
-		gl.addComponents(new Label("Teléfono Movil"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Teléfono Movil"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -360,8 +356,8 @@ public class BienStep implements WizardStep {
 		});
 		
 		//correo
-		gl.addComponents(new Label("Correo"));
-		gl.addComponent(new HorizontalLayout(){
+		glRoot.addComponents(new Label("Correo"));
+		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
@@ -369,8 +365,16 @@ public class BienStep implements WizardStep {
 				addComponents(tf);
 			}
 		});
-		
-		return gl;
+	}
+
+	@Override
+	public String getCaption() {
+		return "Bien";
+	}
+
+	@Override
+	public Component getContent() {
+		return glRoot;
 	}
 
 	@Override

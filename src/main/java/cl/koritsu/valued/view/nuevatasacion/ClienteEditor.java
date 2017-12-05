@@ -6,31 +6,24 @@ import java.util.Locale;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import com.vaadin.data.Container;
-import com.vaadin.data.Item;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
+import com.vaadin.data.fieldgroup.PropertyId;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.converter.Converter;
-import com.vaadin.data.fieldgroup.PropertyId;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
-import com.vaadin.shared.Position;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.DefaultFieldFactory;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Table;
@@ -38,20 +31,14 @@ import com.vaadin.ui.TableFieldFactory;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.RazonSocial;
-import cl.koritsu.valued.domain.Region;
-import cl.koritsu.valued.domain.Solicitante;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.domain.enums.TipoPersona;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.utils.Utils;
 
 
 public class ClienteEditor extends VerticalLayout {
@@ -89,30 +76,29 @@ public class ClienteEditor extends VerticalLayout {
     private OptionGroup multirutField;
     
     private HorizontalLayout tbMultirut, tbContactos;
-    BeanItemContainer<Contacto> beanItemContacto = new BeanItemContainer<Contacto>(Contacto.class);
-    BeanItemContainer<RazonSocial> beanItemRazon = new BeanItemContainer<RazonSocial>(RazonSocial.class);
+    protected BeanItemContainer<Contacto> beanItemContacto = new BeanItemContainer<Contacto>(Contacto.class);
+    protected BeanItemContainer<RazonSocial> beanItemRazon = new BeanItemContainer<RazonSocial>(RazonSocial.class);
     BeanFieldGroup<Contacto> fg;
     ValuedService service;
       
-    public ClienteEditor(final Cliente cliente) {
-    	init(cliente);
+    public ClienteEditor(final Cliente cliente,ValuedService service) {
+    	init(cliente,service);
     }
     
-    ClienteEditor() {
-    	init(new Cliente());
+    ClienteEditor(ValuedService service) {
+    	init(new Cliente(),service);
     }
     
-    public void init(Cliente cliente) {
+    public void init(Cliente cliente,ValuedService service) {
         //addStyleName("profile-window");
+    	this.service = service;
         setId(ID);
         Responsive.makeResponsive(this);
 
-        setSpacing(true);
-		setMargin(true);
 		setSizeFull();
 		
 		FormLayout detailLayout = new FormLayout();
-		//detailLayout.setMargin(true);
+		detailLayout.setMargin(true);
 		detailLayout.setSpacing(true);
 		
 		Panel p = new Panel(detailLayout);
@@ -122,7 +108,7 @@ public class ClienteEditor extends VerticalLayout {
 		addComponent(p);
 		setExpandRatio(p, 1.0f);
 
-		detailLayout.addComponent(buildFormCliente());
+		buildFormCliente(detailLayout);
               
         tbContactos = buildTableContact();
         detailLayout.addComponent(tbContactos);
@@ -131,7 +117,7 @@ public class ClienteEditor extends VerticalLayout {
         detailLayout.addComponent(tbMultirut);
         tbMultirut.setVisible(false);
         
-        detailLayout.addComponent(buildFooter());
+        addComponent(buildFooter());
         
         fieldGroup.bindMemberFields(this);
         cliente.setTipoPersona(TipoPersona.JURIDICA);
@@ -151,10 +137,12 @@ public class ClienteEditor extends VerticalLayout {
             	
             	//oculta los nombres
             	nombresField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
+            	nombresField.setRequired(tipoPersonaField.isSelected(TipoPersona.NATURAL));
             	apellidoPaternoField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
             	apellidoMaternoField.setVisible(tipoPersonaField.isSelected(TipoPersona.NATURAL));
             	//muestra la razon social
             	razonSocialField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+            	razonSocialField.setRequired(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
             }
         });
 
@@ -171,11 +159,11 @@ public class ClienteEditor extends VerticalLayout {
         });
 	}
 
-	private Component buildFormCliente() {
+	private Component buildFormCliente(FormLayout details) {
 //        HorizontalLayout root = new HorizontalLayout();
         
-        FormLayout details = new FormLayout();
-        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+//        FormLayout details = new FormLayout();
+//        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
 //        root.addComponent(details);
 //        root.setExpandRatio(details, 1);
                
@@ -242,20 +230,23 @@ public class ClienteEditor extends VerticalLayout {
         multirutField.focus();    
 
         rutField = new TextField("RUT");
-        rutField.setRequired(true);
+        rutField.setRequired(true);rutField.setRequired(true);rutField.setRequiredError("El campo Rut es requerido");
         details.addComponent(rutField);
         
         nombresField = new TextField("Nombre");
+        nombresField.setVisible(false);nombresField.setRequiredError("El campo Nombre es requerido");
         details.addComponent(nombresField);
         
         apellidoPaternoField = new TextField("Apellido Paterno");
+        apellidoPaternoField.setVisible(false);
         details.addComponent(apellidoPaternoField);
         
         apellidoMaternoField = new TextField("Apellido Materno");
+        apellidoMaternoField.setVisible(false);
         details.addComponent(apellidoMaternoField);
         
         razonSocialField = new TextField("Razón Social");
-        details.addComponent(razonSocialField);
+        details.addComponent(razonSocialField);razonSocialField.setRequired(true);razonSocialField.setRequiredError("El campo Nombre es requerido");
         
         direccionField = new TextField("Dirección");
         details.addComponent(direccionField);
@@ -271,9 +262,13 @@ public class ClienteEditor extends VerticalLayout {
 
     private HorizontalLayout buildTableContact() {
         HorizontalLayout root = new HorizontalLayout();
+        root.setMargin(false);
+        root.setSpacing(false);
+        root.setWidth("100%");
         
         FormLayout details = new FormLayout();
-        //details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+        details.setMargin(false);
+        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         root.addComponent(details);
         root.setExpandRatio(details, 1);
     	
@@ -306,22 +301,22 @@ public class ClienteEditor extends VerticalLayout {
 			public Field<?> createField(Container container, Object itemId,
 					Object propertyId, Component uiContext) {
 				Field<?> field = null; 
-				if(propertyId.equals("apellidoPaterno") || propertyId.equals("telefonoMovil")){
+				if(propertyId.equals("apellidoMaterno") || propertyId.equals("nombre") || propertyId.equals("apellidoPaterno") || propertyId.equals("telefonoMovil")){
 					field = new TextField();
 					((TextField)field).setImmediate(true);
 				} else if(  propertyId.equals("cargo") ){
 						field = new ComboBox();
-						field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
-						
-						ComboBox cbCargo = new ComboBox();
-						cbCargo.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-						cbCargo.setItemCaptionPropertyId("nombre");
+						((ComboBox)field).setItemCaptionMode(ItemCaptionMode.PROPERTY);
+						((ComboBox)field).setItemCaptionPropertyId("nombre");
 						BeanItemContainer<Cargo> ds = new BeanItemContainer<Cargo>(Cargo.class);
 						List<Cargo> cargos = service.getCargos();
 						ds.addAll(cargos);
-						cbCargo.setContainerDataSource(ds);
-				}else
+						((ComboBox)field).setContainerDataSource(ds);
+				} else if( propertyId.equals("eliminar")) {
 					return null;
+				}
+				
+				field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
 					
 				return field;
 			}
@@ -350,8 +345,8 @@ public class ClienteEditor extends VerticalLayout {
 		});
 		
 		tableContacto.setContainerDataSource(beanItemContacto);
-		tableContacto.setVisibleColumns("apellidoPaterno","cargo","telefonoMovil","eliminar");
-		tableContacto.setColumnHeaders("Apellido","Cargo","Telefono","Acciones");
+		tableContacto.setVisibleColumns("nombre","apellidoPaterno","apellidoMaterno","cargo","telefonoMovil","eliminar");
+		tableContacto.setColumnHeaders("Nombre","Apellido Paterno","Apellido Materno","Cargo","Telefono","Acciones");
 		tableContacto.setEditable(true);				
 		details.addComponent(tableContacto);
 		//details.setComponentAlignment(root, Alignment.TOP_RIGHT);
@@ -364,8 +359,12 @@ public class ClienteEditor extends VerticalLayout {
      */
     private HorizontalLayout buildTableMultiRut() {
     	HorizontalLayout root = new HorizontalLayout();
+    	root.setMargin(false);
+        root.setSpacing(false);
+    	root.setWidth("100%");
          
         FormLayout details = new FormLayout();
+        details.setMargin(false);
         details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
         root.addComponent(details);
         root.setExpandRatio(details, 1);
@@ -446,39 +445,19 @@ public class ClienteEditor extends VerticalLayout {
     
     private Component buildFooter() {
         HorizontalLayout footer = new HorizontalLayout();
-        //footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-        footer.setWidth(100.0f, Unit.PERCENTAGE);
+        footer.setSpacing(true);
+        footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+//        footer.setWidth(100.0f, Unit.PERCENTAGE);
 
         btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        btnGuadar.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(ClickEvent event) {
-                try {
-                    fieldGroup.commit();
-                    // Updated user should also be persisted to database. But
-                    // not in this demo.
-
-                    Notification success = new Notification(
-                            "Cliente almacenado correctamente");
-                    success.setDelayMsec(2000);
-                    success.setStyleName("bar success small");
-                    success.setPosition(Position.BOTTOM_CENTER);
-                    success.show(Page.getCurrent());
-
-                } catch (CommitException e) {
-                    Notification.show(e.getMessage(),
-                            Type.ERROR_MESSAGE);
-                }
-
-            }
-        });
+        btnGuadar.setIcon(FontAwesome.SAVE);
         btnGuadar.focus();
 		
 		btnCancelar.addStyleName("link");
         
         footer.addComponent(btnGuadar);
         footer.addComponent(btnCancelar);
-        footer.setComponentAlignment(btnGuadar, Alignment.TOP_RIGHT);
+        footer.setComponentAlignment(btnGuadar, Alignment.TOP_LEFT);
         footer.setComponentAlignment(btnCancelar, Alignment.TOP_LEFT);
         return footer;
     }

@@ -25,28 +25,26 @@ public class HonorarioClienteStep implements WizardStep {
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
 	
+	VerticalLayout root = new VerticalLayout();
+	
 	public HonorarioClienteStep(Wizard wizard, BeanFieldGroup<SolicitudTasacion> fg,ValuedService service){
 		this.fg = fg;
 		this.service = service;
+		
+		initView();
 	}
 
-	@Override
-	public String getCaption() {
-		return "Ingresos Cliente";
-	}
+	private void initView() {
 
-	@Override
-	public Component getContent() {
-		VerticalLayout vl = new VerticalLayout();
-		vl.setMargin(true);
-		vl.setSpacing(true);
-		vl.setWidth("100%");
+		root.setMargin(true);
+		root.setSpacing(true);
+		root.setWidth("100%");
 		
 		GridLayout glIngresoSolicitud = new GridLayout(2,2);
 		glIngresoSolicitud.setWidth("100%");
 		glIngresoSolicitud.setSpacing(true);
 		
-		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicitud(UF)"));
+		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicitud"));
 		TextField ingresoCliente = new TextField();
 		Utils.bind(fg, ingresoCliente, "honorarioCliente.montoHonorarioUF");
 		glIngresoSolicitud.addComponents(ingresoCliente);
@@ -139,12 +137,20 @@ public class HonorarioClienteStep implements WizardStep {
 		glPorDesplazamiento.addComponents(new TextField(){{setEnabled(false);}});
 		
 		//return gl;
-		vl.addComponent(glIngresoSolicitud);
-		vl.addComponent(og);
-		vl.addComponent(glMontoDesplazamientoFijo);
-		vl.addComponent(glPorDesplazamiento);
-		
-		return vl;
+		root.addComponent(glIngresoSolicitud);
+		root.addComponent(og);
+		root.addComponent(glMontoDesplazamientoFijo);
+		root.addComponent(glPorDesplazamiento);
+	}
+
+	@Override
+	public String getCaption() {
+		return "Ingresos Cliente";
+	}
+
+	@Override
+	public Component getContent() {
+		return root;
 	}
 
 	/**

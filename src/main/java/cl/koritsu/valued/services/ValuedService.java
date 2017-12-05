@@ -13,6 +13,7 @@ import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.HonorarioCliente;
+import cl.koritsu.valued.domain.RazonSocial;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Solicitante;
 import cl.koritsu.valued.domain.SolicitudTasacion;
@@ -26,6 +27,7 @@ import cl.koritsu.valued.repositories.ClienteRepository;
 import cl.koritsu.valued.repositories.ComunaRepository;
 import cl.koritsu.valued.repositories.ContactoRepository;
 import cl.koritsu.valued.repositories.HonorarioClienteRepository;
+import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
 import cl.koritsu.valued.repositories.SolicitudRepository;
@@ -68,6 +70,8 @@ public class ValuedService {
 	SolicitudTasacionRepository solicitudTasacionRepo;
 	@Autowired
 	CargoRepository cargoRepo;
+	@Autowired
+	private RazonSocialRepository razonSocialRepo;
 	
 	public List<Region> getRegiones() {
 		return (List<Region>) regionRepo.findAll();
@@ -105,8 +109,34 @@ public class ValuedService {
 		sucursalRepo.save(bean);
 	}
 
-	public void saveCliente(Cliente bean) {
-		clienteRepo.save(bean);
+	@Transactional
+	public void saveCliente(Cliente bean, List<Contacto> contactos, List<RazonSocial> razones) {
+		Cliente cliente = clienteRepo.save(bean);
+		//luego de guardar el cliente, guarda los contactos y las razones sociales asociadas a el
+		if(contactos != null && !contactos.isEmpty()) {
+			//obtiene el cargo tipo ejecutivo
+			Cargo cargoEjecutivo = cargoRepo.getCargoEjecutivo();
+			ejecutivoRepo.deleteByClienteNotEjecutivo(cliente,cargoEjecutivo);
+			//llena los cargos con el cliente y los guarda
+			for(Contacto contacto : contactos) {
+				contacto.setCliente(cliente);
+				ejecutivoRepo.save(contacto);
+			}
+		}
+		
+		//finalmente guarda las razones sociales o las elimina si ya no es multirut
+		if(!cliente.isMultiRut())
+			razonSocialRepo.deleteByCliente(cliente);
+		else if(razones != null && !razones.isEmpty()) {
+			//obtiene el cargo tipo ejecutivo
+			razonSocialRepo.deleteByCliente(cliente);
+			//llena los cargos con el cliente y los guarda
+			for(RazonSocial razon : razones) {
+				razon.setCliente(cliente);
+				razonSocialRepo.save(razon);
+			}
+		}
+		
 	}
 
 	@Transactional
@@ -155,5 +185,9 @@ public class ValuedService {
 
 	public List<Cargo> getCargos() {
 		return (List<Cargo>) cargoRepo.findAll();
+	}
+
+	public void saveUsuario(Usuario usuario) {
+		usuarioRepo.save(usuario);
 	}
 }

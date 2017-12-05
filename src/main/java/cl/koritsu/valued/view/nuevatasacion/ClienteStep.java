@@ -1,15 +1,20 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.Validator;
+import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -17,6 +22,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -27,11 +33,13 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
+import cl.koritsu.valued.domain.RazonSocial;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Solicitante;
 import cl.koritsu.valued.domain.SolicitudTasacion;
@@ -49,10 +57,25 @@ public class ClienteStep implements WizardStep {
 	Button btnEjecutivo, btnSucursal,btnAgregarCliente,btnSolicitante;
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
+	ComboBox cbCliente = new ComboBox();
+	ComboBox cbSucursal = new ComboBox();
+	ComboBox cbEjecutivo = new ComboBox();
+	ComboBox cbSolicitante = new ComboBox();
+
 
 	public ClienteStep(BeanFieldGroup<SolicitudTasacion> fg,ValuedService service) {
 		this.fg = fg;
 		this.service = service;
+		
+		initView();
+	}
+	
+	private void initView() {
+		hsp = new HorizontalSplitPanel();
+		hsp.setSizeFull();
+		
+		VerticalLayout usersListLayout = drawForm();
+		hsp.addComponent(usersListLayout);
 	}
 
 	@Override
@@ -62,29 +85,20 @@ public class ClienteStep implements WizardStep {
 	
 	@Override
 	public Component getContent() {
-		
-		hsp = new HorizontalSplitPanel();
-		hsp.setSizeFull();
-		
-		VerticalLayout usersListLayout = drawForm();
-		hsp.addComponent(usersListLayout);
-				
 		return hsp;
 	}
 	
 	private VerticalLayout drawFormAddCliente() {
 
-		final ClienteEditor editor = new ClienteEditor();
+		final ClienteEditor editor = new ClienteEditor(service);
 		editor.getBtnCancelar().addClickListener(new ClickListener() {
 			
 			@Override
 			public void buttonClick(ClickEvent event) {
 				hsp.removeComponent(generalDetailLayout);	
-				btnSucursal.setEnabled(true);
-				btnAgregarCliente.setEnabled(true);
-				btnEjecutivo.setEnabled(true);
-				btnSolicitante.setEnabled(true);
 				editor.fieldGroup.discard();
+				//habilita los botones para agregar
+				enableButtons();
 			}
 		});
 		
@@ -93,14 +107,26 @@ public class ClienteStep implements WizardStep {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				try {
-					hsp.removeComponent(generalDetailLayout);	
+					//realiza el commit de los campos del fomulario
 					editor.fieldGroup.commit();
-	        		service.saveCliente(editor.fieldGroup.getItemDataSource().getBean());
+					// llena el objeto a guardar con los contactos;
+					Cliente clienteToSave  = editor.fieldGroup.getItemDataSource().getBean();
+					List<Contacto> contactos = editor.beanItemContacto.getItemIds();
+					List<RazonSocial> razones = editor.beanItemRazon.getItemIds();
+	        		service.saveCliente(clienteToSave,contactos,razones);
+					hsp.removeComponent(generalDetailLayout);
+					
+					//recarga los clientes
+					List<Cliente> clientes = service.getClientes();
+					cbCliente.getContainerDataSource().removeAllItems();
+					((BeanItemContainer<Cliente>) cbCliente.getContainerDataSource()).addAll(clientes);
+					
+					//habilita los botones para agregar otras cosas
+					enableButtons();
+					
 	        		Notification.show("Cliente guardado correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
-
-					e.printStackTrace();
-	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.ERROR_MESSAGE);
+					validateEditor("el cliente",e);
 				}
 			}
 		});
@@ -114,8 +140,6 @@ public class ClienteStep implements WizardStep {
 	private VerticalLayout drawFormAddSucursal() {
 		
 		VerticalLayout vl = new VerticalLayout();
-		vl.setSpacing(true);
-		vl.setMargin(true);
 		vl.setSizeFull();
 		
 		FormLayout detailLayout = new FormLayout();
@@ -134,6 +158,7 @@ public class ClienteStep implements WizardStep {
 		// Loop through the properties, build fields for them and add the fields
         // to this UI 
 		TextField tfNombre = new TextField("Nombre");
+		tfNombre.setWidth("100%");
 		Utils.bind(fgSucursal, tfNombre, "nombre");
 		tfNombre.setNullRepresentation("");
 		detailLayout.addComponent(tfNombre);
@@ -174,12 +199,13 @@ public class ClienteStep implements WizardStep {
 		detailLayout.addComponent(cbComuna);
 		
 		TextField tfDireccion = new TextField("Dirección");
+		tfDireccion.setWidth("100%");
 		Utils.bind(fgSucursal, tfDireccion, "direccion");
 		tfDireccion.setNullRepresentation("");
 		detailLayout.addComponent(tfDireccion);
 
 		HorizontalLayout botones = new HorizontalLayout();
-		botones.setHeight("60px");
+		botones.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 		botones.setSpacing(true);
 		
 		//agrega un boton que hace el commit
@@ -189,26 +215,34 @@ public class ClienteStep implements WizardStep {
         	public void buttonClick(ClickEvent event) {
 
         		try {
+        			
 					fgSucursal.commit();
 					//setea
 					Sucursal sucursal = fgSucursal.getItemDataSource().getBean();
-					sucursal.setCliente((Cliente) cbCliente.getValue());
+					Cliente cliente = (Cliente) cbCliente.getValue();
+					sucursal.setCliente(cliente);
 	        		service.saveSucursal(sucursal);
-	        		Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
+	        		
+					//recarga las sucursales del cliente
+					List<Sucursal> sucursales = service.getSucursalByCliente(cliente);
+					cbSucursal.getContainerDataSource().removeAllItems();
+					((BeanItemContainer<Sucursal>) cbSucursal.getContainerDataSource()).addAll(sucursales);
+					
+	        		
 	        		hsp.removeComponent(generalDetailLayout);	
-					btnSucursal.setEnabled(true);
-					btnAgregarCliente.setEnabled(true);
-					btnEjecutivo.setEnabled(true);
-					btnSolicitante.setEnabled(true);
+	        		//habilita los botones para agregar
+					enableButtons();
+					
+					Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
 
-					e.printStackTrace();
-	        		Notification.show("Error al guardar la sucursal debido a "+e.getMessage(),Type.TRAY_NOTIFICATION);
+					validateEditor("la sucursal",e);
 				}
         	}
         }){{
         	setIcon(FontAwesome.SAVE);
         }};
+        btnSave.addStyleName(ValoTheme.BUTTON_PRIMARY);
         
         botones.addComponent(btnSave);
         botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
@@ -218,12 +252,11 @@ public class ClienteStep implements WizardStep {
 
         	@Override
         	public void buttonClick(ClickEvent event) {
-        		hsp.removeComponent(generalDetailLayout);	
-    			btnSucursal.setEnabled(true);
-				btnAgregarCliente.setEnabled(true);
-				btnEjecutivo.setEnabled(true);
-				btnSolicitante.setEnabled(true);
         		fgSucursal.discard();
+        		hsp.removeComponent(generalDetailLayout);
+        		
+        		//habilita los botones para agregar
+				enableButtons();
         	}
         }){{
         	addStyleName("link");
@@ -231,7 +264,7 @@ public class ClienteStep implements WizardStep {
         
         botones.addComponent(btnCancel);
         botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
-        detailLayout.addComponent(botones);
+        vl.addComponent(botones);
         
 		return vl;
 	}
@@ -242,8 +275,6 @@ public class ClienteStep implements WizardStep {
 	private VerticalLayout drawFormAddEjecutivo() {
 		
 		VerticalLayout vl = new VerticalLayout();
-		vl.setSpacing(true);
-		vl.setMargin(true);
 		vl.setSizeFull();
 		
 		final BeanFieldGroup<Contacto> fgEjecutivo = new BeanFieldGroup<Contacto>(Contacto.class);
@@ -295,7 +326,7 @@ public class ClienteStep implements WizardStep {
 		detailLayout.addComponent(tfEmail);
 
 		HorizontalLayout botones = new HorizontalLayout();
-		botones.setHeight("60px");
+		botones.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 		botones.setSpacing(true);
 		
 		//agrega un boton que hace el commit
@@ -306,25 +337,33 @@ public class ClienteStep implements WizardStep {
         		try {
         			fgEjecutivo.commit();
         			
-	        		service.saveContacto(fgEjecutivo.getItemDataSource().getBean());
+        			Contacto contacto = fgEjecutivo.getItemDataSource().getBean();
+	        		Cliente cliente = (Cliente) cbCliente.getValue();
+	        		contacto.setCliente(cliente);
+	        		service.saveContacto(contacto);
+	        			        		
+					//recarga las sucursales del cliente
+					List<Contacto> ejecutivos = service.getEjecutivosByCliente(cliente);
+					cbEjecutivo.getContainerDataSource().removeAllItems();
+					((BeanItemContainer<Contacto>) cbEjecutivo.getContainerDataSource()).addAll(ejecutivos);
 	        		
+        			hsp.removeComponent(generalDetailLayout);	
+
+            		//habilita los botones para agregar
+    				enableButtons();
+    				
         			Notification.show("Ejecutivo guardado correctamente",Type.TRAY_NOTIFICATION);
         			
-        			hsp.removeComponent(generalDetailLayout);	
-        			btnSucursal.setEnabled(true);
-					btnAgregarCliente.setEnabled(true);
-					btnEjecutivo.setEnabled(true);
-					btnSolicitante.setEnabled(true);
-            		
         		}catch(CommitException ce) {
-
-					ce.printStackTrace();
-	        		Notification.show("Error al guardar el ejecutivo debido a "+ce.getMessage(),Type.TRAY_NOTIFICATION);
+        			
+					validateEditor("el ejecutivo",ce);
         		}
         	}
         }){{
         	setIcon(FontAwesome.SAVE);
         }};
+        
+        btnSave.addStyleName(ValoTheme.BUTTON_PRIMARY);
         
         botones.addComponent(btnSave);
         botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
@@ -334,11 +373,11 @@ public class ClienteStep implements WizardStep {
 
         	@Override
         	public void buttonClick(ClickEvent event) {
+        		fgEjecutivo.discard();
         		hsp.removeComponent(generalDetailLayout);	
-    			btnSucursal.setEnabled(true);
-				btnAgregarCliente.setEnabled(true);
-				btnEjecutivo.setEnabled(true);
-				btnSolicitante.setEnabled(true);
+
+        		//habilita los botones para agregar
+				enableButtons();
         	}
         }){{
         	addStyleName("link");
@@ -346,7 +385,7 @@ public class ClienteStep implements WizardStep {
         
         botones.addComponent(btnCancel);
         botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
-        detailLayout.addComponent(botones);
+        vl.addComponent(botones);
         
 		return vl;
 	}
@@ -357,8 +396,6 @@ public class ClienteStep implements WizardStep {
 	private VerticalLayout drawFormAddSolicitante() {
 		
 		VerticalLayout vl = new VerticalLayout();
-		vl.setSpacing(true);
-		vl.setMargin(true);
 		vl.setSizeFull();
 		
 		final BeanFieldGroup<Solicitante> fgSolicitante = new BeanFieldGroup<Solicitante>(Solicitante.class);
@@ -416,7 +453,7 @@ public class ClienteStep implements WizardStep {
 		detailLayout.addComponent(tfEmail);
 
 		HorizontalLayout botones = new HorizontalLayout();
-		botones.setHeight("60px");
+		botones.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 		botones.setSpacing(true);
 		
 		//agrega un boton que hace el commit
@@ -427,26 +464,33 @@ public class ClienteStep implements WizardStep {
         		try {
         			fgSolicitante.commit();
         			
-	        		service.saveSolicitante(fgSolicitante.getItemDataSource().getBean());
+        			Solicitante solicitante = fgSolicitante.getItemDataSource().getBean();
+	        		Cliente cliente = (Cliente) cbCliente.getValue();
+	        		solicitante.setCliente(cliente);
+        			
+	        		service.saveSolicitante(solicitante);
 	        		
-        			Notification.show("Solicitante guardado correctamente",Type.TRAY_NOTIFICATION);
+	        		//recarga las sucursales del cliente
+					List<Solicitante> solicitantes = service.getSolicitantesByCliente(cliente);
+					cbSolicitante.getContainerDataSource().removeAllItems();
+					((BeanItemContainer<Solicitante>) cbSolicitante.getContainerDataSource()).addAll(solicitantes);
         			
         			hsp.removeComponent(generalDetailLayout);	
-        			btnSucursal.setEnabled(true);
-					btnAgregarCliente.setEnabled(true);
-					btnEjecutivo.setEnabled(true);
-					btnSolicitante.setEnabled(true);
+
+        			//habilita los botones para agregar
+    				enableButtons();
+    				
+        			Notification.show("Solicitante guardado correctamente",Type.TRAY_NOTIFICATION);
             		
         		}catch(CommitException ce) {
 
-					ce.printStackTrace();
-	        		Notification.show("Error al guardar el ejecutivo debido a "+ce.getMessage(),Type.TRAY_NOTIFICATION);
+        			validateEditor("el solicitante",ce);
         		}
         	}
         }){{
         	setIcon(FontAwesome.SAVE);
         }};
-        
+        btnSave.addStyleName(ValoTheme.BUTTON_PRIMARY);
         botones.addComponent(btnSave);
         botones.setComponentAlignment(btnSave, Alignment.BOTTOM_LEFT);
         
@@ -455,11 +499,12 @@ public class ClienteStep implements WizardStep {
 
         	@Override
         	public void buttonClick(ClickEvent event) {
+        		
+        		fgSolicitante.discard();
         		hsp.removeComponent(generalDetailLayout);	
-    			btnSucursal.setEnabled(true);
-				btnAgregarCliente.setEnabled(true);
-				btnEjecutivo.setEnabled(true);
-				btnSolicitante.setEnabled(true);
+
+        		//habilita los botones para agregar
+				enableButtons();
         	}
         }){{
         	addStyleName("link");
@@ -467,13 +512,11 @@ public class ClienteStep implements WizardStep {
         
         botones.addComponent(btnCancel);
         botones.setComponentAlignment(btnCancel, Alignment.BOTTOM_RIGHT);
-        detailLayout.addComponent(botones);
+        vl.addComponent(botones);
         
 		return vl;
 	}
 	
-	final ComboBox cbCliente = new ComboBox();
-
 	/*
 	 * Permite dibujar el formulario de ingreso
 	 */
@@ -489,6 +532,7 @@ public class ClienteStep implements WizardStep {
 		gl.setMargin(true);
                 
 		
+		cbCliente.setFilteringMode(FilteringMode.CONTAINS);
 		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbCliente.setItemCaptionPropertyId("nombreCliente");
 		BeanItemContainer<Cliente> ds = new BeanItemContainer<Cliente>(Cliente.class);
@@ -528,10 +572,9 @@ public class ClienteStep implements WizardStep {
 								//ClienteWindow.open(cliente);								
 								generalDetailLayout = drawFormAddCliente();	
 								hsp.addComponent(generalDetailLayout);
-								btnSucursal.setEnabled(false);
-								btnAgregarCliente.setEnabled(false);
-								btnEjecutivo.setEnabled(false);
-								btnSolicitante.setEnabled(false);
+
+								// deshabilita los botones
+								disableButtons();
 							}
 
 						});				
@@ -543,8 +586,8 @@ public class ClienteStep implements WizardStep {
 		Label clienteSel = new Label();
 		gl.addComponent(clienteSel);
 		
-		
-		final ComboBox cbSucursal = new ComboBox();
+		// sucursal
+		cbSucursal.setFilteringMode(FilteringMode.CONTAINS);
 		cbSucursal.setEnabled(false);
 		cbSucursal.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbSucursal.setItemCaptionPropertyId("nombre");
@@ -566,22 +609,19 @@ public class ClienteStep implements WizardStep {
 							public void buttonClick(ClickEvent event) {
 								generalDetailLayout = drawFormAddSucursal();	
 								hsp.addComponent(generalDetailLayout);
-								btnSucursal.setEnabled(false);
-								btnAgregarCliente.setEnabled(false);
-								btnEjecutivo.setEnabled(false);
-								btnSolicitante.setEnabled(false);
+
+								// deshabilita los botones
+								disableButtons();
 							}
 						});	
-			        
+				btnSucursal.setEnabled(false);
 				addComponents(cbSucursal,btnSucursal);
 			}
 		});
 		Label sucursalSel = new Label();
 		gl.addComponent(sucursalSel);
 		
-		
-
-		final ComboBox cbEjecutivo = new ComboBox();
+		cbEjecutivo.setFilteringMode(FilteringMode.CONTAINS);
 		cbEjecutivo.setEnabled(false);
 		cbEjecutivo.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbEjecutivo.setItemCaptionPropertyId("nombre");
@@ -603,12 +643,12 @@ public class ClienteStep implements WizardStep {
 							public void buttonClick(ClickEvent event) {
 								generalDetailLayout = drawFormAddEjecutivo();	
 								hsp.addComponent(generalDetailLayout);
-								btnSucursal.setEnabled(false);
-								btnAgregarCliente.setEnabled(false);
-								btnEjecutivo.setEnabled(false);
-								btnSolicitante.setEnabled(false);
+
+								// deshabilita los botones
+								disableButtons();
 							}
 						});	
+				btnEjecutivo.setEnabled(false);
 				addComponents(cbEjecutivo,btnEjecutivo);
 			}
 		});
@@ -616,7 +656,7 @@ public class ClienteStep implements WizardStep {
 		gl.addComponent(ejecutivoSel);
 		
 		
-		final ComboBox cbSolicitante = new ComboBox();
+		cbSolicitante.setFilteringMode(FilteringMode.CONTAINS);
 		cbSolicitante.setEnabled(false);
 		cbSolicitante.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbSolicitante.setItemCaptionPropertyId("nombres");
@@ -637,12 +677,11 @@ public class ClienteStep implements WizardStep {
 							public void buttonClick(ClickEvent event) {
 								generalDetailLayout = drawFormAddSolicitante();	
 								hsp.addComponent(generalDetailLayout);
-								btnSucursal.setEnabled(false);
-								btnAgregarCliente.setEnabled(false);
-								btnEjecutivo.setEnabled(false);
-								btnSolicitante.setEnabled(false);
+								// deshabilita los botones
+								disableButtons();
 							}
 						});	
+				btnSolicitante.setEnabled(false);
 				addComponents(cbSolicitante,btnSolicitante);
 			}
 		});
@@ -671,6 +710,8 @@ public class ClienteStep implements WizardStep {
 				cbSolicitante.getContainerDataSource().removeAllItems();
 				((BeanItemContainer<Solicitante>)cbSolicitante.getContainerDataSource()).addAll(solicitantes);
 				cbSolicitante.setEnabled(true);
+				
+				enableButtons();
 			}
 		});
 		
@@ -729,4 +770,36 @@ public class ClienteStep implements WizardStep {
 	public boolean onBack() {
 		return false;
 	}
+
+	/* FUNCIONES DE APOYO */
+	
+	private void enableButtons() {
+		endisButtons(true);
+	}
+	
+	private void disableButtons() {
+		endisButtons(false);
+	}
+	
+	private void endisButtons(boolean enabled) {
+		btnSucursal.setEnabled(enabled);
+		btnAgregarCliente.setEnabled(enabled);
+		btnEjecutivo.setEnabled(enabled);
+		btnSolicitante.setEnabled(enabled);
+	}
+	
+	private void validateEditor(String msj,CommitException e) {
+		e.printStackTrace();
+		Map<Field<?>, Validator.InvalidValueException> invalidFields = e.getInvalidFields();
+		if(!invalidFields.isEmpty()) {
+			for(Entry<Field<?>, InvalidValueException> entry : invalidFields.entrySet() ) {
+				Notification.show("Error al guardar "+msj+" debido a : \""+entry.getValue().getMessage()+"\"",Type.ERROR_MESSAGE);
+				entry.getKey().focus();
+				return;
+			}
+		}else {
+			Notification.show("Error al guardar "+msj+" debido a "+e.getMessage(),Type.ERROR_MESSAGE);
+		}
+	}	
+
 }

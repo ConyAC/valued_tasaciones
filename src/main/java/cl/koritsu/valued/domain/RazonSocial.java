@@ -21,6 +21,8 @@ public class RazonSocial {
 	Comuna comuna;
 	@JoinColumn(name="regionId")
 	Region region;
+	@JoinColumn(name="clienteId")
+	Cliente cliente;
 	
 	public Long getId() {
 		return id;
@@ -57,6 +59,12 @@ public class RazonSocial {
 	}
 	public void setRegion(Region region) {
 		this.region = region;
+	}
+	public Cliente getCliente() {
+		return cliente;
+	}
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
 	}
 	
 }

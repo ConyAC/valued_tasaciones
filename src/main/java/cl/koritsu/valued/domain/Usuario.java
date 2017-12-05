@@ -12,13 +12,13 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private boolean tasador;
-    private String nombres;
-    private String apellidoPaterno;
-    private String apellidoMaterno;
+    private String nombres = "";
+    private String apellidoPaterno = "";
+    private String apellidoMaterno = "";
     private boolean male;
-    private String email;
+    private String email = "";
     private boolean habilitado;
-    private String contrasena;
+    private String contrasena = "";
     private String telefonoFijo;
     private String telefonoMovil;
     private String nroCuentaBancaria;
