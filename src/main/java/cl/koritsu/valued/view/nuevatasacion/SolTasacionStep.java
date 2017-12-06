@@ -3,15 +3,11 @@ package cl.koritsu.valued.view.nuevatasacion;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
@@ -26,7 +22,6 @@ import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateField;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -312,7 +307,7 @@ public class SolTasacionStep implements WizardStep {
 					Notification.show("Tasador guardado correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
 
-					validateEditor("el tasador",e);
+					Utils.validateEditor("el tasador",e);
 				}
         	}
         }){{
@@ -363,18 +358,5 @@ public class SolTasacionStep implements WizardStep {
 		return true;
 	}
 
-	private void validateEditor(String msj,CommitException e) {
-		e.printStackTrace();
-		Map<Field<?>, Validator.InvalidValueException> invalidFields = e.getInvalidFields();
-		if(!invalidFields.isEmpty()) {
-			for(Entry<Field<?>, InvalidValueException> entry : invalidFields.entrySet() ) {
-				Notification.show("Error al guardar "+msj+" debido a : \""+entry.getValue().getMessage()+"\"",Type.ERROR_MESSAGE);
-				entry.getKey().focus();
-				return;
-			}
-		}else {
-			Notification.show("Error al guardar "+msj+" debido a "+e.getMessage(),Type.ERROR_MESSAGE);
-		}
-	}	
 }
 

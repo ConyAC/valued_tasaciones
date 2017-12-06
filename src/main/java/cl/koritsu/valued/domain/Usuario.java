@@ -5,6 +5,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.hibernate.validator.constraints.Email;
+
 @Entity
 public class Usuario {
 	
@@ -16,6 +18,7 @@ public class Usuario {
     private String apellidoPaterno = "";
     private String apellidoMaterno = "";
     private boolean male;
+    @Email(message="El email es inválido.")
     private String email = "";
     private boolean habilitado;
     private String contrasena = "";

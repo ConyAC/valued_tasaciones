@@ -6,6 +6,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
+import org.hibernate.validator.constraints.Email;
+
 @Entity
 public class Contacto {
 
@@ -17,6 +19,7 @@ public class Contacto {
 	String apellidoMaterno = "";
 	String telefonoFijo = "";
 	String telefonoMovil = "";
+	@Email(message="El email es inválido.")
 	String email = "";
 	@JoinColumn(name="cargoId")
 	Cargo cargo;
@@ -76,6 +79,18 @@ public class Contacto {
 	}
 	public void setCliente(Cliente cliente) {
 		this.cliente = cliente;
+	}
+
+	public String getNombreCompleto() {
+		StringBuilder sb = new StringBuilder();
+		
+			sb.append(getNombre()).append(" ");
+			if(getApellidoPaterno() != null )
+				sb.append(getApellidoPaterno()).append(" ");
+			if(getApellidoMaterno() != null )
+				sb.append(getApellidoMaterno()).append(" ");
+		
+		return sb.toString();
 	}
 	
 }

@@ -230,6 +230,7 @@ public class ClienteEditor extends VerticalLayout {
         multirutField.focus();    
 
         rutField = new TextField("RUT");
+        rutField.setInputPrompt("11111111-1");
         rutField.setRequired(true);rutField.setRequired(true);rutField.setRequiredError("El campo Rut es requerido");
         details.addComponent(rutField);
         
@@ -400,6 +401,8 @@ public class ClienteEditor extends VerticalLayout {
 				Field<?> field = null; 
 				if(propertyId.equals("nombre") || propertyId.equals("rut")){
 					field = new TextField();
+					if(propertyId.equals("rut"))
+						((TextField) field).setInputPrompt("11111111-1");
 					((TextField)field).setImmediate(true);
 				}else
 					return null;

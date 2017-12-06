@@ -13,7 +13,10 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.validator.constraints.Email;
+
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.validator.RutDigit;
 
 @Entity
 @Table(name="solicitud_tasacion")
@@ -35,18 +38,22 @@ public class SolicitudTasacion {
 	float montoTasacionUF;
 	
 	String nombrePropietario = "";
+	@RutDigit(message="El rut ingresado no es válido.")
 	String rutPropietario = "";
 	String telefonoPropietario = "";
+	@Email(message="El email es inválido.")
 	String emailPropietario = "";
 	
 	String nombreContacto = "";
 	String telefonoFijoContacto = "";
 	String telefonoMovilContacto = "";
+	@Email(message="El email es inválido.")
 	String emailContacto = "";
 	
 	String nombreContacto2 = "";
 	String telefonoFijoContacto2 = "";
 	String telefonoMovilContacto2 = "";
+	@Email(message="El email es inválido.")
 	String emailContacto2 = "";
 	
 	String numeroTasacionCliente = "";

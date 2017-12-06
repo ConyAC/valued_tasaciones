@@ -126,7 +126,7 @@ public class ClienteStep implements WizardStep {
 					
 	        		Notification.show("Cliente guardado correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
-					validateEditor("el cliente",e);
+					Utils.validateEditor("el cliente",e);
 				}
 			}
 		});
@@ -236,7 +236,7 @@ public class ClienteStep implements WizardStep {
 					Notification.show("Sucursal guardada correctamente",Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
 
-					validateEditor("la sucursal",e);
+					Utils.validateEditor("la sucursal",e);
 				}
         	}
         }){{
@@ -356,7 +356,7 @@ public class ClienteStep implements WizardStep {
         			
         		}catch(CommitException ce) {
         			
-					validateEditor("el ejecutivo",ce);
+        			Utils.validateEditor("el ejecutivo",ce);
         		}
         	}
         }){{
@@ -416,6 +416,7 @@ public class ClienteStep implements WizardStep {
 		// Loop through the properties, build fields for them and add the fields
         // to this UI 
 		TextField tfRut = new TextField("Rut");
+		tfRut.setInputPrompt("11111111-1");
 		tfRut.setNullRepresentation("");
 		Utils.bind(fgSolicitante, tfRut,"rut" );
 		detailLayout.addComponent(tfRut);
@@ -484,7 +485,7 @@ public class ClienteStep implements WizardStep {
             		
         		}catch(CommitException ce) {
 
-        			validateEditor("el solicitante",ce);
+        			Utils.validateEditor("el solicitante",ce);
         		}
         	}
         }){{
@@ -624,7 +625,7 @@ public class ClienteStep implements WizardStep {
 		cbEjecutivo.setFilteringMode(FilteringMode.CONTAINS);
 		cbEjecutivo.setEnabled(false);
 		cbEjecutivo.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbEjecutivo.setItemCaptionPropertyId("nombre");
+		cbEjecutivo.setItemCaptionPropertyId("nombreCompleto");
 		BeanItemContainer<Contacto> ds3 = new BeanItemContainer<Contacto>(Contacto.class);
 		cbEjecutivo.setContainerDataSource(ds3);
 		Utils.bind(fg,cbEjecutivo, "ejecutivo");
@@ -659,7 +660,7 @@ public class ClienteStep implements WizardStep {
 		cbSolicitante.setFilteringMode(FilteringMode.CONTAINS);
 		cbSolicitante.setEnabled(false);
 		cbSolicitante.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbSolicitante.setItemCaptionPropertyId("nombres");
+		cbSolicitante.setItemCaptionPropertyId("nombreCompleto");
 		BeanItemContainer<Solicitante> ds4 = new BeanItemContainer<Solicitante>(Solicitante.class);
 		cbSolicitante.setContainerDataSource(ds4);
 		Utils.bind(fg,cbSolicitante, "solicitante");
@@ -787,19 +788,6 @@ public class ClienteStep implements WizardStep {
 		btnEjecutivo.setEnabled(enabled);
 		btnSolicitante.setEnabled(enabled);
 	}
-	
-	private void validateEditor(String msj,CommitException e) {
-		e.printStackTrace();
-		Map<Field<?>, Validator.InvalidValueException> invalidFields = e.getInvalidFields();
-		if(!invalidFields.isEmpty()) {
-			for(Entry<Field<?>, InvalidValueException> entry : invalidFields.entrySet() ) {
-				Notification.show("Error al guardar "+msj+" debido a : \""+entry.getValue().getMessage()+"\"",Type.ERROR_MESSAGE);
-				entry.getKey().focus();
-				return;
-			}
-		}else {
-			Notification.show("Error al guardar "+msj+" debido a "+e.getMessage(),Type.ERROR_MESSAGE);
-		}
-	}	
+
 
 }

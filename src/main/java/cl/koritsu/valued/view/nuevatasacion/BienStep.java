@@ -234,6 +234,7 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				TextField tf = new TextField();
+				tf.setInputPrompt("11111111-1");
 				Utils.bind(fg,tf,"rutPropietario");
 				addComponents(tf);
 			}

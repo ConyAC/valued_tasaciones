@@ -6,12 +6,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
+import cl.koritsu.valued.domain.validator.RutDigit;
+
 @Entity
 public class Solicitante {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
+	@RutDigit(message="El rut ingresado no es válido.")
 	String rut;
 	String nombres;
 	String apellidoPaterno;
@@ -81,6 +84,18 @@ public class Solicitante {
 	}
 	public void setCliente(Cliente cliente) {
 		this.cliente = cliente;
+	}
+	
+	public String getNombreCompleto() {
+		StringBuilder sb = new StringBuilder();
+		
+			sb.append(getNombres()).append(" ");
+		if(getApellidoPaterno() != null )
+			sb.append(getApellidoPaterno()).append(" ");
+		if(getApellidoMaterno() != null )
+			sb.append(getApellidoMaterno()).append(" ");
+		
+		return sb.toString();
 	}
 	
 }

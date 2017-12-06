@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import cl.koritsu.valued.domain.enums.TipoPersona;
+import cl.koritsu.valued.domain.validator.RutDigit;
 
 @Entity
 public class Cliente {
@@ -15,6 +16,7 @@ public class Cliente {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@RutDigit(message="El rut ingresado no es válido.")
     private String rut = "";
     private String nombres = "";
     private String apellidoPaterno = "";

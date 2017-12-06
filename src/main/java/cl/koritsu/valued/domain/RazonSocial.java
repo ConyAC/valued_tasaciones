@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 
+import cl.koritsu.valued.domain.validator.RutDigit;
+
 @Entity
 @Table(name="razon_social")
 public class RazonSocial {
@@ -14,6 +16,7 @@ public class RazonSocial {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
+	@RutDigit(message="El rut ingresado no es válido.")
 	String rut = "";
 	String nombre = "";
 	String direccion = "";
