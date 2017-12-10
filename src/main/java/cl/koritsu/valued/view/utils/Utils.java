@@ -1,5 +1,7 @@
 package cl.koritsu.valued.view.utils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -44,6 +46,13 @@ public class Utils {
 		}else {
 			Notification.show("Error al guardar "+msj+" debido a "+e.getMessage()+"(2)",Type.ERROR_MESSAGE);
 		}
-	}	
+	}
+	
+	public static String formatoFecha(Date date) {
+		String pattern = "dd/MM/yyyy";
+		SimpleDateFormat format = new SimpleDateFormat(pattern);
+		
+		return format.format(date);
+	}
 
 }

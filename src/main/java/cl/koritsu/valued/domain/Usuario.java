@@ -144,7 +144,8 @@ public class Usuario {
 		this.rol = rol;
 	}
 
-    
-    
+	public String getFullname(){
+    	return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");
+    }    
     
 }
