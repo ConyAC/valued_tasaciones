@@ -1,6 +1,7 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
@@ -34,6 +35,7 @@ import com.vaadin.ui.VerticalLayout;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
 import cl.koritsu.valued.domain.enums.TipoBien;
@@ -401,15 +403,6 @@ public class BienStep implements WizardStep {
 		googleMap.setCenter(new LatLon(-33.448779, -70.668551));
 		googleMap.setSizeFull();	
 		
-		//rescatamos las tasaciones realizadas desde la base...
-//		googleMap.addMarker("Tasación Visada: Inmobiliaria1 S.A.", new LatLon(
-//				-33.484747, -70.739321), false, "VAADIN/img/pin_tas_ing.png");	
-//		googleMap.addMarker("Tasación Visada: Inmobiliaria2 S.A.", new LatLon(
-//				-33.429363, -70.615143), false, "VAADIN/img/pin_tas_ing.png");	
-//		googleMap.addMarker("Tasación Visada: Inmobiliaria3 S.A.", new LatLon(
-//				-33.397766, -70.597899), false, "VAADIN/img/pin_tas_ing.png");	
-//		googleMap.addMarker("Tasación Visada: Inmobiliaria4 S.A.", new LatLon(
-//				-33.610913, -70.879582), false, "VAADIN/img/pin_tas_ing.png");
 		//obtiene las solicitud pasadas
 		List<SolicitudTasacion> tasaciones = service.getTasaciones();
 
@@ -417,8 +410,26 @@ public class BienStep implements WizardStep {
 		for(SolicitudTasacion tasacion : tasaciones) {
 			//lo agrega solo si tiene sentido
 			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
-				googleMap.addMarker("Tasación "+tasacion.getEstado()+": "+tasacion.getCliente().getNombreCliente(), new LatLon(
-						tasacion.getNorteY(),tasacion.getEsteX()), false, "VAADIN/img/pin_tas_ing.png");
+				String ruta_img = null;
+				switch (tasacion.getEstado()) {
+				case CREADA:
+					ruta_img = "VAADIN/img/pin_tas_asignada.png";
+					break;
+				case TASADA:
+					ruta_img = "VAADIN/img/pin_tas_visitada.png";
+					break;
+				case VISADA:
+					ruta_img = "VAADIN/img/pin_tas_visada.png";
+					break;
+				default:
+					break;			
+				}
+				
+				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
+									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
+									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
+									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
+									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
 			}
 		}
 		
