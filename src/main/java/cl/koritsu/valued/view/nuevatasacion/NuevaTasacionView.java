@@ -39,6 +39,7 @@ import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
@@ -173,8 +174,8 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 			
 			reset();
 		}catch(CommitException ce) {
-			ce.printStackTrace();
-			Notification.show("Error al guardar la nueva solicitud debido : "+ce.getMessage(),Type.ERROR_MESSAGE);
+			
+			Utils.validateEditor("la solicitud",ce);
 		}
 		
 	}
