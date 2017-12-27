@@ -483,7 +483,7 @@ public class BienStep implements WizardStep {
 					
 					googleMap.setCenter(new LatLon(lat,lon));
 					googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
-							lat, lon), true, "VAADIN/img/pin_tas_process.png");
+							lat, lon), true, "VAADIN/img/pin_tas_proceso.png");
 					googleMap.setZoom(zoom);					
 				default:
 					break;
