@@ -179,10 +179,6 @@ public class ValuedService {
 		
 	}
 
-	public void saveSolicitante(Solicitante bean) {
-		solicitanteRepo.save(bean);
-	}
-
 	public List<Cargo> getCargos() {
 		return (List<Cargo>) cargoRepo.findAll();
 	}
@@ -194,4 +190,31 @@ public class ValuedService {
 	public List<SolicitudTasacion> getTasacionesByRegionAndComuna(Comuna comuna) {
 		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByRegionAndComuna(comuna);
 	}
+	
+	public Solicitante saveSolicitante(Solicitante bean) {
+		//verifica que no exista por el rut
+		Solicitante solicitantebd = null;
+		if(bean.getRut() != null && bean.getRut().trim().length() != 0)
+			solicitantebd = solicitanteRepo.findByRut(bean.getRut());
+		if( solicitantebd != null )
+			return solicitantebd;
+		
+		return solicitanteRepo.save(bean);
+			
+	}
+	
+
+	public Usuario getUsuarioById(long id) {
+		return usuarioRepo.findOne(id);
+	}
+
+	public void saveSolicitudes(List<SolicitudTasacion> solicitudes) {
+		solicitudRepo.save(solicitudes);
+	}
+	
+
+	public Comuna getComunaPorNombre(String comuna) {
+		return comunaRepo.findByNombre(comuna);
+	}
+
 }

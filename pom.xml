@@ -175,6 +175,12 @@
 			<artifactId>spring-data-jpa</artifactId>
 			<version>1.9.2.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
 <!-- 
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -187,12 +193,30 @@
 			<version>3.2.5.RELEASE</version>
 		</dependency>
  -->
+ 		<!-- Junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- eclipselink -->
 
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>2.5.2</version>
+		</dependency>
+		
+				<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.11</version>
 		</dependency>
 		
 		<dependency>
