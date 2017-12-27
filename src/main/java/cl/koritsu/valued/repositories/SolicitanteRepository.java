@@ -11,4 +11,6 @@ public interface SolicitanteRepository extends PagingAndSortingRepository<Solici
 
 	List<Solicitante> findByCliente(Cliente cliente);
 
+	Solicitante findByRut(String rut);
+
 }

@@ -13,4 +13,6 @@ public interface ComunaRepository extends PagingAndSortingRepository<Comuna, Lon
 
 	List<Comuna> findByRegion(Region region);
 
+	Comuna findByNombre(String comuna);
+
 }
