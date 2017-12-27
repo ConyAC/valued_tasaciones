@@ -1,15 +1,11 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.data.Validator;
-import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
@@ -22,7 +18,6 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -540,6 +535,9 @@ public class ClienteStep implements WizardStep {
 		List<Cliente> clientes = service.getClientes();
 		ds.addAll(clientes);
 		cbCliente.setContainerDataSource(ds);
+		//lo define como requerido
+		cbCliente.setRequired(true);
+		cbCliente.setRequiredError("Es necesario seleccionar el cliente.");
 		
 		Utils.bind(fg,cbCliente, "cliente");
 		
