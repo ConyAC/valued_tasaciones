@@ -190,4 +190,8 @@ public class ValuedService {
 	public void saveUsuario(Usuario usuario) {
 		usuarioRepo.save(usuario);
 	}
+	
+	public List<SolicitudTasacion> getTasacionesByRegionAndComuna(Comuna comuna) {
+		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByRegionAndComuna(comuna);
+	}
 }

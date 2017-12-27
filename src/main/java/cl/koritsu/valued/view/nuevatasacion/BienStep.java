@@ -162,6 +162,16 @@ public class BienStep implements WizardStep {
 			}
 		});
 		
+		cbComuna.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				
+				Comuna comuna = (Comuna) event.getProperty().getValue();
+				cargarTasaciones(comuna);
+			}
+		});
+		
 		//calle
 		glRoot.addComponents(new Label("Calle"));
 		glRoot.addComponent(new HorizontalLayout(){
@@ -402,37 +412,7 @@ public class BienStep implements WizardStep {
 		//situamos, inicialmente, el mapa en Santiago.
 		googleMap.setCenter(new LatLon(-33.448779, -70.668551));
 		googleMap.setSizeFull();	
-		
-		//obtiene las solicitud pasadas
-		List<SolicitudTasacion> tasaciones = service.getTasaciones();
-
-		//agrega las tasaciones realizadas
-		for(SolicitudTasacion tasacion : tasaciones) {
-			//lo agrega solo si tiene sentido
-			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
-				String ruta_img = null;
-				switch (tasacion.getEstado()) {
-				case CREADA:
-					ruta_img = "VAADIN/img/pin_tas_asignada.png";
-					break;
-				case TASADA:
-					ruta_img = "VAADIN/img/pin_tas_visitada.png";
-					break;
-				case VISADA:
-					ruta_img = "VAADIN/img/pin_tas_visada.png";
-					break;
-				default:
-					break;			
-				}
 				
-				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
-									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
-									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
-									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
-									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
-			}
-		}
-		
 		googleMap.setMinZoom(4);
 		googleMap.setMaxZoom(16);
 		
@@ -509,5 +489,40 @@ public class BienStep implements WizardStep {
 					break;
 		     }
 		 }
+	}
+	
+	private void cargarTasaciones(Comuna c){		
+		//obtiene las solicitud pasadas en base a la comuna y región
+		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(c);
+	
+		//agrega las tasaciones realizadas
+		for(SolicitudTasacion tasacion : tasaciones) {
+			//lo agrega solo si tiene sentido
+			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
+				String ruta_img = null;
+				switch (tasacion.getEstado()) {
+				case CREADA:
+					ruta_img = "VAADIN/img/pin_tas_asignada.png";
+					break;
+				case TASADA:
+					ruta_img = "VAADIN/img/pin_tas_visitada.png";
+					break;
+				case VISADA:
+					ruta_img = "VAADIN/img/pin_tas_visada.png";
+					break;
+				default:
+					break;			
+				}
+				
+				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
+									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
+									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
+									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
+									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
+			}
+		}
+		
+		googleMap.setMinZoom(4);
+		googleMap.setMaxZoom(16);
 	}
 }
