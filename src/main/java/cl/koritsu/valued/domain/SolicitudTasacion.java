@@ -35,7 +35,8 @@ public class SolicitudTasacion {
 	@Temporal(TemporalType.DATE)
 	Date fechaEnvioCliente;
 	
-	float montoCompraEstimado;
+	float montoCompraEstimadoUF;
+	float montoCompraEstimadoPesos;
 	float montoTasacionPesos;
 	float montoTasacionUF;
 	
@@ -123,12 +124,18 @@ public class SolicitudTasacion {
 	}
 	public void setFechaEnvioCliente(Date fechaEnvioCliente) {
 		this.fechaEnvioCliente = fechaEnvioCliente;
+	}	
+	public float getMontoCompraEstimadoUF() {
+		return montoCompraEstimadoUF;
 	}
-	public float getMontoCompraEstimado() {
-		return montoCompraEstimado;
+	public void setMontoCompraEstimadoUF(float montoCompraEstimadoUF) {
+		this.montoCompraEstimadoUF = montoCompraEstimadoUF;
 	}
-	public void setMontoCompraEstimado(float montoCompraEstimado) {
-		this.montoCompraEstimado = montoCompraEstimado;
+	public float getMontoCompraEstimadoPesos() {
+		return montoCompraEstimadoPesos;
+	}
+	public void setMontoCompraEstimadoPesos(float montoCompraEstimadoPesos) {
+		this.montoCompraEstimadoPesos = montoCompraEstimadoPesos;
 	}
 	public float getMontoTasacionPesos() {
 		return montoTasacionPesos;

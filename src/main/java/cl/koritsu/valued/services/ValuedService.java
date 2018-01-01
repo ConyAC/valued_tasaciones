@@ -217,4 +217,7 @@ public class ValuedService {
 		return comunaRepo.findByNombre(comuna);
 	}
 
+	public Cliente getClienteById(long id) {
+		return clienteRepo.findOne(id);
+	}
 }
