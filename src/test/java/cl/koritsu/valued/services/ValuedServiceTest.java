@@ -53,21 +53,40 @@ public class ValuedServiceTest {
 			
 			Assert.assertNotNull("el wb es nulo", wb);
 			
-			Sheet sheet = wb.getSheetAt(3);
+			Sheet sheet = wb.getSheetAt(5);
 			Assert.assertNotNull("el sheet es nulo", sheet);
 			
 			List<SolicitudTasacion> solicitudes = new ArrayList<SolicitudTasacion>( sheet.getLastRowNum());
 			
+			
+			List<String> rutInvalidos = new ArrayList<String>();
 			Row row = null;
 			//crea una solicitud por cada fila
-			for( int i = 0 ; i < sheet.getLastRowNum() ; i++ ){
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
+				
+				if(i == 0) continue; 				
+				row = sheet.getRow(i);
+				String rut_solicitante = getValueFromCell(row,3);
+				String dv_solicitante = getValueFromCell(row,4);	
+				//primero valida los rut
+				if(rut_solicitante != null && rut_solicitante.length() != 0 && !RutDigitValidator.ValidarRut(Integer.parseInt(rut_solicitante), dv_solicitante.charAt(0)))
+					rutInvalidos.add(rut_solicitante);
+				
+			}
+			if(!rutInvalidos.isEmpty()) {
+				for(String rutInvalido : rutInvalidos ) {
+					System.out.println(rutInvalido+"-"+RutDigitValidator.Digito(Integer.valueOf(rutInvalido)));
+				}
+				Assert.fail("existe rut invalidos");
+			}
+			
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
 				
 				row = sheet.getRow(i);
-				
 				System.out.println(row.getRowNum());
 				
 				//ignora la primera fila
-				if(i == 0) continue; 				i++;
+				if(i == 0) continue; 				
 				int j = 0;
 				double cliente =getDoubleFromCell(row,j++);
 				String nroEncargo = getValueFromCell(row,j++);
@@ -94,6 +113,8 @@ public class ValuedServiceTest {
 				String direccionUnidadSII =getValueFromCell(row,j++);
 				Date fechaEnviada =getDateFromCell(row,j++);
 				String obs =getValueFromCell(row,j++);
+				String nEncCliente = getValueFromCell(row, j++);
+				double montoTasacionUF= getDoubleFromCell(row, j++);
 				
 				SolicitudTasacion st = new SolicitudTasacion();
 				Bien bien = new Bien();
@@ -134,6 +155,8 @@ public class ValuedServiceTest {
 				st.setFechaEnvioCliente(fechaEnviada);
 				st.setTipoInforme(getTipoInfome(tipoInforme));
 				st.setUsuario(getUsuario());
+				st.setNumeroTasacionCliente(nEncCliente);
+				st.setMontoTasacionUF( Float.parseFloat(montoTasacionUF+""));
 				
 				System.out.println(row.getRowNum()+" "+nroEncargo);
 				//la agrega al arreglo a guardar

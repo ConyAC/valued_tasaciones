@@ -29,7 +29,7 @@ public class RutDigitValidator implements ConstraintValidator<RutDigit, String> 
 		return false;
 	}
 	
-	public String Digito(int rut) {
+	public static String Digito(int rut) {
 		int suma = 0;
 		int multiplicador = 1;
 		while (rut != 0) {
