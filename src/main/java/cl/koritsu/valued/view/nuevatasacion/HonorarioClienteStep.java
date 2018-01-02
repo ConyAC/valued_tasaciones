@@ -3,12 +3,15 @@ package cl.koritsu.valued.view.nuevatasacion;
 import org.vaadin.teemu.wizards.Wizard;
 import org.vaadin.teemu.wizards.WizardStep;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
@@ -44,10 +47,32 @@ public class HonorarioClienteStep implements WizardStep {
 		glIngresoSolicitud.setWidth("100%");
 		glIngresoSolicitud.setSpacing(true);
 		
-		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicitud"));
-		TextField ingresoCliente = new TextField();
-		Utils.bind(fg, ingresoCliente, "honorarioCliente.montoHonorarioUF");
-		glIngresoSolicitud.addComponents(ingresoCliente);
+		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicituds"));
+		glIngresoSolicitud.addComponent(new HorizontalLayout(){
+			{
+				setSpacing(true);
+				final ComboBox cb = new ComboBox();
+				cb.setWidth("70px");
+				cb.addItem("$");
+				cb.addItem("UF");
+				cb.setValue("$");
+				final TextField tf = new TextField();
+				addComponents(cb,tf);
+				Utils.bind(fg, tf, "honorarioCliente.montoHonorarioPesos");
+				cb.addValueChangeListener(new ValueChangeListener() {
+					
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						if(cb.getValue().equals("$"))
+							Utils.bind(fg, tf, "honorarioCliente.montoHonorarioPesos");
+						else
+							Utils.bind(fg, tf, "honorarioCliente.montoHonorarioUF");
+					}
+				});
+				
+				setExpandRatio(tf, 1f);
+			}
+		});
 		
 		CheckBox cb = new CheckBox("Tendrá desplazamiento?");
 		glIngresoSolicitud.addComponent(cb,0,1,1,1);

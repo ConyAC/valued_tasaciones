@@ -83,6 +83,9 @@ public class SolTasacionStep implements WizardStep {
 				BeanItemContainer<TipoInforme> tipoInformeDS = new BeanItemContainer<TipoInforme>(TipoInforme.class);
 				tf.setContainerDataSource(tipoInformeDS);
 				
+				tf.setRequired(true);
+				tf.setRequiredError("Es necesario seleccionar el tipo de informe.");
+				
 				Utils.bind(fg, tf, "tipoInforme");
 				
 				List<TipoInforme> informes = service.getTipoInformes();
@@ -98,13 +101,25 @@ public class SolTasacionStep implements WizardStep {
 		glRoot.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);
-				ComboBox cb = new ComboBox();
+				final ComboBox cb = new ComboBox();
 				cb.setWidth("70px");
 				cb.addItem("$");
 				cb.addItem("UF");
 				cb.setValue("$");
-				TextField tf = new TextField();
+				final TextField tf = new TextField();
 				addComponents(cb,tf);
+				Utils.bind(fg, tf, "montoCompraEstimadoPesos");
+				cb.addValueChangeListener(new ValueChangeListener() {
+					
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						if(cb.getValue().equals("UF"))
+							Utils.bind(fg, tf, "montoCompraEstimadoUF");
+						else
+							Utils.bind(fg, tf, "montoCompraEstimadoPesos");
+					}
+				});
+
 				setExpandRatio(tf, 1f);
 			}
 		});
@@ -174,6 +189,10 @@ public class SolTasacionStep implements WizardStep {
 				setSpacing(true);
 				DateField tf = new DateField();
 				tf.setDateFormat("dd/MM/yyyy");
+				
+				tf.setRequired(true);
+				tf.setRequiredError("Es necesario seleccionar la fecha.");
+				
 				Utils.bind(fg, tf, "fechaEncargo");
 				//setea la fecha de hoy
 				tf.setValue(new Date());

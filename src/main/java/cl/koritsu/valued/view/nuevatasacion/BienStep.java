@@ -72,6 +72,8 @@ public class BienStep implements WizardStep {
 			{
 				setSpacing(true);
 				OptionGroup option = new OptionGroup();
+				option.setRequired(true);
+				option.setRequiredError("Es necesario seleccionar la clase de bien.");
 				Utils.bind(fg,option,"bien.clase");
 				int i = 0;
 				for(ClaseBien cb : ClaseBien.values()) {
