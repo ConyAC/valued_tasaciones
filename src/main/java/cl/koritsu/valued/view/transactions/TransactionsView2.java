@@ -93,7 +93,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 	
 	public static final String NAME = "en_proceso";
 
-    private Table table;
+    Table table;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     private static final DateFormat DATEFORMAT = new SimpleDateFormat(
@@ -101,24 +101,12 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
     private static final String[] DEFAULT_COLLAPSIBLE = { "country", "city",
             "theater", "room", "title", "seats" };
-    
-    VerticalLayout layout = new VerticalLayout();
-    
-    private GoogleMapMarker kakolaMarker = new GoogleMapMarker(
-        "DRAGGABLE: Kakolan vankila", new LatLon(60.44291, 22.242415),
-        true, null);
-    private GoogleMapInfoWindow kakolaInfoWindow = new GoogleMapInfoWindow(
-        "Kakola used to be a provincial prison.", kakolaMarker);
-    private GoogleMapMarker maariaMarker = new GoogleMapMarker("Maaria",
-        new LatLon(60.536403, 22.344648), false);
-    private GoogleMapInfoWindow maariaWindow = new GoogleMapInfoWindow(
-        "Maaria is a district of Turku", maariaMarker);
-    ;
-    private Button componentToMaariaInfoWindowButton;
-    
+   
     
     @Autowired
     ValuedService service;
+    
+    BeanItemContainer<SolicitudTasacion> solicitudContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
 
     public TransactionsView2() {
     	addStyleName("transactions");
@@ -138,147 +126,20 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         mapsPanel.setContent(googleMap);
         addComponent(mapsPanel);
        
-        Window mapToolBox = new Window("Map Tool Box");
-        mapToolBox.setClosable(false);
-        mapToolBox.setResizable(false);
+        Window mapToolBox = new Window();
+      //  mapToolBox.setClosable(false);
+       // mapToolBox.setResizable(false);
         mapToolBox.setPosition(210, 220);
-        mapToolBox.setWidth("350px");
+        mapToolBox.setWidth("450px");
         mapToolBox.setHeight("520px");
-        mapToolBox.addStyleName("mywindowstyle");
+       // mapToolBox.addStyleName("mywindowstyle");
         UI.getCurrent().addWindow(mapToolBox);
-
-        HorizontalLayout latlonLayout = new HorizontalLayout();
-        latlonLayout.setSpacing(true);
-        
-        TextField latitude = new TextField("Lat");
-        latitude.setWidth("100px");
-        latitude.setNullSettingAllowed(true);
-        latitude.setNullRepresentation("0.0");
-        
-        TextField longitude = new TextField("Long");
-        longitude.setWidth("100px");
-        longitude.setNullSettingAllowed(true);
-        longitude.setNullRepresentation("0.0");
-        
-        latlonLayout.addComponent(latitude);
-        latlonLayout.addComponent(longitude);
-        
-        HorizontalLayout infoLayout = new HorizontalLayout();
-        infoLayout.setSpacing(true);
-        
-        Label currentLat = new Label();
-        currentLat.setCaption("Current Latitude");
-        
-        Label currentLon = new Label();
-        currentLon.setCaption("Current Longitude");
-
-        infoLayout.addComponent(currentLat);
-        infoLayout.addComponent(currentLon);
-        
-        TextField markerName = new TextField("Marker Name");
-
-        Label latErrMsg = new Label();
-        latErrMsg.addStyleName("mylabelstyle");
-        Label lonErrMsg = new Label();
-        lonErrMsg.addStyleName("mylabelstyle");
-        
-//        Button.ClickListener addMarkerListener = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				String mName = markerName.getValue();
-//				if(mName.isEmpty()){
-//					mName = "Marker";
-//				}
-//				Double dLat = 0.0; 
-//				Double dLon = 0.0; 
-//				dLat = Double.valueOf(currentLat.getValue());
-//				dLon = Double.valueOf(currentLon.getValue());
-//
-//				GoogleMapMarker customMarker = new GoogleMapMarker(mName, new LatLon(dLat, dLon),true, null);
-//				googleMap.addMarker(customMarker);
-//			}
-//		};
-        
-        Button addMarker = new Button("Add Marker", FontAwesome.ANCHOR);
-  //      addMarker.addClickListener(addMarkerListener);
-        
-//        Button.ClickListener moveView = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				Boolean val = true;
-//				Double dLat = 0.0; 
-//				Double dLon = 0.0; 
-//
-//				try {
-//					dLat = Double.valueOf(latitude.getValue());
-//				} catch (Exception e) {
-//					val = false;
-//					latErrMsg.setValue("Latitude is not a valid number");
-//				}
-//				try {
-//					dLon = Double.valueOf(longitude.getValue());
-//				} catch (Exception e) {
-//					val = false;
-//					lonErrMsg.setValue("Longitude is not a valid number");
-//				}
-//				
-//				if(val){
-//					latErrMsg.setValue("");
-//					lonErrMsg.setValue("");
-//					if((dLat<= -85.0) || (dLat >= 85.0)){
-//						val = false;
-//						latErrMsg.setValue("Latitude must be between -85.0 and 85.0");
-//					}
-//					if((dLon<= -180.0) || (dLon >= 180.0)){
-//						val = false;
-//						lonErrMsg.setValue("Longitude  must be between -180.0 and 180.0");
-//					}
-//				}
-//				
-//				if(val){
-//					latErrMsg.setValue("");
-//					lonErrMsg.setValue("");
-//	                googleMap.setCenter(new LatLon(dLat, dLon));
-//	                googleMap.setZoom(12);
-//	                currentLat.setValue(latitude.getValue());
-//	                currentLon.setValue(longitude.getValue());
-//				}
-//			}
-//		};
-        
-        Button moveButton = new Button("Move", FontAwesome.BULLSEYE);
-       // moveButton.addClickListener(moveView);
-
-//        Button.ClickListener clearMarkerListener = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//                googleMap.clearMarkers();
-//			}
-//		};
-
-		Button clearMarkersButton = new Button("Clear markers", FontAwesome.REMOVE);
-       // clearMarkersButton.addClickListener(clearMarkerListener);
-
-        Double newyorkLat = 40.7128;
-        Double newyorkLon = -74.0059;
-        googleMap.setCenter(new LatLon(40.7128, -74.0059));
-		GoogleMapMarker newyorkMarker = new GoogleMapMarker("New York", new LatLon(newyorkLat, newyorkLon),true, null);
-		googleMap.addMarker(newyorkMarker);
-		latitude.setValue(newyorkLat.toString());
-		longitude.setValue(newyorkLon.toString());
-		currentLat.setValue(latitude.getValue());
-		currentLon.setValue(longitude.getValue());
-
-        VerticalLayout toolLayout = new VerticalLayout();
-        toolLayout.setMargin(true);
-        toolLayout.setSpacing(true);
-        
-        table = buildTable();
-        toolLayout.addComponent(table);
-        mapToolBox.setContent(toolLayout);
+             
+      //situamos, inicialmente, el mapa en Santiago.
+      	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
+		
+        table = tabla();
+        mapToolBox.setContent(table);
     }
 
   
@@ -303,10 +164,10 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         title.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(title);
 
-        HorizontalLayout tools = new HorizontalLayout(buildFilter());
-        tools.setSpacing(true);
-        tools.addStyleName("toolbar");
-        header.addComponent(tools);
+//        HorizontalLayout tools = new HorizontalLayout(buildFilter());
+//        tools.setSpacing(true);
+//        tools.addStyleName("toolbar");
+//        header.addComponent(tools);
 
         return header;
     }
@@ -399,22 +260,6 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         table.setColumnAlignment("seats", Align.RIGHT);
         table.setColumnAlignment("price", Align.RIGHT);
         
-        table.addGeneratedColumn("vacio", new ColumnGenerator() {
-			
-			@Override
-			public Object generateCell(Table source, Object itemId, Object columnId) {
-		
-				// Find the application directory
-				String basepath = VaadinService.getCurrent()
-				                  .getBaseDirectory().getAbsolutePath();
-
-				// Image as a file resource
-				FileResource resource = new FileResource(new File(basepath +
-				                        "/VAADIN/img/pin_tas_ing.png"));
-				return new Image(null,resource);
-			}
-		});
-        
         table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
 			
 			@Override
@@ -424,8 +269,8 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 			}
 		});
 
-        table.setVisibleColumns("vacio","numeroTasacion","fechaEncargo", "nombrecliente");
-        table.setColumnHeaders("","N° Tasación", "Fecha visita", "Cliente");
+        table.setVisibleColumns("numeroTasacion","fechaEncargo", "nombrecliente");
+        table.setColumnHeaders("N° Tasación", "Fecha visita", "Cliente");
         
         table.addGeneratedColumn("Acciones", new ColumnGenerator() {
 			
@@ -492,7 +337,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     @Override
     public void enter(final ViewChangeEvent event) {
     	//limpia la tabla
-    	table.removeAllItems();
+    	//table.removeAllItems();
     	//llena con las tasaciones
     	Comuna comuna = new Comuna();
     	comuna.setId(15101L);
@@ -501,171 +346,48 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     	comuna.setRegion(reg);
     	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);
     	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);
+    	//solicitudContainer.addAll(solicitudes);
+    	
     }
     
-    public void probando(VaadinRequest request) {
-        VerticalLayout rootLayout = new VerticalLayout();
-        rootLayout.setSizeFull();
-        addComponent(rootLayout);
+    public Table tabla() {
+    	//create table instance
+        Table table = new Table();
         
-
-        googleMap = new GoogleMap(apiKey, null, null);
-        googleMap.setZoom(10);
-        googleMap.setSizeFull();
-        googleMap.setMinZoom(4);
-        googleMap.setMaxZoom(16);
-
-        Panel mapsPanel = new Panel();
-        mapsPanel.setSizeFull();
-        mapsPanel.setContent(googleMap);
-        rootLayout.addComponent(mapsPanel);
-
-       
-        Window mapToolBox = new Window("Map Tool Box");
-        mapToolBox.setClosable(false);
-        mapToolBox.setResizable(false);
-        mapToolBox.setPosition(10, 100);
-        mapToolBox.setWidth("350px");
-        mapToolBox.setHeight("520px");
-        mapToolBox.addStyleName("mywindowstyle");
-        UI.getCurrent().addWindow(mapToolBox);
-
-        HorizontalLayout latlonLayout = new HorizontalLayout();
-        latlonLayout.setSpacing(true);
+//        table.addContainerProperty("Numeric column", Integer.class, null);
+//        table.addContainerProperty("String column", String.class, null);
+//        table.addContainerProperty("Date column", Date.class, null);
+//        //add table data (rows)
+//        table.addItem(new Object[]{new Integer(100500), "this is first", new Date()}, new Integer(1));
+//        table.addItem(new Object[]{new Integer(100501), "this is second", new Date()}, new Integer(2));
+//        table.addItem(new Object[]{new Integer(100502), "this is third", new Date()}, new Integer(3));
+//        table.addItem(new Object[]{new Integer(100503), "this is forth", new Date()}, new Integer(4));
+//        table.addItem(new Object[]{new Integer(100504), "this is fifth", new Date()}, new Integer(5));
+//        table.addItem(new Object[]{new Integer(100505), "this is sixth", new Date()}, new Integer(6));
+//        
         
-        TextField latitude = new TextField("Lat");
-        latitude.setWidth("100px");
-        latitude.setNullSettingAllowed(true);
-        latitude.setNullRepresentation("0.0");
+        table.setContainerDataSource(new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class));        
+        table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
+				return sol.getCliente() != null ? sol.getCliente().getNombreCliente() : "";
+			}
+		});
+ 
+        table.setVisibleColumns("numeroTasacion", "nombrecliente");
+        table.setColumnHeaders("N° Tasación", "Cliente");
         
-        TextField longitude = new TextField("Long");
-        longitude.setWidth("100px");
-        longitude.setNullSettingAllowed(true);
-        longitude.setNullRepresentation("0.0");
+        table.addGeneratedColumn("Acciones", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				return new Button(FontAwesome.EDIT){{}};
+			}
+		});
+        table.setVisible(true);
         
-        latlonLayout.addComponent(latitude);
-        latlonLayout.addComponent(longitude);
-        
-        HorizontalLayout infoLayout = new HorizontalLayout();
-        infoLayout.setSpacing(true);
-        
-        Label currentLat = new Label();
-        currentLat.setCaption("Current Latitude");
-        
-        Label currentLon = new Label();
-        currentLon.setCaption("Current Longitude");
-
-        infoLayout.addComponent(currentLat);
-        infoLayout.addComponent(currentLon);
-        
-        TextField markerName = new TextField("Marker Name");
-
-        Label latErrMsg = new Label();
-        latErrMsg.addStyleName("mylabelstyle");
-        Label lonErrMsg = new Label();
-        lonErrMsg.addStyleName("mylabelstyle");
-        
-//        Button.ClickListener addMarkerListener = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				String mName = markerName.getValue();
-//				if(mName.isEmpty()){
-//					mName = "Marker";
-//				}
-//				Double dLat = 0.0; 
-//				Double dLon = 0.0; 
-//				dLat = Double.valueOf(currentLat.getValue());
-//				dLon = Double.valueOf(currentLon.getValue());
-//
-//				GoogleMapMarker customMarker = new GoogleMapMarker(mName, new LatLon(dLat, dLon),true, null);
-//				googleMap.addMarker(customMarker);
-//			}
-//		};
-        
-        Button addMarker = new Button("Add Marker", FontAwesome.ANCHOR);
-  //      addMarker.addClickListener(addMarkerListener);
-        
-//        Button.ClickListener moveView = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				Boolean val = true;
-//				Double dLat = 0.0; 
-//				Double dLon = 0.0; 
-//
-//				try {
-//					dLat = Double.valueOf(latitude.getValue());
-//				} catch (Exception e) {
-//					val = false;
-//					latErrMsg.setValue("Latitude is not a valid number");
-//				}
-//				try {
-//					dLon = Double.valueOf(longitude.getValue());
-//				} catch (Exception e) {
-//					val = false;
-//					lonErrMsg.setValue("Longitude is not a valid number");
-//				}
-//				
-//				if(val){
-//					latErrMsg.setValue("");
-//					lonErrMsg.setValue("");
-//					if((dLat<= -85.0) || (dLat >= 85.0)){
-//						val = false;
-//						latErrMsg.setValue("Latitude must be between -85.0 and 85.0");
-//					}
-//					if((dLon<= -180.0) || (dLon >= 180.0)){
-//						val = false;
-//						lonErrMsg.setValue("Longitude  must be between -180.0 and 180.0");
-//					}
-//				}
-//				
-//				if(val){
-//					latErrMsg.setValue("");
-//					lonErrMsg.setValue("");
-//	                googleMap.setCenter(new LatLon(dLat, dLon));
-//	                googleMap.setZoom(12);
-//	                currentLat.setValue(latitude.getValue());
-//	                currentLon.setValue(longitude.getValue());
-//				}
-//			}
-//		};
-        
-        Button moveButton = new Button("Move", FontAwesome.BULLSEYE);
-       // moveButton.addClickListener(moveView);
-
-//        Button.ClickListener clearMarkerListener = new ClickListener() {
-//			
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//                googleMap.clearMarkers();
-//			}
-//		};
-
-		Button clearMarkersButton = new Button("Clear markers", FontAwesome.REMOVE);
-       // clearMarkersButton.addClickListener(clearMarkerListener);
-
-        Double newyorkLat = 40.7128;
-        Double newyorkLon = -74.0059;
-        googleMap.setCenter(new LatLon(40.7128, -74.0059));
-		GoogleMapMarker newyorkMarker = new GoogleMapMarker("New York", new LatLon(newyorkLat, newyorkLon),true, null);
-		googleMap.addMarker(newyorkMarker);
-		latitude.setValue(newyorkLat.toString());
-		longitude.setValue(newyorkLon.toString());
-		currentLat.setValue(latitude.getValue());
-		currentLon.setValue(longitude.getValue());
-
-        VerticalLayout toolLayout = new VerticalLayout();
-        toolLayout.setMargin(true);
-        toolLayout.setSpacing(true);
-        mapToolBox.setContent(toolLayout);
-        toolLayout.addComponent(clearMarkersButton);
-        toolLayout.addComponent(latlonLayout);
-        toolLayout.addComponent(moveButton);
-        toolLayout.addComponent(infoLayout);
-        toolLayout.addComponent(markerName);
-        toolLayout.addComponent(addMarker);
-        toolLayout.addComponent(latErrMsg);
-        toolLayout.addComponent(lonErrMsg);
-	}
+        return table;
+    }
 }
