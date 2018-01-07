@@ -143,6 +143,11 @@ public class ClienteEditor extends VerticalLayout {
             	//muestra la razon social
             	razonSocialField.setVisible(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
             	razonSocialField.setRequired(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+            	
+     	        rutField.setRequired(tipoPersonaField.isSelected(TipoPersona.JURIDICA));
+     	        rutField.setRequiredError((tipoPersonaField.isSelected(TipoPersona.JURIDICA))?"El campo Rut es requerido":"");
+     	        tbMultirut.setVisible((tipoPersonaField.isSelected(TipoPersona.JURIDICA) && multirutField.isSelected(1))? true:false);
+                 
             }
         });
 
@@ -231,7 +236,8 @@ public class ClienteEditor extends VerticalLayout {
 
         rutField = new TextField("RUT");
         rutField.setInputPrompt("11111111-1");
-        rutField.setRequired(true);rutField.setRequired(true);rutField.setRequiredError("El campo Rut es requerido");
+        rutField.setRequired(true);
+        rutField.setRequiredError("El campo Rut es requerido");
         details.addComponent(rutField);
         
         nombresField = new TextField("Nombre");
