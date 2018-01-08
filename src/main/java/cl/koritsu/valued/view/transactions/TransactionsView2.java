@@ -1,79 +1,40 @@
 package cl.koritsu.valued.view.transactions;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.vaadin.maddon.FilterableListContainer;
 
 import com.google.common.eventbus.Subscribe;
-import com.vaadin.data.Container.Filter;
-import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.event.FieldEvents.TextChangeEvent;
-import com.vaadin.event.FieldEvents.TextChangeListener;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
-import com.vaadin.server.Responsive;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
 import com.vaadin.tapio.googlemaps.GoogleMap;
-import com.vaadin.tapio.googlemaps.client.GoogleMapControl;
 import com.vaadin.tapio.googlemaps.client.LatLon;
-import com.vaadin.tapio.googlemaps.client.events.InfoWindowClosedListener;
-import com.vaadin.tapio.googlemaps.client.events.MapClickListener;
-import com.vaadin.tapio.googlemaps.client.events.MapMoveListener;
-import com.vaadin.tapio.googlemaps.client.events.MarkerClickListener;
-import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
-import com.vaadin.tapio.googlemaps.client.layers.GoogleMapKmlLayer;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapPolygon;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapPolyline;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.Table.ColumnGenerator;
-import com.vaadin.ui.Table.TableDragMode;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.ValoTheme;
 
-
-import cl.koritsu.valued.ValuedUI;
-import cl.koritsu.valued.component.MovieDetailsWindow;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
@@ -107,8 +68,15 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     ValuedService service;
     
     BeanItemContainer<SolicitudTasacion> solicitudContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
+    
+
+    Window mapToolBox = new Window();
 
     public TransactionsView2() {
+    	
+    }
+    @PostConstruct
+    void init() {
     	addStyleName("transactions");
     	ValuedEventBus.register(this);
 
@@ -123,23 +91,29 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         Panel mapsPanel = new Panel();
         mapsPanel.setSizeFull();
         mapsPanel.setHeight("800px");
-        mapsPanel.setContent(googleMap);
+//        mapsPanel.setContent(googleMap);
         addComponent(mapsPanel);
        
-        Window mapToolBox = new Window();
       //  mapToolBox.setClosable(false);
        // mapToolBox.setResizable(false);
-        mapToolBox.setPosition(210, 220);
+        mapToolBox.center();
         mapToolBox.setWidth("450px");
         mapToolBox.setHeight("520px");
        // mapToolBox.addStyleName("mywindowstyle");
-        UI.getCurrent().addWindow(mapToolBox);
+        
              
       //situamos, inicialmente, el mapa en Santiago.
       	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
 		
         table = tabla();
-        mapToolBox.setContent(table);
+        mapsPanel.setContent(googleMap);
+        mapToolBox.setContent(new VerticalLayout() {{
+        	setMargin(true);
+        	setSpacing(true);
+        	addComponent(table);
+        }});
+        mapToolBox.setData("no_cerrar");
+    	UI.getCurrent().addWindow(mapToolBox);
     }
 
   
@@ -156,7 +130,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         HorizontalLayout header = new HorizontalLayout();
         header.addStyleName("viewheader");
         header.setSpacing(true);
-        Responsive.makeResponsive(header);
+//        Responsive.makeResponsive(header);
 
         Label title = new Label("Mis Tasaciones en Curso");
         title.setSizeUndefined();
@@ -171,7 +145,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 
         return header;
     }
-
+/*
     private Component buildFilter() {
         final TextField filter = new TextField();
         filter.addTextChangeListener(new TextChangeListener() {
@@ -225,7 +199,8 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         });
         return filter;
     }
-
+    */
+/*
     private Table buildTable() {
         final Table table = new Table() {
             @Override
@@ -289,7 +264,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 
         return table;
     }
-
+*/
     private boolean defaultColumnsVisible() {
         boolean result = true;
         for (String propertyId : DEFAULT_COLLAPSIBLE) {
@@ -345,26 +320,31 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     	reg.setId(1L);
     	comuna.setRegion(reg);
     	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);
+    	for(SolicitudTasacion st : solicitudes) {
+    		System.out.println(st);
+    	}
+    	
     	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);
     	//solicitudContainer.addAll(solicitudes);
+    	
     	
     }
     
     public Table tabla() {
     	//create table instance
         Table table = new Table();
-        
-//        table.addContainerProperty("Numeric column", Integer.class, null);
-//        table.addContainerProperty("String column", String.class, null);
-//        table.addContainerProperty("Date column", Date.class, null);
-//        //add table data (rows)
-//        table.addItem(new Object[]{new Integer(100500), "this is first", new Date()}, new Integer(1));
-//        table.addItem(new Object[]{new Integer(100501), "this is second", new Date()}, new Integer(2));
-//        table.addItem(new Object[]{new Integer(100502), "this is third", new Date()}, new Integer(3));
-//        table.addItem(new Object[]{new Integer(100503), "this is forth", new Date()}, new Integer(4));
-//        table.addItem(new Object[]{new Integer(100504), "this is fifth", new Date()}, new Integer(5));
-//        table.addItem(new Object[]{new Integer(100505), "this is sixth", new Date()}, new Integer(6));
-//        
+        /*
+        table.addContainerProperty("Numeric column", Integer.class, null);
+        table.addContainerProperty("String column", String.class, null);
+        table.addContainerProperty("Date column", Date.class, null);
+        //add table data (rows)
+        table.addItem(new Object[]{new Integer(100500), "this is first", new Date()}, new Integer(1));
+        table.addItem(new Object[]{new Integer(100501), "this is second", new Date()}, new Integer(2));
+        table.addItem(new Object[]{new Integer(100502), "this is third", new Date()}, new Integer(3));
+        table.addItem(new Object[]{new Integer(100503), "this is forth", new Date()}, new Integer(4));
+        table.addItem(new Object[]{new Integer(100504), "this is fifth", new Date()}, new Integer(5));
+        table.addItem(new Object[]{new Integer(100505), "this is sixth", new Date()}, new Integer(6));
+        */
         
         table.setContainerDataSource(new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class));        
         table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
