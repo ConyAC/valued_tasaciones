@@ -6,4 +6,6 @@ import cl.koritsu.valued.domain.SolicitudTasacion;
 
 public interface SolicitudRepository extends PagingAndSortingRepository<SolicitudTasacion, Long> {
 
+	SolicitudTasacion findFirstByNumeroTasacion(String nroEncargo);
+
 }
