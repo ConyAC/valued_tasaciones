@@ -35,4 +35,10 @@
     <inherits name="com.vaadin.tapio.googlemaps.Widgetset" />
 
     <inherits name="org.vaadin.addons.locationtextfield.LocationTextFieldWidgetSet" />
+
+    <inherits name="org.tepi.filtertable.WidgetSet" />
+
+    <inherits name="org.vaadin.hene.popupbutton.widgetset.PopupbuttonWidgetset" />
+
+    <inherits name="com.vaadin.v7.Vaadin7WidgetSet" />
 </module>
