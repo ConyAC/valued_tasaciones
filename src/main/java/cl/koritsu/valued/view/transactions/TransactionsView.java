@@ -218,7 +218,7 @@ public final class TransactionsView extends VerticalLayout implements View {
 
 				// Image as a file resource
 				FileResource resource = new FileResource(new File(basepath +
-				                        "/VAADIN/img/pin_tas_ing.png"));
+				                        "/VAADIN/img/pin_tas_asignada.png"));
 				return new Image(null,resource);
 			}
 		});

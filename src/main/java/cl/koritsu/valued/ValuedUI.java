@@ -112,7 +112,7 @@ public final class ValuedUI extends UI {
     @Subscribe
     public void closeOpenWindows(final CloseOpenWindowsEvent event) {
         for (Window window : getWindows()) {
-        	if(!window.getData().equals("no_cerrar"))
+        	if(!window.getData().equals("no_cerrar") || !getNavigator().getState().equals("en_proceso"))
         		window.close();
         }
     }
