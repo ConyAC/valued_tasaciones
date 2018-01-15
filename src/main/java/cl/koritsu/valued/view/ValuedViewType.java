@@ -9,13 +9,13 @@ import cl.koritsu.valued.view.nuevatasacion.NuevaTasacionView;
 import cl.koritsu.valued.view.reports.ReportsView;
 import cl.koritsu.valued.view.schedule.ScheduleView;
 import cl.koritsu.valued.view.transactions.TransactionsView;
-import cl.koritsu.valued.view.transactions.TransactionsView2;
+import cl.koritsu.valued.view.transactions.MisSolicitudesView;
 
 public enum ValuedViewType {
     DASHBOARD(DashboardView.NAME/*"reportería"*/, DashboardView.class, FontAwesome.PIE_CHART, true), 
     SALES(NuevaTasacionView.NAME/*"nueva solicitud"*/, NuevaTasacionView.class, FontAwesome.BUILDING, false), 
     TRANSACTIONS(TransactionsView.NAME/*"tasaciones en curso"*/, TransactionsView.class, FontAwesome.TABLE, false), 
-    TRANSACTIONS2(TransactionsView2.NAME/*"tasaciones en curso"*/, TransactionsView2.class, FontAwesome.TABLE, false), 
+    TRANSACTIONS2(MisSolicitudesView.NAME/*"tasaciones en curso"*/, MisSolicitudesView.class, FontAwesome.TABLE, false), 
     REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SEARCH, true), 
     SCHEDULE(ScheduleView.NAME/*"Administración"*/, ScheduleView.class, FontAwesome.GEAR, false);
 

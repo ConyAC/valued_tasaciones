@@ -1,16 +1,27 @@
 package cl.koritsu.valued.view;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Position;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -18,10 +29,16 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.event.ValuedEvent.UserLoginRequestedEvent;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.dashboard.DashboardView;
+import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.event.ValuedEventBus;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -32,6 +49,22 @@ import ru.xpoft.vaadin.VaadinView;
 public class LoginView extends VerticalLayout {
 
 	public static final String NAME = "";
+	
+	Button signin;
+	
+	@Autowired
+	private transient AuthenticationManager authenticationManager;
+	@Autowired
+	private transient ValuedService service;
+	
+	ShortcutListener enter = new ShortcutListener("Entrar",
+			KeyCode.ENTER, null) {
+		@Override
+		public void handleAction(Object sender, Object target) {
+			signin.click();
+		}
+
+	};
 	
     public LoginView() {
         setSizeFull();
@@ -77,7 +110,7 @@ public class LoginView extends VerticalLayout {
         password.setIcon(FontAwesome.LOCK);
         password.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
 
-        final Button signin = new Button("Ingresar");
+        signin = new Button("Ingresar");
         signin.addStyleName(ValoTheme.BUTTON_PRIMARY);
         signin.setClickShortcut(KeyCode.ENTER);
         signin.focus();
@@ -92,6 +125,57 @@ public class LoginView extends VerticalLayout {
                         .getValue(), password.getValue()));
             }
         });
+        
+        /*signin.addClickListener(new Button.ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				
+				String u = username.getValue();
+				String p = password.getValue();
+				
+				 if (u.isEmpty() || p.isEmpty()) {
+					 Notification.show("Deben ser ingresados el usuario y el password ",Type.ERROR_MESSAGE);
+		            } 
+				 else {
+					 try {
+						 System.out.println("Holi "+ username +" "+ password );
+						 	UsernamePasswordAuthenticationToken token = 
+		                            new UsernamePasswordAuthenticationToken(u, p);
+		                    
+		                    Authentication authentication = authenticationManager.authenticate(token);
+
+		                    // Set the authentication info to context 
+		                    SecurityContext securityContext = SecurityContextHolder.getContext();
+		                    securityContext.setAuthentication(authentication);
+		                    VaadinSession.getCurrent().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+		                    //busca el usuario en base de datos para guardarlo en la session
+		                    Usuario user = service.findUsuarioByUsername(u);
+		                    VaadinSession.getCurrent().setAttribute(Constants.SESSION_USUARIO, user);
+		                    System.out.println("Login authentication "+authentication);
+		                    signin.removeShortcutListener(enter);
+
+		                    ((ValuedUI)UI.getCurrent()).setVisible(true);
+		                    UI.getCurrent().getNavigator().navigateTo(DashboardView.NAME);
+		                    
+					} catch (Exception e) {
+						System.out.println("Mal login "+ e.toString() );
+	                    // Add new error message
+	                    Label error = new Label(
+	                            e.getMessage(),
+	                            ContentMode.HTML);
+	                    error.addStyleName("error");
+	                    error.setSizeUndefined();
+	                    error.addStyleName("light");
+	                    // Add animation
+	                    error.addStyleName("v-animate-reveal");
+	                    //loginPanel.addComponent(error);
+	                    username.focus();
+
+					}
+				 }
+			}
+		});*/
         return fields;
     }
 

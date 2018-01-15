@@ -220,4 +220,10 @@ public class ValuedService {
 	public Cliente getClienteById(long id) {
 		return clienteRepo.findOne(id);
 	}
+	
+	
+	public Usuario findUsuarioByUsername(String email) {
+		return usuarioRepo.findByEmail(email);
+		
+	}
 }

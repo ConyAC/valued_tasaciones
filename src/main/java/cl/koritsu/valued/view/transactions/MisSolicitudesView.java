@@ -9,12 +9,13 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import com.google.common.eventbus.Subscribe;
-import com.vaadin.data.Container;
-import com.vaadin.data.Item;
 import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.View;
@@ -26,37 +27,33 @@ import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
-import com.vaadin.ui.Accordion;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Field;
+import com.vaadin.ui.CustomTable;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TableFieldFactory;
-import com.vaadin.ui.Table.Align;
-import com.vaadin.ui.Table.ColumnGenerator;
-import com.vaadin.ui.Table.TableDragMode;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.themes.ValoTheme;
 
-import cl.koritsu.valued.domain.Cargo;
+import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.Comuna;
-import cl.koritsu.valued.domain.Contacto;
-import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
+import cl.koritsu.valued.domain.enums.Adicional;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
+import cl.koritsu.valued.domain.enums.Programa;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
@@ -68,13 +65,16 @@ import ru.xpoft.vaadin.VaadinView;
 @SuppressWarnings({ "serial", "unchecked" })
 @org.springframework.stereotype.Component
 @Scope("prototype")
-@VaadinView(value = TransactionsView2.NAME, cached = true)
-public final class TransactionsView2 extends VerticalLayout implements View {
+@VaadinView(value = MisSolicitudesView.NAME, cached = true)
+public final class MisSolicitudesView extends VerticalLayout implements View {
 	
 	public static final String NAME = "en_proceso";
 
-    Table table;
+	FilterTable table;
+	FormLayout details, detailsIngreso;
     Label consoleEntry;
+    OptionGroup continuar;
+    VerticalLayout formInicial, formIngreso;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
@@ -88,7 +88,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
  
     Window mapToolBox = new Window();
 
-    public TransactionsView2() {
+    public MisSolicitudesView() {
     	
     }
     
@@ -98,7 +98,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     	ValuedEventBus.register(this);
 
     	addComponent(buildToolbar());
-
+    	
         googleMap = new GoogleMap(apiKey, null, null);
         googleMap.setZoom(10);
         googleMap.setSizeFull();
@@ -117,7 +117,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         //FIXME
         mapToolBox.setWidth("550px");
         mapToolBox.setHeight("520px");
-        mapToolBox.addStyleName("mywindowstyle");
+        //mapToolBox.addStyleName("mywindowstyle");
         
              
         //situamos, inicialmente, el mapa en Santiago.
@@ -138,7 +138,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         super.detach();
         // A new instance of TransactionsView is created every time it's
         // navigated to so we'll need to clean up references to it on detach.
-        //ValuedEventBus.unregister(this);
+        ValuedEventBus.unregister(this);
     }
 
     private Component buildToolbar() {
@@ -156,8 +156,9 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         return header;
     }
     
-    private Table buildTable() {
-        final Table table = new Table() {
+    private FilterTable buildTable() {
+    	FilterTable table = new FilterTable()
+    	{
             @Override
             protected String formatPropertyValue(final Object rowId,
                     final Object colId, final Property<?> property) {
@@ -175,37 +176,42 @@ public final class TransactionsView2 extends VerticalLayout implements View {
                 return result;
             }
         };
-       // table.setSizeFull();
+    	table.setImmediate(true);
+        table.setContainerDataSource(solicitudContainer);
+        table.setSizeFull();
 //        table.addStyleName(ValoTheme.TABLE_BORDERLESS);
 //        table.addStyleName(ValoTheme.TABLE_NO_HORIZONTAL_LINES);
 //        table.addStyleName(ValoTheme.TABLE_COMPACT);
         table.setSelectable(true);
-
-
         table.setColumnReorderingAllowed(true);
-        table.setContainerDataSource(new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class));
-        table.setSortContainerPropertyId("time");
         table.setSortAscending(false);
-
-        table.setColumnAlignment("seats", Align.RIGHT);
-        table.setColumnAlignment("price", Align.RIGHT);
         
-        table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
-			
+        table.addGeneratedColumn("nombrecliente", new CustomTable.ColumnGenerator() {
+
 			@Override
-			public Object generateCell(Table source, Object itemId, Object columnId) {
+			public Object generateCell(CustomTable source, Object itemId, Object columnId) {
 				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
 				return sol.getCliente() != null ? sol.getCliente().getNombreCliente() : "";
 			}
 		});
-
-        table.setVisibleColumns("numeroTasacion","fechaEncargo", "nombrecliente");
-        table.setColumnHeaders("N° Tasación", "Fecha visita", "Cliente");
         
-        table.addGeneratedColumn("Acciones", new ColumnGenerator() {
-			
+        table.addGeneratedColumn("direccion", new CustomTable.ColumnGenerator() {
+
 			@Override
-			public Object generateCell(final Table source, final Object itemId, Object columnId) {
+			public Object generateCell(CustomTable source, Object itemId, Object columnId) {
+				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
+				Bien bien = sol.getBien();				
+				return (bien != null && bien.getDireccion() != null)
+						? bien.getDireccion() + " " + bien.getNumeroManzana() + " " + bien.getComuna().getNombre() + " "
+								+ bien.getComuna().getRegion().getNombre()
+						: "";
+			}
+		});
+
+        table.addGeneratedColumn("acceder", new CustomTable.ColumnGenerator()  {
+
+			@Override
+			public Object generateCell(final CustomTable source, final Object itemId, Object columnId) {
 				Button editarTasacion = new Button(null,FontAwesome.MAP_MARKER);
 				editarTasacion.addClickListener(new Button.ClickListener() {
 					
@@ -217,7 +223,10 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 						googleMap.setCenter(new LatLon(lat,lon));
 						googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
 								lat, lon), true, "VAADIN/img/pin_tas_asignada.png");
-						googleMap.setZoom(12);		
+						googleMap.setZoom(20);
+						
+						if(sol.getBien() != null && sol.getBien().getComuna() != null)
+							cargarTasaciones(sol.getBien().getComuna());
 						
 						mapToolBox.setContent(buildForm(sol));
 					}
@@ -225,13 +234,11 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 				return editarTasacion;
 			}
         });
-
+        
+        table.setVisibleColumns("acceder","numeroTasacion","fechaEncargo","direccion");
+        table.setColumnHeaders("Acceder","N° Tasación", "Fecha Encargo","Dirección");
+        table.setFilterBarVisible(true);
         table.setFooterVisible(true);
-        table.setColumnFooter("time", "Total");
-
-        // Allow dragging items to the reports menu
-        table.setDragMode(TableDragMode.MULTIROW);
-        table.setMultiSelect(true);
 
         return table;
     }
@@ -272,21 +279,23 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     	table.removeAllItems();
     	//llena con las tasaciones
     	Comuna comuna = new Comuna();
-    	comuna.setId(15101L);
-    	Region reg = new Region();
-    	reg.setId(1L);
-    	comuna.setRegion(reg);
+    	comuna.setId(13101L);
     	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);    	
     	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);   	
     	
     }
     
-    public VerticalLayout buildForm(SolicitudTasacion solicitud) {
-    	final VerticalLayout vl = new VerticalLayout();
+    /*
+     * Permite crear el formulario de ingreso para el tasador.
+     */
+    public VerticalLayout buildForm(final SolicitudTasacion solicitud) {
+    	VerticalLayout vl = new VerticalLayout();
     	vl.setMargin(true);
     	
-    	final FormLayout details = new FormLayout();
-        details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+    	details = new FormLayout();
+       // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+    	details.setMargin(true);
+    	details.setSizeFull();
         vl.addComponent(details);
         vl.setExpandRatio(details, 1);
       	
@@ -323,15 +332,53 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 	    sectionBien.addStyleName(ValoTheme.LABEL_COLORED);	    
 	    details.addComponent(sectionBien);
 	    
-	    TextField superficie = new TextField();
-	    superficie.setCaption("Superficie Total");
-        details.addComponent(superficie);
-	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
-        details.addComponent(superficieBalcon);
-	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
-        details.addComponent(superficieTerraza);
+	    PopupDateField fechaVisita = new PopupDateField();
+	    fechaVisita.setCaption("Fecha Visita");
+        details.addComponent(fechaVisita);
         
-        Label obras = new Label("Obras Complementarias");
+	    TextArea incidencia = new TextArea("Incidencia");
+	    incidencia.setRows(10);
+	    incidencia.setWordwrap(false);
+        details.addComponent(incidencia);
+        
+        continuar = new OptionGroup("¿Continuar Ingreso?");
+        continuar.addItem(1);
+        continuar.addItem(2);
+        continuar.setItemCaption(1, "Si");
+        continuar.setItemCaption(2, "No");        
+        continuar.setImmediate(true);
+        continuar.addStyleName("horizontal");
+        
+    	addListeners();
+    	
+        details.addComponent(continuar);
+        
+	  /*  HorizontalLayout hl = new HorizontalLayout();
+	    details.addComponent(hl);
+	    TextField superTerreno = new TextField();
+	    superTerreno.setCaption("Mts Superficie Terreno");
+        hl.addComponent(superTerreno);
+	    TextField valorSuperTerreno = new TextField();
+	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
+        hl.addComponent(valorSuperTerreno);
+        
+	    HorizontalLayout hl2 = new HorizontalLayout();
+	    details.addComponent(hl2);
+	    TextField superEdif = new TextField();
+	    superEdif.setCaption("Mts Superficie Edificado");
+        hl2.addComponent(superEdif);
+	    TextField valorSuperEdif = new TextField();
+	    valorSuperEdif.setCaption("Valor Mts Superficie Edificado");
+        hl2.addComponent(valorSuperEdif);
+        
+	    HorizontalLayout hl3 = new HorizontalLayout();
+	    details.addComponent(hl3);
+	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
+	    hl3.addComponent(superficieBalcon);
+	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
+	    hl3.addComponent(superficieTerraza);
+        
+        Label obras = new Label("Adicionales");
         obras.addStyleName(ValoTheme.LABEL_H3);
         obras.addStyleName(ValoTheme.LABEL_COLORED);	    
 	    details.addComponent(obras);
@@ -375,19 +422,135 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
 		 * se arrastraron los puntos (draggable)
 		 */    
-		googleMap.addMarkerDragListener(new MarkerDragListener() {
+		/*googleMap.addMarkerDragListener(new MarkerDragListener() {
 			@Override
 			public void markerDragged(GoogleMapMarker draggedMarker,
                 LatLon oldPosition) {
-                consoleEntry = new Label("Marcador arrastrado desde ("
+                consoleEntry = new Label();
+                consoleEntry.setValue("Marcador arrastrado desde ("
                     + oldPosition.getLat() + ", " + oldPosition.getLon()
                     + ") hacia (" + draggedMarker.getPosition().getLat()
                     + ", " + draggedMarker.getPosition().getLon() + ")");
                 details.addComponent(consoleEntry);
             }
         });
-		
+		*/
 		vl.addComponent(buildFooter());
+		
+	    return vl;
+    }
+    
+    
+    private void addListeners() {
+    
+	    continuar.addValueChangeListener(new ValueChangeListener() {
+	
+	        @Override
+	        public void valueChange(ValueChangeEvent event) {
+	            if (continuar.isSelected(1)) {
+	            	formIngreso = buildFormIngreso();
+	            	details.addComponent(formIngreso);
+	            } else if (continuar.isSelected(2)) {
+	            	details.removeComponent(formIngreso);
+	            }
+	        }
+	    });
+    }
+    
+    public VerticalLayout buildFormIngreso() {
+    	VerticalLayout vl = new VerticalLayout();
+    	//vl.setMargin(true);
+    	
+    	detailsIngreso = new FormLayout();
+       // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
+    	//detailsIngreso.setMargin(true);
+    	detailsIngreso.setSizeFull();
+        vl.addComponent(detailsIngreso);
+       // vl.setExpandRatio(detailsIngreso, 1);
+        
+	    HorizontalLayout hl = new HorizontalLayout();
+	    detailsIngreso.addComponent(hl);
+	    TextField superTerreno = new TextField();
+	    superTerreno.setCaption("Mts Superficie Terreno");
+        hl.addComponent(superTerreno);
+	    TextField valorSuperTerreno = new TextField();
+	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
+        hl.addComponent(valorSuperTerreno);
+        
+	    HorizontalLayout hl2 = new HorizontalLayout();
+	    detailsIngreso.addComponent(hl2);
+	    TextField superEdif = new TextField();
+	    superEdif.setCaption("Mts Superficie Edificado");
+        hl2.addComponent(superEdif);
+	    TextField valorSuperEdif = new TextField();
+	    valorSuperEdif.setCaption("Valor Mts Superficie Edificado");
+        hl2.addComponent(valorSuperEdif);
+        
+	    HorizontalLayout hl3 = new HorizontalLayout();
+	    detailsIngreso.addComponent(hl3);
+	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
+	    hl3.addComponent(superficieBalcon);
+	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
+	    hl3.addComponent(superficieTerraza);
+        
+        Label obras = new Label("Adicionales");
+        obras.addStyleName(ValoTheme.LABEL_H3);
+        obras.addStyleName(ValoTheme.LABEL_COLORED);	    
+        detailsIngreso.addComponent(obras);
+	    
+	    Button btnObras = new Button(null,FontAwesome.PLUS);
+	    detailsIngreso.addComponent(btnObras);
+//		btnObras.addClickListener(new Button.ClickListener() {
+//
+//			@Override
+//			public void buttonClick(ClickEvent event) {
+//				;				
+//			}
+//		});	
+
+	    
+	    detailsIngreso.addComponent(buildTableObras());	  
+		
+		Label programa = new Label("Programa");
+		programa.addStyleName(ValoTheme.LABEL_H3);
+		programa.addStyleName(ValoTheme.LABEL_COLORED);	    
+		detailsIngreso.addComponent(programa);
+	    
+	    Button btnPrograma = new Button(null,FontAwesome.PLUS);
+	    detailsIngreso.addComponent(btnPrograma);
+//		btnPrograma.addClickListener(new Button.ClickListener() {
+//
+//			@Override
+//			public void buttonClick(ClickEvent event) {
+//				;				
+//			}
+//		});	
+		
+	    detailsIngreso.addComponent(buildTablePrograma());
+		
+		Label coor = new Label("Coordenadas");
+		coor.addStyleName(ValoTheme.LABEL_H3);
+		coor.addStyleName(ValoTheme.LABEL_COLORED);	    
+		detailsIngreso.addComponent(coor);
+	    
+		/*
+		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
+		 * se arrastraron los puntos (draggable)
+		 */    
+		googleMap.addMarkerDragListener(new MarkerDragListener() {
+			@Override
+			public void markerDragged(GoogleMapMarker draggedMarker,
+                LatLon oldPosition) {
+                consoleEntry = new Label();
+                consoleEntry.setValue("Marcador arrastrado desde ("
+                    + oldPosition.getLat() + ", " + oldPosition.getLon()
+                    + ") hacia (" + draggedMarker.getPosition().getLat()
+                    + ", " + draggedMarker.getPosition().getLon() + ")");
+                detailsIngreso.addComponent(consoleEntry);
+            }
+        });
+		
+		//vl.addComponent(buildFooter());
 		
 	    return vl;
     }
@@ -395,15 +558,18 @@ public final class TransactionsView2 extends VerticalLayout implements View {
     Button btnRegresar = new Button("Regresar");
     Button btnGuadar = new Button("Aceptar");
     
+    /*
+     * Permite construir los botones de almacenamiento y regreso a la lista de tasaciones por hacer
+     */
     private Component buildFooter() {
         HorizontalLayout footer = new HorizontalLayout();
         footer.setSpacing(true);
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-//        footer.setWidth(100.0f, Unit.PERCENTAGE);
+        footer.setWidth(100.0f, Unit.PERCENTAGE);
 
         btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);
         btnGuadar.setIcon(FontAwesome.SAVE);
-        btnGuadar.focus();
+        //btnGuadar.focus();
 		
         btnRegresar.addStyleName("link");        
         btnRegresar.addClickListener(new Button.ClickListener() {
@@ -424,18 +590,23 @@ public final class TransactionsView2 extends VerticalLayout implements View {
         return footer;
     }
     
+    /*
+     * Permite crear la tabla del programa.
+     */
     private VerticalLayout buildTablePrograma() {
     	VerticalLayout vll = new VerticalLayout();
  
     	final Table tablePrograma = new Table();
 		tablePrograma.setHeight("100px");
 		tablePrograma.addContainerProperty("Elementos", ComboBox.class, null);
-		tablePrograma.addContainerProperty("Cantidad/Superficies",  Integer.class, null);
+		tablePrograma.addContainerProperty("Cantidad/Superficie",  Integer.class, null);
 		
 		ComboBox cbProg = new ComboBox();
 		cbProg.setWidth("150px");
-		cbProg.addItem("Dormitoro");
-		cbProg.addItem("Baño");
+		cbProg.setNullSelectionAllowed(false);
+		for(Programa p : Programa.values()){
+			cbProg.addItem(p);
+		}
 		
 		tablePrograma.addItem(new Object[]{cbProg,2}, 1);
 
@@ -447,7 +618,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 
 					@Override
 					public void buttonClick(ClickEvent event) {
-						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el contacto seleccionado?",
+						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el programa seleccionado?",
 								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
 
 							public void onClose(ConfirmDialog dialog) {
@@ -466,6 +637,9 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 		return vll;
     }
     
+    /*
+     * Permite crear la tabla de obras complementarias
+     */
     private Table buildTableObras() {
 		final Table tableObras = new Table();
 		tableObras.setHeight("100px");
@@ -475,8 +649,10 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 		
 		ComboBox cb = new ComboBox();
 		cb.setWidth("150px");
-		cb.addItem("Bodega");
-		cb.addItem("Estacionamiento");
+		cb.setNullSelectionAllowed(false);
+		for(Adicional p : Adicional.values()){
+			cb.addItem(p);
+		}
 		
 		tableObras.addItem(new Object[]{cb,2,240}, 1);
 
@@ -488,7 +664,7 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 
 					@Override
 					public void buttonClick(ClickEvent event) {
-						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el contacto seleccionado?",
+						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el adicional seleccionado?",
 								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
 
 							public void onClose(ConfirmDialog dialog) {
@@ -504,4 +680,42 @@ public final class TransactionsView2 extends VerticalLayout implements View {
 		
 		return tableObras;
     }
+    
+    /*
+     * Permite cargar en el mapa las tasaciones historicas.
+     */
+    private void cargarTasaciones(Comuna c){		
+		//obtiene las solicitud pasadas en base a la comuna y región
+		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(c);
+	
+		//agrega las tasaciones realizadas
+		for(SolicitudTasacion tasacion : tasaciones) {
+			//lo agrega solo si tiene sentido
+			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
+				String ruta_img = null;
+				switch (tasacion.getEstado()) {
+				case CREADA:
+					ruta_img = "VAADIN/img/pin_tas_asignada.png";
+					break;
+				case TASADA:
+					ruta_img = "VAADIN/img/pin_tas_visitada.png";
+					break;
+				case VISADA:
+					ruta_img = "VAADIN/img/pin_tas_visada.png";
+					break;
+				default:
+					break;			
+				}
+				
+				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
+									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
+									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
+									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
+									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
+			}
+		}
+		
+		googleMap.setMinZoom(4);
+		googleMap.setMaxZoom(16);
+	}
 }
