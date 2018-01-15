@@ -113,7 +113,9 @@ public final class ValuedUI extends UI {
     public void closeOpenWindows(final CloseOpenWindowsEvent event) {
         for (Window window : getWindows()) {
         	if(!window.getData().equals("no_cerrar") || !getNavigator().getState().equals("en_proceso"))
-        		window.close();
+        		window.setVisible(false);
+        	else
+        		window.setVisible(true);
         }
     }
 

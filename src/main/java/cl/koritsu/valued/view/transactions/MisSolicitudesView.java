@@ -13,11 +13,18 @@ import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import com.google.common.eventbus.Subscribe;
+import com.vaadin.data.Item;
 import com.vaadin.data.Property;
+import com.vaadin.data.Container.Filter;
+import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.ShortcutListener;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.event.FieldEvents.TextChangeListener;
+import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
@@ -74,7 +81,8 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	FormLayout details, detailsIngreso;
     Label consoleEntry;
     OptionGroup continuar;
-    VerticalLayout formInicial, formIngreso;
+    VerticalLayout formInicial, formIngreso, vlInicial;
+    Component footer;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
@@ -126,7 +134,9 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         table = buildTable();
         mapsPanel.setContent(googleMap);
         
-        mapToolBox.setContent(table);
+    	footer = buildFooter();
+
+    	mapToolBox.setContent(table);
         mapToolBox.setData("no_cerrar");
     	UI.getCurrent().addWindow(mapToolBox);
     }
@@ -153,7 +163,83 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         title.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(title);
 
+        HorizontalLayout tools = new HorizontalLayout(buildFilter());
+        tools.setSpacing(true);
+        tools.addStyleName("toolbar");
+        header.addComponent(tools);
+        
         return header;
+    }
+    
+    /*
+     * Cambiar filtro segun perfil
+     */
+    private Component buildFilter() {
+        final TextField filter = new TextField();
+        filter.addTextChangeListener(new TextChangeListener() {
+            @Override
+            public void textChange(final TextChangeEvent event) {
+                Filterable data = (Filterable) table.getContainerDataSource();
+                data.removeAllContainerFilters();
+                data.addContainerFilter(new Filter() {
+                    @Override
+                    public boolean passesFilter(final Object itemId,
+                            final Item item) {
+
+                        if (event.getText() == null
+                                || event.getText().equals("")) {
+                            return true;
+                        }
+
+                        return filterByProperty("numeroTasacion", item,
+                                event.getText())
+                                || filterByProperty("estado", item,
+                                        event.getText())
+                                || filterByProperty("bien.direccion", item,
+                                        event.getText());
+
+                    }
+
+                    @Override
+                    public boolean appliesToProperty(final Object propertyId) {
+                        if (propertyId.equals("numeroTasacion")
+                                || propertyId.equals("estado")
+                                || propertyId.equals("bien.direccion")) {
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
+
+        filter.setInputPrompt("Filter");
+        filter.setIcon(FontAwesome.SEARCH);
+        filter.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
+        filter.addShortcutListener(new ShortcutListener("Clear",
+                KeyCode.ESCAPE, null) {
+            @Override
+            public void handleAction(final Object sender, final Object target) {
+                filter.setValue("");
+                ((Filterable) table.getContainerDataSource())
+                        .removeAllContainerFilters();
+            }
+        });
+        return filter;
+    }
+    
+    private boolean filterByProperty(final String prop, final Item item,
+            final String text) {
+        if (item == null || item.getItemProperty(prop) == null
+                || item.getItemProperty(prop).getValue() == null) {
+            return false;
+        }
+        String val = item.getItemProperty(prop).getValue().toString().trim()
+                .toLowerCase();
+        if (val.contains(text.toLowerCase().trim())) {
+            return true;
+        }
+        return false;
     }
     
     private FilterTable buildTable() {
@@ -289,15 +375,15 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
      * Permite crear el formulario de ingreso para el tasador.
      */
     public VerticalLayout buildForm(final SolicitudTasacion solicitud) {
-    	VerticalLayout vl = new VerticalLayout();
-    	vl.setMargin(true);
+    	vlInicial = new VerticalLayout();
+    	vlInicial.setMargin(true);
     	
     	details = new FormLayout();
        // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
     	details.setMargin(true);
     	details.setSizeFull();
-        vl.addComponent(details);
-        vl.setExpandRatio(details, 1);
+    	vlInicial.addComponent(details);
+    	vlInicial.setExpandRatio(details, 1);
       	
       	Label sectionCliente = new Label("Resumen");
       	sectionCliente.addStyleName(ValoTheme.LABEL_H3);
@@ -435,9 +521,9 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
             }
         });
 		*/
-		vl.addComponent(buildFooter());
+        vlInicial.addComponent(footer);
 		
-	    return vl;
+	    return vlInicial;
     }
     
     
@@ -449,9 +535,11 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	        public void valueChange(ValueChangeEvent event) {
 	            if (continuar.isSelected(1)) {
 	            	formIngreso = buildFormIngreso();
-	            	details.addComponent(formIngreso);
+	            	vlInicial.removeComponent(footer);
+	            	vlInicial.addComponent(formIngreso);
 	            } else if (continuar.isSelected(2)) {
-	            	details.removeComponent(formIngreso);
+	            	vlInicial.removeComponent(formIngreso);
+	            	vlInicial.addComponent(footer);
 	            }
 	        }
 	    });
@@ -550,7 +638,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
             }
         });
 		
-		//vl.addComponent(buildFooter());
+		vl.addComponent(footer);
 		
 	    return vl;
     }
