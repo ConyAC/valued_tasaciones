@@ -149,9 +149,14 @@ public class ValuedService {
 		//setea los bean controlados
 		bean.setBien(bien);
 		bean.setHonorarioCliente(honorarioCliente);
-		//genera un nùmero de solicitud para valued
-		String nroValued = bean.getCliente().getNombreCliente() +"-"+  ai.getAndIncrement()+"";
-		bean.setNumeroTasacion(nroValued);
+		//genera un nùmero de solicitud para valued si es que viene nulo
+		String nroValued = null;
+		if(bean.getNumeroTasacion() == null ) {
+			nroValued = bean.getCliente().getNombreCliente() +"-"+  ai.getAndIncrement()+"";
+			bean.setNumeroTasacion(nroValued);
+		}else {
+			nroValued = bean.getNumeroTasacion();
+		}
 		//guarda la solicitud
 		solicitudRepo.save(bean);
 		
@@ -221,7 +226,10 @@ public class ValuedService {
 		return clienteRepo.findOne(id);
 	}
 	
-	
+	public SolicitudTasacion getSolicitudByNumeroTasacion(String nroEncargo) {
+		return solicitudRepo.findFirstByNumeroTasacion(nroEncargo);
+	}
+		
 	public Usuario findUsuarioByUsername(String email) {
 		return usuarioRepo.findByEmail(email);
 		

@@ -2,6 +2,7 @@ package cl.koritsu.valued.domain.enums;
 
 public enum TipoBien {
 	
+	BODEGA("Bodega"),
 	CASA("Casa"),
 	CASA_DE_REPOSO("Casa de reposo"),
 	DEPARTAMENTO("Departamento"),
@@ -22,6 +23,7 @@ public enum TipoBien {
 	SITIO("Sitio"),
 	TERRENO("Terreno"),
 	TERRENO_INDUSTRIAL("Terreno Industrial"),
+	VISITA_EXTERIOR_REMATE("Visita Exterior Remate"),
 	VARIOS("Varios")
 	;
 	
