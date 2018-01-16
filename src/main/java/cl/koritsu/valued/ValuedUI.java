@@ -77,7 +77,7 @@ public final class ValuedUI extends UI {
     private void updateContent() {
         Usuario user = (Usuario) VaadinSession.getCurrent().getAttribute(
                 Usuario.class.getName());
-        if (user != null && "admin".equals(user.getRol())) {
+        if (user != null && "admin".equals("admin")) {
             // Authenticated user
             setContent(new MainView());
             removeStyleName("loginview");

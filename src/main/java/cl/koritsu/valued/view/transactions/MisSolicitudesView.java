@@ -69,11 +69,11 @@ import cl.koritsu.valued.view.ValuedViewType;
 import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
 
-@SuppressWarnings({ "serial", "unchecked" })
+@SuppressWarnings("serial")
 @org.springframework.stereotype.Component
 @Scope("prototype")
 @VaadinView(value = MisSolicitudesView.NAME, cached = true)
-public final class MisSolicitudesView extends VerticalLayout implements View {
+public class MisSolicitudesView extends VerticalLayout implements View {
 	
 	public static final String NAME = "en_proceso";
 
@@ -101,7 +101,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     }
     
     @PostConstruct
-    void init() {
+    public void init() {
     	addStyleName("transactions");
     	ValuedEventBus.register(this);
 

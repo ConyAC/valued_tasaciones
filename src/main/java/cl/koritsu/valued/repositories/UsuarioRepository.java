@@ -11,7 +11,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, L
 
 	List<Usuario> findByTasadorTrue();
 	
-	@Query(value="SELECT u FROM Usuario u WHERE u.email = ?1 and u.habilitado = false ")
+	@Query(value="SELECT u FROM Usuario u WHERE u.email = ?1 and u.habilitado = cl.koritsu.valued.domain.enums.EstadoUsuario.HABILITADO ")
 	Usuario findByEmail(String email); 
 	
 

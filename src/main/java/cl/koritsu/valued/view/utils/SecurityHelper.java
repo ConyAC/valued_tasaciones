@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.server.VaadinSession;
 
 import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.Permisos;
+import cl.koritsu.valued.domain.enums.Permiso;
 
 public class SecurityHelper {
 	
@@ -32,7 +32,7 @@ public class SecurityHelper {
 		return  user != null;
 	}
 
-	public static boolean hasPermission(Permisos... permissions) {
+	public static boolean hasPermission(Permiso... permissions) {
 		if(permissions == null)
 			return true;
 

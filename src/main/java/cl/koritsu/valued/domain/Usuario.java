@@ -4,8 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 
 import org.hibernate.validator.constraints.Email;
+
+import cl.koritsu.valued.domain.enums.EstadoUsuario;
 
 @Entity
 public class Usuario {
@@ -20,17 +23,14 @@ public class Usuario {
     private boolean male;
     @Email(message="El email es inválido.")
     private String email = "";
-    private boolean habilitado;
+    private EstadoUsuario habilitado;
     private String contrasena = "";
     private String telefonoFijo;
     private String telefonoMovil;
     private String nroCuentaBancaria;
     private String banco;
-    
-    /**
-     * @deprecated se cambiará por perfil
-     */
-    private String rol;
+    @JoinColumn(name="rolId")
+    private Rol rol;
 
 	public Long getId() {
 		return id;
@@ -88,11 +88,11 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public boolean isHabilitado() {
+	public EstadoUsuario getHabilitado() {
 		return habilitado;
 	}
 
-	public void setHabilitado(boolean habilitado) {
+	public void setHabilitado(EstadoUsuario habilitado) {
 		this.habilitado = habilitado;
 	}
 
@@ -136,13 +136,25 @@ public class Usuario {
 		this.banco = banco;
 	}
 
-	public String getRol() {
+	public Rol getRol() {
 		return rol;
 	}
 
-	public void setRol(String rol) {
+	public void setRol(Rol rol) {
 		this.rol = rol;
 	}
+	
+	//atributo para crear el registro
+    transient String contrasena2;
+    
+	public String getContrasena2() {
+		return contrasena2;
+	}
+
+	public void setContrasena2(String contrasena2) {
+		this.contrasena2 = contrasena2;
+	}
+
 
 	public String getFullname(){
     	return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");
