@@ -26,6 +26,8 @@ public class Bien {
 	String direccion = "";
 	float superficieTerreno;
 	float superficieConstruida;
+	float superficieTerraza;
+	
 	String antecedentes = "";
 	@JoinColumn(name="comunaId")
 	Comuna comuna;
@@ -90,5 +92,10 @@ public class Bien {
 	public void setComuna(Comuna comuna) {
 		this.comuna = comuna;
 	}
-	
+	public float getSuperficieTerraza() {
+		return superficieTerraza;
+	}
+	public void setSuperficieTerraza(float superficieTerraza) {
+		this.superficieTerraza = superficieTerraza;
+	}
 }

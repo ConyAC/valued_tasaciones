@@ -13,6 +13,7 @@ import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.HonorarioCliente;
+import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.RazonSocial;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Solicitante;
@@ -27,6 +28,7 @@ import cl.koritsu.valued.repositories.ClienteRepository;
 import cl.koritsu.valued.repositories.ComunaRepository;
 import cl.koritsu.valued.repositories.ContactoRepository;
 import cl.koritsu.valued.repositories.HonorarioClienteRepository;
+import cl.koritsu.valued.repositories.ObraComplementariaRepository;
 import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
@@ -72,6 +74,9 @@ public class ValuedService {
 	CargoRepository cargoRepo;
 	@Autowired
 	private RazonSocialRepository razonSocialRepo;
+	@Autowired
+	ObraComplementariaRepository obrasRepo;
+	
 	
 	public List<Region> getRegiones() {
 		return (List<Region>) regionRepo.findAll();
@@ -233,5 +238,9 @@ public class ValuedService {
 	public Usuario findUsuarioByUsername(String email) {
 		return usuarioRepo.findByEmail(email);
 		
+	}
+
+	public List<ObraComplementaria> findObrasComplementariasByBien(long bienId) {	
+		return obrasRepo.findByBien(bienId);
 	}
 }

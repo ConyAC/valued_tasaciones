@@ -1,11 +1,16 @@
 package cl.koritsu.valued.domain.enums;
 
 public enum TipoBien {
-	
+	AUTO("Auto"),
+	AGRICOLA("Agricola"),
 	BODEGA("Bodega"),
 	CASA("Casa"),
 	CASA_DE_REPOSO("Casa de reposo"),
 	DEPARTAMENTO("Departamento"),
+	DERECHOS_DE_AGUA("Derechos de agua"),
+	ESTADIO("Estadio"),
+	FAJA_VIA("Faja Via"),
+	HOTEL("Hotel"),
 	FUNDO("Fundo"),
 	GALPON("Galpón"),
 	PARCELA("Parcela"),

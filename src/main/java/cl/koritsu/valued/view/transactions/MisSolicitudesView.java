@@ -13,18 +13,20 @@ import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import com.google.common.eventbus.Subscribe;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
+import com.vaadin.data.Container;
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container.Filterable;
+import com.vaadin.data.Item;
+import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.FieldEvents.TextChangeListener;
 import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
@@ -36,9 +38,11 @@ import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomTable;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -46,16 +50,17 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.TableFieldFactory;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
-import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.Comuna;
+import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.domain.enums.Adicional;
@@ -375,6 +380,10 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
      * Permite crear el formulario de ingreso para el tasador.
      */
     public VerticalLayout buildForm(final SolicitudTasacion solicitud) {
+    	
+    	BeanFieldGroup<SolicitudTasacion> bfg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
+    	bfg.setItemDataSource(solicitud);
+    	
     	vlInicial = new VerticalLayout();
     	vlInicial.setMargin(true);
     	
@@ -419,6 +428,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    details.addComponent(sectionBien);
 	    
 	    PopupDateField fechaVisita = new PopupDateField();
+	    bfg.bind(fechaVisita, "fechaTasacion");
 	    fechaVisita.setCaption("Fecha Visita");
         details.addComponent(fechaVisita);
         
@@ -435,7 +445,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         continuar.setImmediate(true);
         continuar.addStyleName("horizontal");
         
-    	addListeners();
+    	addListeners(bfg);
     	
         details.addComponent(continuar);
         
@@ -527,14 +537,14 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     }
     
     
-    private void addListeners() {
+    private void addListeners(final BeanFieldGroup<SolicitudTasacion> bfg) {
     
 	    continuar.addValueChangeListener(new ValueChangeListener() {
 	
 	        @Override
 	        public void valueChange(ValueChangeEvent event) {
 	            if (continuar.isSelected(1)) {
-	            	formIngreso = buildFormIngreso();
+	            	formIngreso = buildFormIngreso(bfg);
 	            	vlInicial.removeComponent(footer);
 	            	vlInicial.addComponent(formIngreso);
 	            } else if (continuar.isSelected(2)) {
@@ -545,7 +555,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    });
     }
     
-    public VerticalLayout buildFormIngreso() {
+    public VerticalLayout buildFormIngreso(BeanFieldGroup<SolicitudTasacion> bfg) {
     	VerticalLayout vl = new VerticalLayout();
     	//vl.setMargin(true);
     	
@@ -557,10 +567,13 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
        // vl.setExpandRatio(detailsIngreso, 1);
         
 	    HorizontalLayout hl = new HorizontalLayout();
+	    hl.setSpacing(true);
 	    detailsIngreso.addComponent(hl);
 	    TextField superTerreno = new TextField();
 	    superTerreno.setCaption("Mts Superficie Terreno");
+	    Utils.bind(bfg, superTerreno, "bien.superficieTerreno");
         hl.addComponent(superTerreno);
+        
 	    TextField valorSuperTerreno = new TextField();
 	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
         hl.addComponent(valorSuperTerreno);
@@ -568,6 +581,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    HorizontalLayout hl2 = new HorizontalLayout();
 	    detailsIngreso.addComponent(hl2);
 	    TextField superEdif = new TextField();
+	    Utils.bind(bfg, superEdif, "bien.superficieConstruida");
 	    superEdif.setCaption("Mts Superficie Edificado");
         hl2.addComponent(superEdif);
 	    TextField valorSuperEdif = new TextField();
@@ -577,6 +591,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    HorizontalLayout hl3 = new HorizontalLayout();
 	    detailsIngreso.addComponent(hl3);
 	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
+	    Utils.bind(bfg, superficieBalcon, "bien.superficieTerraza");
 	    hl3.addComponent(superficieBalcon);
 	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
 	    hl3.addComponent(superficieTerraza);
@@ -588,16 +603,21 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    
 	    Button btnObras = new Button(null,FontAwesome.PLUS);
 	    detailsIngreso.addComponent(btnObras);
-//		btnObras.addClickListener(new Button.ClickListener() {
-//
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				;				
-//			}
-//		});	
 
+	    final Table tableObras = buildTableObras(bfg.getItemDataSource().getBean().getBien().getId());
 	    
-	    detailsIngreso.addComponent(buildTableObras());	  
+		btnObras.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				ObraComplementaria obra = new ObraComplementaria();
+				obra.setAdicional(Adicional.ESTACIONAMIENTO);
+				((BeanItemContainer<ObraComplementaria>) tableObras.getContainerDataSource()).addBean(obra);
+								
+			}
+		});	
+		
+	    detailsIngreso.addComponent(tableObras);	  
 		
 		Label programa = new Label("Programa");
 		programa.addStyleName(ValoTheme.LABEL_H3);
@@ -728,22 +748,41 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     /*
      * Permite crear la tabla de obras complementarias
      */
-    private Table buildTableObras() {
+    private Table buildTableObras(long bienId) {
 		final Table tableObras = new Table();
 		tableObras.setHeight("100px");
-		tableObras.addContainerProperty("Elemento", ComboBox.class, null);
-		tableObras.addContainerProperty("Cantidad/Superficie",  Integer.class, null);
-		tableObras.addContainerProperty("Valor Total (UF)",  Integer.class, null);
 		
-		ComboBox cb = new ComboBox();
-		cb.setWidth("150px");
-		cb.setNullSelectionAllowed(false);
-		for(Adicional p : Adicional.values()){
-			cb.addItem(p);
-		}
+		BeanItemContainer<ObraComplementaria> ds = new BeanItemContainer<ObraComplementaria>(ObraComplementaria.class);
+		tableObras.setContainerDataSource(ds);
+		List<ObraComplementaria> obrascomplementarias = service.findObrasComplementariasByBien(bienId);
+		ds.addAll(obrascomplementarias);
 		
-		tableObras.addItem(new Object[]{cb,2,240}, 1);
-
+		tableObras.setTableFieldFactory(new TableFieldFactory() {
+			
+			@Override
+			public Field<?> createField(Container container, Object itemId,
+					Object propertyId, Component uiContext) {
+				Field<?> field = null; 
+				if(propertyId.equals("cantidadSuperficie") || propertyId.equals("valorTotalUF") ){
+					field = new TextField();
+					((TextField)field).setImmediate(true);
+				} else if(  propertyId.equals("adicional") ){
+						field = new ComboBox();
+						field.setWidth("150px");
+						((ComboBox)field).setNullSelectionAllowed(false);
+						for(Adicional p : Adicional.values()){
+							((ComboBox)field).addItem(p);
+						}
+				} else if( propertyId.equals("eliminar")) {
+					return null;
+				}
+				
+				field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
+					
+				return field;
+			}
+		});	
+		
 		tableObras.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
 
 			@Override
@@ -765,6 +804,8 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 				}){{setIcon(FontAwesome.TRASH_O);}};
 			}
 		});
+		
+		tableObras.setVisibleColumns("adicional","cantidadSuperficie","valorTotalUF","eliminar");
 		
 		return tableObras;
     }
