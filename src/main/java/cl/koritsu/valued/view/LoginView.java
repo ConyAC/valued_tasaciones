@@ -11,6 +11,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
@@ -50,8 +51,7 @@ public class LoginView extends VerticalLayout {
 
 	public static final String NAME = "";
 	
-	Button signin;
-	
+	Button signin;	
 	@Autowired
 	private transient AuthenticationManager authenticationManager;
 	@Autowired
@@ -90,7 +90,6 @@ public class LoginView extends VerticalLayout {
         loginPanel.setSpacing(true);
         Responsive.makeResponsive(loginPanel);
         loginPanel.addStyleName("login-panel");
-
         loginPanel.addComponent(buildLabels());
         loginPanel.addComponent(buildFields());
         //loginPanel.addComponent(new CheckBox("Remember me", true));
@@ -118,15 +117,15 @@ public class LoginView extends VerticalLayout {
         fields.addComponents(username, password, signin);
         fields.setComponentAlignment(signin, Alignment.BOTTOM_LEFT);
 
-        signin.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                ValuedEventBus.post(new UserLoginRequestedEvent(username
-                        .getValue(), password.getValue()));
-            }
-        });
+//        signin.addClickListener(new ClickListener() {
+//            @Override
+//            public void buttonClick(final ClickEvent event) {
+//                ValuedEventBus.post(new UserLoginRequestedEvent(username
+//                        .getValue(), password.getValue()));
+//            }
+//        });
         
-        /*signin.addClickListener(new Button.ClickListener() {
+        signin.addClickListener(new Button.ClickListener() {
 			
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -142,15 +141,16 @@ public class LoginView extends VerticalLayout {
 						 System.out.println("Holi "+ username +" "+ password );
 						 	UsernamePasswordAuthenticationToken token = 
 		                            new UsernamePasswordAuthenticationToken(u, p);
-		                    
+						 	System.out.println("token "+ token );
 		                    Authentication authentication = authenticationManager.authenticate(token);
-
+		                    System.out.println("authentication "+ authentication );
 		                    // Set the authentication info to context 
 		                    SecurityContext securityContext = SecurityContextHolder.getContext();
 		                    securityContext.setAuthentication(authentication);
 		                    VaadinSession.getCurrent().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 		                    //busca el usuario en base de datos para guardarlo en la session
 		                    Usuario user = service.findUsuarioByUsername(u);
+		                    System.out.println("user "+ user );
 		                    VaadinSession.getCurrent().setAttribute(Constants.SESSION_USUARIO, user);
 		                    System.out.println("Login authentication "+authentication);
 		                    signin.removeShortcutListener(enter);
@@ -175,7 +175,8 @@ public class LoginView extends VerticalLayout {
 					}
 				 }
 			}
-		});*/
+		});
+        
         return fields;
     }
 
@@ -196,5 +197,13 @@ public class LoginView extends VerticalLayout {
         labels.addComponent(title);
         return labels;
     }
+    
+	public void enter(ViewChangeEvent event) {
+		
+		((ValuedUI)UI.getCurrent()).setVisible(false);
+		//re asigna el enter
+		signin.addShortcutListener(enter);
+		
+	}
 
 }
