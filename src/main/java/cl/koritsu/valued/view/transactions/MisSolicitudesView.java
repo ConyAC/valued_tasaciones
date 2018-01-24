@@ -21,6 +21,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
@@ -39,6 +40,8 @@ import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomTable;
@@ -46,6 +49,7 @@ import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.PopupDateField;
@@ -382,7 +386,6 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     public VerticalLayout buildForm(final SolicitudTasacion solicitud) {
     	
     	BeanFieldGroup<SolicitudTasacion> bfg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
-    	bfg.setItemDataSource(solicitud);
     	
     	vlInicial = new VerticalLayout();
     	vlInicial.setMargin(true);
@@ -532,6 +535,8 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         });
 		*/
         vlInicial.addComponent(footer);
+        
+        bfg.setItemDataSource(solicitud);
 		
 	    return vlInicial;
     }
@@ -553,6 +558,23 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	            }
 	        }
 	    });
+	    
+	    btnGuadar.addClickListener(new ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				try {
+					bfg.commit();
+					SolicitudTasacion sol = bfg.getItemDataSource().getBean();
+					service.saveSolicitud(sol);
+					Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
+				}catch(CommitException e) {
+					Utils.validateEditor("", e);
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
     }
     
     public VerticalLayout buildFormIngreso(BeanFieldGroup<SolicitudTasacion> bfg) {
@@ -579,6 +601,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         hl.addComponent(valorSuperTerreno);
         
 	    HorizontalLayout hl2 = new HorizontalLayout();
+	    hl2.setSpacing(true);
 	    detailsIngreso.addComponent(hl2);
 	    TextField superEdif = new TextField();
 	    Utils.bind(bfg, superEdif, "bien.superficieConstruida");
@@ -589,6 +612,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         hl2.addComponent(valorSuperEdif);
         
 	    HorizontalLayout hl3 = new HorizontalLayout();
+	    hl3.setSpacing(true);
 	    detailsIngreso.addComponent(hl3);
 	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
 	    Utils.bind(bfg, superficieBalcon, "bien.superficieTerraza");
@@ -605,6 +629,8 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	    detailsIngreso.addComponent(btnObras);
 
 	    final Table tableObras = buildTableObras(bfg.getItemDataSource().getBean().getBien().getId());
+	    
+	    Utils.bind(bfg, tableObras, "bien.obrasComplementarias");
 	    
 		btnObras.addClickListener(new Button.ClickListener() {
 
@@ -666,6 +692,13 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     Button btnRegresar = new Button("Regresar");
     Button btnGuadar = new Button("Aceptar");
     
+    
+    private void regresar() {
+    	googleMap.clearMarkers();
+		mapToolBox.setContent(table);
+      	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
+    }
+    
     /*
      * Permite construir los botones de almacenamiento y regreso a la lista de tasaciones por hacer
      */
@@ -684,9 +717,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				googleMap.clearMarkers();
-				mapToolBox.setContent(table);
-		      	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
+				regresar();
 			}
 		});	
         
@@ -753,9 +784,10 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 		tableObras.setHeight("100px");
 		
 		BeanItemContainer<ObraComplementaria> ds = new BeanItemContainer<ObraComplementaria>(ObraComplementaria.class);
-		tableObras.setContainerDataSource(ds);
 		List<ObraComplementaria> obrascomplementarias = service.findObrasComplementariasByBien(bienId);
 		ds.addAll(obrascomplementarias);
+		
+		tableObras.setBuffered(true);
 		
 		tableObras.setTableFieldFactory(new TableFieldFactory() {
 			
@@ -786,7 +818,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 		tableObras.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
 
 			@Override
-			public Object generateCell(Table source, final Object itemId, Object columnId) {
+			public Object generateCell(final Table source, final Object itemId, Object columnId) {
 				return new Button(null,new Button.ClickListener() {
 
 					@Override
@@ -796,7 +828,7 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 
 							public void onClose(ConfirmDialog dialog) {
 								if (dialog.isConfirmed()) {
-									;
+									source.removeItem(itemId);
 								}
 							}
 						});
@@ -805,6 +837,8 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 			}
 		});
 		
+		tableObras.setContainerDataSource(ds);
+		tableObras.setEditable(true);
 		tableObras.setVisibleColumns("adicional","cantidadSuperficie","valorTotalUF","eliminar");
 		
 		return tableObras;

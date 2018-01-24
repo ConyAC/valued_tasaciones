@@ -1,3 +1,10 @@
+CREATE TABLE `valued`.`obra_complementaria` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `adicional` VARCHAR(45) NULL,
+  `cantidadSuperficie` FLOAT NULL,
+  `valorTotalUF` FLOAT NULL,
+  `bienId` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`));
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: valued
@@ -74,3 +81,16 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2017-11-28 22:27:01
+
+
+
+CREATE TABLE `valued`.`obra_complementaria` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `adicional` VARCHAR(45) NULL,
+  `cantidadSuperficie` FLOAT NULL,
+  `valorTotalUF` FLOAT NULL,
+  `bienId` INT UNSIGNED NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `valued`.`bien` 
+ADD COLUMN `superficieTerraza` FLOAT NULL AFTER `comunaId`;

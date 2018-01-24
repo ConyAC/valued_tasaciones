@@ -1,5 +1,9 @@
 package cl.koritsu.valued.domain;
 
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -7,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
 import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.TipoBien;
@@ -26,11 +31,15 @@ public class Bien {
 	String direccion = "";
 	float superficieTerreno;
 	float superficieConstruida;
+	@Column(name="superficieTerraza")
 	float superficieTerraza;
 	
 	String antecedentes = "";
 	@JoinColumn(name="comunaId")
 	Comuna comuna;
+	
+	@OneToMany(mappedBy="bien",cascade=CascadeType.ALL)
+	Set<ObraComplementaria> obrasComplementarias;
 	
 	public Long getId() {
 		return id;
@@ -98,4 +107,12 @@ public class Bien {
 	public void setSuperficieTerraza(float superficieTerraza) {
 		this.superficieTerraza = superficieTerraza;
 	}
+	public Set<ObraComplementaria> getObrasComplementarias() {
+		return obrasComplementarias;
+	}
+	public void setObrasComplementarias(Set<ObraComplementaria> obrasComplementarias) {
+		this.obrasComplementarias = obrasComplementarias;
+	}
+	
+	
 }

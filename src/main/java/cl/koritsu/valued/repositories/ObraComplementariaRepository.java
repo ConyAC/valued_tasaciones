@@ -9,7 +9,7 @@ import cl.koritsu.valued.domain.ObraComplementaria;
 
 public interface ObraComplementariaRepository extends PagingAndSortingRepository<ObraComplementaria, Long> {
 
-	@Query(value="select o from ObraComplementaria where bienId = ?1 ")
+	@Query(value="select o from ObraComplementaria o where o.bien.id = ?1 ")
 	List<ObraComplementaria> findByBien(long bienId);
 
 }
