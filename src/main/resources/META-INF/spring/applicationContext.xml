@@ -82,5 +82,5 @@
 	    <property name="queueCapacity" value="25" />
 	</bean>
 
-	<import resource="security.xml" />
+	<!-- <import resource="security.xml" />-->
 </beans>

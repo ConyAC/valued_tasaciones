@@ -33,7 +33,6 @@ import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
 
-@Service(value="valuedService")
 @Transactional(readOnly=true)
 public class UsuarioServiceImpl implements UserDetailsService {
 	static Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
