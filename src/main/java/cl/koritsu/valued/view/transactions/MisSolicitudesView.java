@@ -1,8 +1,6 @@
 package cl.koritsu.valued.view.transactions;
 
-import java.text.DecimalFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -17,7 +15,6 @@ import com.vaadin.data.Container;
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
@@ -41,15 +38,14 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CustomTable;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.PopupDateField;
@@ -59,10 +55,8 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
-import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.SolicitudTasacion;
@@ -75,6 +69,7 @@ import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.ValuedViewType;
+import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
 import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -86,24 +81,15 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 	
 	public static final String NAME = "en_proceso";
 
-	FilterTable table;
 	FormLayout details, detailsIngreso;
     Label consoleEntry;
-    OptionGroup continuar;
-    VerticalLayout formInicial, formIngreso, vlInicial;
-    Component footer;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
-    private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
-    private static final String[] DEFAULT_COLLAPSIBLE = { "country", "city",
-            "theater", "room", "title", "seats" };
 
     @Autowired
     ValuedService service;
     
-    BeanItemContainer<SolicitudTasacion> solicitudContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
- 
-    Window mapToolBox = new Window();
+    MapToolBox mapToolBox = new MapToolBox();
 
     public MisSolicitudesView() {
     	
@@ -128,25 +114,31 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         mapsPanel.setContent(googleMap);
         addComponent(mapsPanel);
        
-        mapToolBox.setClosable(false);
-        mapToolBox.setResizable(true);
-        mapToolBox.setPosition(210, 220);
-        //FIXME
-        mapToolBox.setWidth("550px");
-        mapToolBox.setHeight("520px");
-        //mapToolBox.addStyleName("mywindowstyle");
-        
-             
         //situamos, inicialmente, el mapa en Santiago.
       	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
-		
-        table = buildTable();
-        mapsPanel.setContent(googleMap);
         
-    	footer = buildFooter();
+        mapsPanel.setContent(googleMap);
+    	
+    	//agrega el listener del mapToolBox para cuando se presiona una tasacion
+    	mapToolBox.addOnClickTasacionEvent(new OnClickTasacionEvent() {
+			
+			@Override
+			public void onClick(BeanItem<SolicitudTasacion> solicitudBean) {
 
-    	mapToolBox.setContent(table);
-        mapToolBox.setData("no_cerrar");
+				SolicitudTasacion sol = solicitudBean.getBean();
+				double lat = sol.getNorteY();
+				double lon = sol.getEsteX();			
+				googleMap.setCenter(new LatLon(lat,lon));
+				googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
+						lat, lon), true, "VAADIN/img/pin_tas_asignada.png");
+				googleMap.setZoom(20);
+				
+				if(sol.getBien() != null && sol.getBien().getComuna() != null)
+					cargarTasaciones(sol.getBien().getComuna());
+				
+			}
+		});
+    	
     	UI.getCurrent().addWindow(mapToolBox);
     }
 
@@ -172,10 +164,10 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         title.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(title);
 
-        HorizontalLayout tools = new HorizontalLayout(buildFilter());
-        tools.setSpacing(true);
-        tools.addStyleName("toolbar");
-        header.addComponent(tools);
+//        HorizontalLayout tools = new HorizontalLayout(buildFilter());
+//        tools.setSpacing(true);
+//        tools.addStyleName("toolbar");
+//        header.addComponent(tools);
         
         return header;
     }
@@ -183,59 +175,59 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
     /*
      * Cambiar filtro segun perfil
      */
-    private Component buildFilter() {
-        final TextField filter = new TextField();
-        filter.addTextChangeListener(new TextChangeListener() {
-            @Override
-            public void textChange(final TextChangeEvent event) {
-                Filterable data = (Filterable) table.getContainerDataSource();
-                data.removeAllContainerFilters();
-                data.addContainerFilter(new Filter() {
-                    @Override
-                    public boolean passesFilter(final Object itemId,
-                            final Item item) {
-
-                        if (event.getText() == null
-                                || event.getText().equals("")) {
-                            return true;
-                        }
-
-                        return filterByProperty("numeroTasacion", item,
-                                event.getText())
-                                || filterByProperty("estado", item,
-                                        event.getText())
-                                || filterByProperty("bien.direccion", item,
-                                        event.getText());
-
-                    }
-
-                    @Override
-                    public boolean appliesToProperty(final Object propertyId) {
-                        if (propertyId.equals("numeroTasacion")
-                                || propertyId.equals("estado")
-                                || propertyId.equals("bien.direccion")) {
-                            return true;
-                        }
-                        return false;
-                    }
-                });
-            }
-        });
-
-        filter.setInputPrompt("Filter");
-        filter.setIcon(FontAwesome.SEARCH);
-        filter.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
-        filter.addShortcutListener(new ShortcutListener("Clear",
-                KeyCode.ESCAPE, null) {
-            @Override
-            public void handleAction(final Object sender, final Object target) {
-                filter.setValue("");
-                ((Filterable) table.getContainerDataSource())
-                        .removeAllContainerFilters();
-            }
-        });
-        return filter;
-    }
+//    private Component buildFilter() {
+//        final TextField filter = new TextField();
+//        filter.addTextChangeListener(new TextChangeListener() {
+//            @Override
+//            public void textChange(final TextChangeEvent event) {
+//                Filterable data = (Filterable) table.getContainerDataSource();
+//                data.removeAllContainerFilters();
+//                data.addContainerFilter(new Filter() {
+//                    @Override
+//                    public boolean passesFilter(final Object itemId,
+//                            final Item item) {
+//
+//                        if (event.getText() == null
+//                                || event.getText().equals("")) {
+//                            return true;
+//                        }
+//
+//                        return filterByProperty("numeroTasacion", item,
+//                                event.getText())
+//                                || filterByProperty("estado", item,
+//                                        event.getText())
+//                                || filterByProperty("bien.direccion", item,
+//                                        event.getText());
+//
+//                    }
+//
+//                    @Override
+//                    public boolean appliesToProperty(final Object propertyId) {
+//                        if (propertyId.equals("numeroTasacion")
+//                                || propertyId.equals("estado")
+//                                || propertyId.equals("bien.direccion")) {
+//                            return true;
+//                        }
+//                        return false;
+//                    }
+//                });
+//            }
+//        });
+//
+//        filter.setInputPrompt("Filter");
+//        filter.setIcon(FontAwesome.SEARCH);
+//        filter.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
+//        filter.addShortcutListener(new ShortcutListener("Clear",
+//                KeyCode.ESCAPE, null) {
+//            @Override
+//            public void handleAction(final Object sender, final Object target) {
+//                filter.setValue("");
+//                ((Filterable) table.getContainerDataSource())
+//                        .removeAllContainerFilters();
+//            }
+//        });
+//        return filter;
+//    }
     
     private boolean filterByProperty(final String prop, final Item item,
             final String text) {
@@ -251,597 +243,15 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
         return false;
     }
     
-    private FilterTable buildTable() {
-    	FilterTable table = new FilterTable()
-    	{
-            @Override
-            protected String formatPropertyValue(final Object rowId,
-                    final Object colId, final Property<?> property) {
-                String result = super.formatPropertyValue(rowId, colId,
-                        property);
-                if (colId.equals("fechaEncargo")) {
-                    result = Utils.formatoFecha(((Date) property.getValue()));
-                } else if (colId.equals("price")) {
-                    if (property != null && property.getValue() != null) {
-                        return "$" + DECIMALFORMAT.format(property.getValue());
-                    } else {
-                        return "";
-                    }
-                }
-                return result;
-            }
-        };
-    	table.setImmediate(true);
-        table.setContainerDataSource(solicitudContainer);
-        table.setSizeFull();
-//        table.addStyleName(ValoTheme.TABLE_BORDERLESS);
-//        table.addStyleName(ValoTheme.TABLE_NO_HORIZONTAL_LINES);
-//        table.addStyleName(ValoTheme.TABLE_COMPACT);
-        table.setSelectable(true);
-        table.setColumnReorderingAllowed(true);
-        table.setSortAscending(false);
-        
-        table.addGeneratedColumn("nombrecliente", new CustomTable.ColumnGenerator() {
-
-			@Override
-			public Object generateCell(CustomTable source, Object itemId, Object columnId) {
-				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
-				return sol.getCliente() != null ? sol.getCliente().getNombreCliente() : "";
-			}
-		});
-        
-        table.addGeneratedColumn("direccion", new CustomTable.ColumnGenerator() {
-
-			@Override
-			public Object generateCell(CustomTable source, Object itemId, Object columnId) {
-				SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
-				Bien bien = sol.getBien();				
-				return (bien != null && bien.getDireccion() != null)
-						? bien.getDireccion() + " " + bien.getNumeroManzana() + " " + bien.getComuna().getNombre() + " "
-								+ bien.getComuna().getRegion().getNombre()
-						: "";
-			}
-		});
-
-        table.addGeneratedColumn("acceder", new CustomTable.ColumnGenerator()  {
-
-			@Override
-			public Object generateCell(final CustomTable source, final Object itemId, Object columnId) {
-				Button editarTasacion = new Button(null,FontAwesome.MAP_MARKER);
-				editarTasacion.addClickListener(new Button.ClickListener() {
-					
-					@Override
-					public void buttonClick(ClickEvent event) {
-						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>)source.getItem(itemId)).getBean();
-						double lat = sol.getNorteY();
-						double lon = sol.getEsteX();			
-						googleMap.setCenter(new LatLon(lat,lon));
-						googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
-								lat, lon), true, "VAADIN/img/pin_tas_asignada.png");
-						googleMap.setZoom(20);
-						
-						if(sol.getBien() != null && sol.getBien().getComuna() != null)
-							cargarTasaciones(sol.getBien().getComuna());
-						
-						mapToolBox.setContent(buildForm(sol));
-					}
-				});
-				return editarTasacion;
-			}
-        });
-        
-        table.setVisibleColumns("acceder","numeroTasacion","fechaEncargo","direccion");
-        table.setColumnHeaders("Acceder","N° Tasación", "Fecha Encargo","Dirección");
-        table.setFilterBarVisible(true);
-        table.setFooterVisible(true);
-
-        return table;
-    }
-
-    private boolean defaultColumnsVisible() {
-        boolean result = true;
-        for (String propertyId : DEFAULT_COLLAPSIBLE) {
-            if (table.isColumnCollapsed(propertyId) == Page.getCurrent()
-                    .getBrowserWindowWidth() < 800) {
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    @Subscribe
-    public void browserResized(final BrowserResizeEvent event) {
-        // Some columns are collapsed when browser window width gets small
-        // enough to make the table fit better.
-        if (defaultColumnsVisible()) {
-            for (String propertyId : DEFAULT_COLLAPSIBLE) {
-                table.setColumnCollapsed(propertyId, Page.getCurrent()
-                        .getBrowserWindowWidth() < 800);
-            }
-        }
-    }
-
-    void createNewReportFromSelection() {
-        UI.getCurrent().getNavigator()
-                .navigateTo(ValuedViewType.REPORTS.getViewName());
-        ValuedEventBus.post(new TransactionReportEvent(
-                (Collection<Transaction>) table.getValue()));
-    }
-
+    
     @Override
     public void enter(final ViewChangeEvent event) {
-    	//limpia la tabla
-    	table.removeAllItems();
     	//llena con las tasaciones
     	Comuna comuna = new Comuna();
     	comuna.setId(13101L);
-    	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);    	
-    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);   	
+    	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);
+    	mapToolBox.setSolicitudes(solicitudes);
     	
-    }
-    
-    /*
-     * Permite crear el formulario de ingreso para el tasador.
-     */
-    public VerticalLayout buildForm(final SolicitudTasacion solicitud) {
-    	
-    	BeanFieldGroup<SolicitudTasacion> bfg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
-    	
-    	vlInicial = new VerticalLayout();
-    	vlInicial.setMargin(true);
-    	
-    	details = new FormLayout();
-       // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-    	details.setMargin(true);
-    	details.setSizeFull();
-    	vlInicial.addComponent(details);
-    	vlInicial.setExpandRatio(details, 1);
-      	
-      	Label sectionCliente = new Label("Resumen");
-      	sectionCliente.addStyleName(ValoTheme.LABEL_H3);
-      	sectionCliente.addStyleName(ValoTheme.LABEL_COLORED);	    
-	    details.addComponent(sectionCliente);
-	    
-	    Label encargo = new Label();
-	    encargo.setCaption("Fecha Encargo");
-	    encargo.setValue(Utils.formatoFecha(solicitud.getFechaEncargo()));
-	    details.addComponent(encargo);
-	    Label cliente = new Label();
-	    cliente.setCaption("Nombre Cliente");
-	    cliente.setValue(solicitud.getCliente().getRazonSocial().toString());
-	    details.addComponent(cliente);
-	    Label informe = new Label();
-	    informe.setCaption("Tipo Informe");
-	    informe.setValue(solicitud.getTipoInforme().getNombre().toString());
-	    details.addComponent(informe);
-	    Label clase = new Label();
-	    clase.setCaption("Clase Bien");
-	    clase.setValue(solicitud.getBien().getClase().toString());
-	    details.addComponent(clase);
-	    Label direccion = new Label();
-	    direccion.setCaption("Dirección");
-		direccion.setValue(solicitud.getBien().getDireccion() + " " + solicitud.getBien().getNumeroManzana() + ", "
-				+ solicitud.getBien().getComuna().getNombre() + ", "
-				+ solicitud.getBien().getComuna().getRegion().getNombre());
-	    details.addComponent(direccion);
-	    
-        Label sectionBien = new Label("Ingreso");
-	    sectionBien.addStyleName(ValoTheme.LABEL_H3);
-	    sectionBien.addStyleName(ValoTheme.LABEL_COLORED);	    
-	    details.addComponent(sectionBien);
-	    
-	    PopupDateField fechaVisita = new PopupDateField();
-	    bfg.bind(fechaVisita, "fechaTasacion");
-	    fechaVisita.setCaption("Fecha Visita");
-        details.addComponent(fechaVisita);
-        
-	    TextArea incidencia = new TextArea("Incidencia");
-	    incidencia.setRows(10);
-	    incidencia.setWordwrap(false);
-        details.addComponent(incidencia);
-        
-        continuar = new OptionGroup("¿Continuar Ingreso?");
-        continuar.addItem(1);
-        continuar.addItem(2);
-        continuar.setItemCaption(1, "Si");
-        continuar.setItemCaption(2, "No");        
-        continuar.setImmediate(true);
-        continuar.addStyleName("horizontal");
-        
-    	addListeners(bfg);
-    	
-        details.addComponent(continuar);
-        
-	  /*  HorizontalLayout hl = new HorizontalLayout();
-	    details.addComponent(hl);
-	    TextField superTerreno = new TextField();
-	    superTerreno.setCaption("Mts Superficie Terreno");
-        hl.addComponent(superTerreno);
-	    TextField valorSuperTerreno = new TextField();
-	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
-        hl.addComponent(valorSuperTerreno);
-        
-	    HorizontalLayout hl2 = new HorizontalLayout();
-	    details.addComponent(hl2);
-	    TextField superEdif = new TextField();
-	    superEdif.setCaption("Mts Superficie Edificado");
-        hl2.addComponent(superEdif);
-	    TextField valorSuperEdif = new TextField();
-	    valorSuperEdif.setCaption("Valor Mts Superficie Edificado");
-        hl2.addComponent(valorSuperEdif);
-        
-	    HorizontalLayout hl3 = new HorizontalLayout();
-	    details.addComponent(hl3);
-	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
-	    hl3.addComponent(superficieBalcon);
-	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
-	    hl3.addComponent(superficieTerraza);
-        
-        Label obras = new Label("Adicionales");
-        obras.addStyleName(ValoTheme.LABEL_H3);
-        obras.addStyleName(ValoTheme.LABEL_COLORED);	    
-	    details.addComponent(obras);
-	    
-	    Button btnObras = new Button(null,FontAwesome.PLUS);
-		details.addComponent(btnObras);
-//		btnObras.addClickListener(new Button.ClickListener() {
-//
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				;				
-//			}
-//		});	
-
-	    
-		details.addComponent(buildTableObras());	  
-		
-		Label programa = new Label("Programa");
-		programa.addStyleName(ValoTheme.LABEL_H3);
-		programa.addStyleName(ValoTheme.LABEL_COLORED);	    
-	    details.addComponent(programa);
-	    
-	    Button btnPrograma = new Button(null,FontAwesome.PLUS);
-		details.addComponent(btnPrograma);
-//		btnPrograma.addClickListener(new Button.ClickListener() {
-//
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				;				
-//			}
-//		});	
-		
-		details.addComponent(buildTablePrograma());
-		
-		Label coor = new Label("Coordenadas");
-		coor.addStyleName(ValoTheme.LABEL_H3);
-		coor.addStyleName(ValoTheme.LABEL_COLORED);	    
-	    details.addComponent(coor);
-	    
-		/*
-		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
-		 * se arrastraron los puntos (draggable)
-		 */    
-		/*googleMap.addMarkerDragListener(new MarkerDragListener() {
-			@Override
-			public void markerDragged(GoogleMapMarker draggedMarker,
-                LatLon oldPosition) {
-                consoleEntry = new Label();
-                consoleEntry.setValue("Marcador arrastrado desde ("
-                    + oldPosition.getLat() + ", " + oldPosition.getLon()
-                    + ") hacia (" + draggedMarker.getPosition().getLat()
-                    + ", " + draggedMarker.getPosition().getLon() + ")");
-                details.addComponent(consoleEntry);
-            }
-        });
-		*/
-        vlInicial.addComponent(footer);
-        
-        bfg.setItemDataSource(solicitud);
-		
-	    return vlInicial;
-    }
-    
-    
-    private void addListeners(final BeanFieldGroup<SolicitudTasacion> bfg) {
-    
-	    continuar.addValueChangeListener(new ValueChangeListener() {
-	
-	        @Override
-	        public void valueChange(ValueChangeEvent event) {
-	            if (continuar.isSelected(1)) {
-	            	formIngreso = buildFormIngreso(bfg);
-	            	vlInicial.removeComponent(footer);
-	            	vlInicial.addComponent(formIngreso);
-	            } else if (continuar.isSelected(2)) {
-	            	vlInicial.removeComponent(formIngreso);
-	            	vlInicial.addComponent(footer);
-	            }
-	        }
-	    });
-	    
-	    btnGuadar.addClickListener(new ClickListener() {
-			
-			@Override
-			public void buttonClick(ClickEvent event) {
-				try {
-					bfg.commit();
-					SolicitudTasacion sol = bfg.getItemDataSource().getBean();
-					service.saveSolicitud(sol);
-					Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
-				}catch(CommitException e) {
-					Utils.validateEditor("", e);
-				}catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-    }
-    
-    public VerticalLayout buildFormIngreso(BeanFieldGroup<SolicitudTasacion> bfg) {
-    	VerticalLayout vl = new VerticalLayout();
-    	//vl.setMargin(true);
-    	
-    	detailsIngreso = new FormLayout();
-       // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
-    	//detailsIngreso.setMargin(true);
-    	detailsIngreso.setSizeFull();
-        vl.addComponent(detailsIngreso);
-       // vl.setExpandRatio(detailsIngreso, 1);
-        
-	    HorizontalLayout hl = new HorizontalLayout();
-	    hl.setSpacing(true);
-	    detailsIngreso.addComponent(hl);
-	    TextField superTerreno = new TextField();
-	    superTerreno.setCaption("Mts Superficie Terreno");
-	    Utils.bind(bfg, superTerreno, "bien.superficieTerreno");
-        hl.addComponent(superTerreno);
-        
-	    TextField valorSuperTerreno = new TextField();
-	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
-        hl.addComponent(valorSuperTerreno);
-        
-	    HorizontalLayout hl2 = new HorizontalLayout();
-	    hl2.setSpacing(true);
-	    detailsIngreso.addComponent(hl2);
-	    TextField superEdif = new TextField();
-	    Utils.bind(bfg, superEdif, "bien.superficieConstruida");
-	    superEdif.setCaption("Mts Superficie Edificado");
-        hl2.addComponent(superEdif);
-	    TextField valorSuperEdif = new TextField();
-	    valorSuperEdif.setCaption("Valor Mts Superficie Edificado");
-        hl2.addComponent(valorSuperEdif);
-        
-	    HorizontalLayout hl3 = new HorizontalLayout();
-	    hl3.setSpacing(true);
-	    detailsIngreso.addComponent(hl3);
-	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
-	    Utils.bind(bfg, superficieBalcon, "bien.superficieTerraza");
-	    hl3.addComponent(superficieBalcon);
-	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
-	    hl3.addComponent(superficieTerraza);
-        
-        Label obras = new Label("Adicionales");
-        obras.addStyleName(ValoTheme.LABEL_H3);
-        obras.addStyleName(ValoTheme.LABEL_COLORED);	    
-        detailsIngreso.addComponent(obras);
-	    
-	    Button btnObras = new Button(null,FontAwesome.PLUS);
-	    detailsIngreso.addComponent(btnObras);
-
-	    final Table tableObras = buildTableObras(bfg.getItemDataSource().getBean().getBien().getId());
-	    
-	    Utils.bind(bfg, tableObras, "bien.obrasComplementarias");
-	    
-		btnObras.addClickListener(new Button.ClickListener() {
-
-			@Override
-			public void buttonClick(ClickEvent event) {
-				ObraComplementaria obra = new ObraComplementaria();
-				obra.setAdicional(Adicional.ESTACIONAMIENTO);
-				((BeanItemContainer<ObraComplementaria>) tableObras.getContainerDataSource()).addBean(obra);
-								
-			}
-		});	
-		
-	    detailsIngreso.addComponent(tableObras);	  
-		
-		Label programa = new Label("Programa");
-		programa.addStyleName(ValoTheme.LABEL_H3);
-		programa.addStyleName(ValoTheme.LABEL_COLORED);	    
-		detailsIngreso.addComponent(programa);
-	    
-	    Button btnPrograma = new Button(null,FontAwesome.PLUS);
-	    detailsIngreso.addComponent(btnPrograma);
-//		btnPrograma.addClickListener(new Button.ClickListener() {
-//
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				;				
-//			}
-//		});	
-		
-	    detailsIngreso.addComponent(buildTablePrograma());
-		
-		Label coor = new Label("Coordenadas");
-		coor.addStyleName(ValoTheme.LABEL_H3);
-		coor.addStyleName(ValoTheme.LABEL_COLORED);	    
-		detailsIngreso.addComponent(coor);
-	    
-		/*
-		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
-		 * se arrastraron los puntos (draggable)
-		 */    
-		googleMap.addMarkerDragListener(new MarkerDragListener() {
-			@Override
-			public void markerDragged(GoogleMapMarker draggedMarker,
-                LatLon oldPosition) {
-                consoleEntry = new Label();
-                consoleEntry.setValue("Marcador arrastrado desde ("
-                    + oldPosition.getLat() + ", " + oldPosition.getLon()
-                    + ") hacia (" + draggedMarker.getPosition().getLat()
-                    + ", " + draggedMarker.getPosition().getLon() + ")");
-                detailsIngreso.addComponent(consoleEntry);
-            }
-        });
-		
-		vl.addComponent(footer);
-		
-	    return vl;
-    }
-    
-    Button btnRegresar = new Button("Regresar");
-    Button btnGuadar = new Button("Aceptar");
-    
-    
-    private void regresar() {
-    	googleMap.clearMarkers();
-		mapToolBox.setContent(table);
-      	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
-    }
-    
-    /*
-     * Permite construir los botones de almacenamiento y regreso a la lista de tasaciones por hacer
-     */
-    private Component buildFooter() {
-        HorizontalLayout footer = new HorizontalLayout();
-        footer.setSpacing(true);
-        footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-        footer.setWidth(100.0f, Unit.PERCENTAGE);
-
-        btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        btnGuadar.setIcon(FontAwesome.SAVE);
-        //btnGuadar.focus();
-		
-        btnRegresar.addStyleName("link");        
-        btnRegresar.addClickListener(new Button.ClickListener() {
-
-			@Override
-			public void buttonClick(ClickEvent event) {
-				regresar();
-			}
-		});	
-        
-        footer.addComponent(btnGuadar);
-        footer.addComponent(btnRegresar);
-        footer.setComponentAlignment(btnGuadar, Alignment.TOP_LEFT);
-        footer.setComponentAlignment(btnRegresar, Alignment.TOP_LEFT);
-        
-        return footer;
-    }
-    
-    /*
-     * Permite crear la tabla del programa.
-     */
-    private VerticalLayout buildTablePrograma() {
-    	VerticalLayout vll = new VerticalLayout();
- 
-    	final Table tablePrograma = new Table();
-		tablePrograma.setHeight("100px");
-		tablePrograma.addContainerProperty("Elementos", ComboBox.class, null);
-		tablePrograma.addContainerProperty("Cantidad/Superficie",  Integer.class, null);
-		
-		ComboBox cbProg = new ComboBox();
-		cbProg.setWidth("150px");
-		cbProg.setNullSelectionAllowed(false);
-		for(Programa p : Programa.values()){
-			cbProg.addItem(p);
-		}
-		
-		tablePrograma.addItem(new Object[]{cbProg,2}, 1);
-
-		tablePrograma.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
-
-			@Override
-			public Object generateCell(Table source, final Object itemId, Object columnId) {
-				return new Button(null,new Button.ClickListener() {
-
-					@Override
-					public void buttonClick(ClickEvent event) {
-						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el programa seleccionado?",
-								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
-
-							public void onClose(ConfirmDialog dialog) {
-								if (dialog.isConfirmed()) {
-									;
-								}
-							}
-						});
-					}
-				}){{setIcon(FontAwesome.TRASH_O);}};
-			}
-		});
-		
-		vll.addComponent(tablePrograma);
-		vll.setComponentAlignment(tablePrograma, Alignment.MIDDLE_LEFT);
-		return vll;
-    }
-    
-    /*
-     * Permite crear la tabla de obras complementarias
-     */
-    private Table buildTableObras(long bienId) {
-		final Table tableObras = new Table();
-		tableObras.setHeight("100px");
-		
-		BeanItemContainer<ObraComplementaria> ds = new BeanItemContainer<ObraComplementaria>(ObraComplementaria.class);
-		List<ObraComplementaria> obrascomplementarias = service.findObrasComplementariasByBien(bienId);
-		ds.addAll(obrascomplementarias);
-		
-		tableObras.setBuffered(true);
-		
-		tableObras.setTableFieldFactory(new TableFieldFactory() {
-			
-			@Override
-			public Field<?> createField(Container container, Object itemId,
-					Object propertyId, Component uiContext) {
-				Field<?> field = null; 
-				if(propertyId.equals("cantidadSuperficie") || propertyId.equals("valorTotalUF") ){
-					field = new TextField();
-					((TextField)field).setImmediate(true);
-				} else if(  propertyId.equals("adicional") ){
-						field = new ComboBox();
-						field.setWidth("150px");
-						((ComboBox)field).setNullSelectionAllowed(false);
-						for(Adicional p : Adicional.values()){
-							((ComboBox)field).addItem(p);
-						}
-				} else if( propertyId.equals("eliminar")) {
-					return null;
-				}
-				
-				field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
-					
-				return field;
-			}
-		});	
-		
-		tableObras.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
-
-			@Override
-			public Object generateCell(final Table source, final Object itemId, Object columnId) {
-				return new Button(null,new Button.ClickListener() {
-
-					@Override
-					public void buttonClick(ClickEvent event) {
-						ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro de eliminar el adicional seleccionado?",
-								"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
-
-							public void onClose(ConfirmDialog dialog) {
-								if (dialog.isConfirmed()) {
-									source.removeItem(itemId);
-								}
-							}
-						});
-					}
-				}){{setIcon(FontAwesome.TRASH_O);}};
-			}
-		});
-		
-		tableObras.setContainerDataSource(ds);
-		tableObras.setEditable(true);
-		tableObras.setVisibleColumns("adicional","cantidadSuperficie","valorTotalUF","eliminar");
-		
-		return tableObras;
     }
     
     /*

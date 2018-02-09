@@ -1,7 +1,6 @@
 package cl.koritsu.valued.domain;
 
 import java.util.Date;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -12,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -20,7 +18,9 @@ import javax.persistence.TemporalType;
 import org.hibernate.validator.constraints.Email;
 
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.TipoPersona;
 import cl.koritsu.valued.domain.validator.RutDigit;
+import cl.koritsu.valued.view.utils.Utils;
 
 @Entity
 @Table(name="solicitud_tasacion")
@@ -327,6 +327,16 @@ public class SolicitudTasacion {
 		this.tasador = tasador;
 	}
 
-	
-	
+	public String getFechaEncargoFormateada() {
+		return Utils.formatoFecha(getFechaEncargo());
+	}
+	public String getNombreCliente() {
+		if(getCliente() != null) {
+			if(getCliente().getTipoPersona() == TipoPersona.NATURAL)
+				return getCliente().getNombres()+" "+getCliente().getApellidoPaterno()+" "+getCliente().getApellidoMaterno();
+			else
+				return getCliente().getRazonSocial();
+		}
+		return "Cliente no definido";
+	}
 }
