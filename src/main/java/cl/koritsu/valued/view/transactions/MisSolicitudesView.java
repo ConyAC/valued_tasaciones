@@ -1,74 +1,35 @@
 package cl.koritsu.valued.view.transactions;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.tepi.filtertable.FilterTable;
-import org.vaadin.dialogs.ConfirmDialog;
 
-import com.google.common.eventbus.Subscribe;
-import com.vaadin.data.Container;
-import com.vaadin.data.Container.Filter;
-import com.vaadin.data.Container.Filterable;
 import com.vaadin.data.Item;
-import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.FieldEvents.TextChangeEvent;
-import com.vaadin.event.FieldEvents.TextChangeListener;
-import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
-import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.PopupDateField;
-import com.vaadin.ui.Table;
-import com.vaadin.ui.TableFieldFactory;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Comuna;
-import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.enums.Adicional;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
-import cl.koritsu.valued.domain.enums.Programa;
-import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
-import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.ValuedViewType;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
 import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
 import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
@@ -136,6 +97,25 @@ public final class MisSolicitudesView extends VerticalLayout implements View {
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
 					cargarTasaciones(sol.getBien().getComuna());
 				
+			}
+		});
+    	
+    	mapToolBox.addOnClickRegresarEvent(new OnClickRegresarListener() {
+			
+			@Override
+			public void onClick(BeanItem<SolicitudTasacion> sol) {
+		    	googleMap.clearMarkers();
+		    	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
+				
+			}
+		});
+    	
+    	mapToolBox.addOnClickSiguienteEvent(new OnClickSiguienteListener() {
+			
+			@Override
+			public void onClick(BeanItem<SolicitudTasacion> sol) {
+				//guarda el elemento
+				service.saveSolicitud(sol.getBean());
 			}
 		});
     	

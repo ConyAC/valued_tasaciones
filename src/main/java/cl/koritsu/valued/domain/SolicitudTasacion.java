@@ -339,4 +339,18 @@ public class SolicitudTasacion {
 		}
 		return "Cliente no definido";
 	}
+	
+	public String getTipoInformeString() {
+		return tipoInforme.getDescripcion() != null ? tipoInforme.getDescripcion() : "Sin Tipo Informe";
+	}
+	
+	public String getClaseBienString() {
+		return (bien != null)?bien.getClase().name() : "Sin Clase";
+	}
+	
+	public String getDireccionCompleta() {
+		return getBien().getDireccion() + " " + getBien().getNumeroManzana() + ", "
+		+ getBien().getComuna().getNombre() + ", "
+		+ getBien().getComuna().getRegion().getNombre();
+	}
 }

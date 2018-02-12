@@ -47,7 +47,7 @@ public class HonorarioClienteStep implements WizardStep {
 		glIngresoSolicitud.setWidth("100%");
 		glIngresoSolicitud.setSpacing(true);
 		
-		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicituds"));
+		glIngresoSolicitud.addComponents(new Label("Ingreso por Solicitud"));
 		glIngresoSolicitud.addComponent(new HorizontalLayout(){
 			{
 				setSpacing(true);

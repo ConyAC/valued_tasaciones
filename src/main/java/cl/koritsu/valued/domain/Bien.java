@@ -41,6 +41,9 @@ public class Bien {
 	@OneToMany(mappedBy="bien",cascade=CascadeType.ALL)
 	Set<ObraComplementaria> obrasComplementarias;
 	
+	@OneToMany(mappedBy="bien",cascade=CascadeType.ALL)
+	Set<ProgramaBien> programas;
+	
 	public Long getId() {
 		return id;
 	}
@@ -113,6 +116,11 @@ public class Bien {
 	public void setObrasComplementarias(Set<ObraComplementaria> obrasComplementarias) {
 		this.obrasComplementarias = obrasComplementarias;
 	}
-	
+	public Set<ProgramaBien> getProgramas() {
+		return programas;
+	}
+	public void setProgramas(Set<ProgramaBien> programas) {
+		this.programas = programas;
+	}
 	
 }
