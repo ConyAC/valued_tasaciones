@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Scope;
 import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
-import com.google.common.eventbus.Subscribe;
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitEvent;
@@ -25,13 +24,11 @@ import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.Calendar;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Field;
@@ -54,21 +51,20 @@ import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoUsuario;
 import cl.koritsu.valued.domain.enums.Permiso;
-import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.utils.Utils;
+import cl.koritsu.valued.services.UserService;
 import cl.koritsu.valued.event.ValuedEventBus;
 import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
 @Scope("prototype")
-@VaadinView(value = Administration.NAME, cached = true)
-public class Administration extends CssLayout implements View {
+@VaadinView(value = AdministrationView.NAME, cached = true)
+public class AdministrationView extends CssLayout implements View {
 
 	public static final String NAME = "administrador";
 	
-    private Calendar calendar;
     BeanFieldGroup<Usuario> fieldGroup = new BeanFieldGroup<Usuario>(Usuario.class);
 	BeanFieldGroup<Rol> rolFieldGroup = new BeanFieldGroup<Rol>(Rol.class);
     BeanItemContainer<Usuario> userContainer = new BeanItemContainer<Usuario>(Usuario.class);
@@ -78,9 +74,11 @@ public class Administration extends CssLayout implements View {
     TwinColSelect tcsPermissions;
     
     @Autowired
-    ValuedService service;    
+    ValuedService service;
+	@Autowired
+	UserService serviceUser;
     
-    public Administration() {
+    public AdministrationView() {
 	}
 
     @PostConstruct
@@ -139,7 +137,8 @@ public class Administration extends CssLayout implements View {
 				user.setNombres("Nuevo Usuario");
 				user.setApellidoPaterno("");
 				user.setEmail("");
-				user.setHabilitado(EstadoUsuario.HABILITADO);
+				user.setEstadoUsuario(EstadoUsuario.HABILITADO);
+				user.setTasador(Boolean.FALSE);
 				
 		        fieldGroup.setItemDataSource(new BeanItem<Usuario>(user));				
 			}
@@ -161,17 +160,18 @@ public class Administration extends CssLayout implements View {
 						"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
 					public void onClose(ConfirmDialog dialog) {
 						if (dialog.isConfirmed()) {
-							//si el usuario es nuevo solo lo quita de la lista
-							if(user.getId() != null )
-								service.deleteUser(user.getId());
-							userContainer.removeItem(user);				
-							setUser(userContainer.getItem( userContainer.firstItemId() ));
+							if(user.getId() != null ) {
+								service.deshabilitarUsuario(user);
+								userContainer.removeItem(user);				
+								setUser(userContainer.getItem( userContainer.firstItemId() ));
+							}
 						}
 					}
 				});	
 				
 			}
 		});
+		
 		hl.addComponent(borrarUsuario);
 		
 		usersTable =  drawTableUsers();
@@ -187,15 +187,15 @@ public class Administration extends CssLayout implements View {
 		usersTable.setContainerDataSource(userContainer);
 		usersTable.setSizeFull();
 		usersTable.setFilterBarVisible(true);
-		usersTable.setVisibleColumns("nombres","email","rol.nombre");
-		usersTable.setColumnHeaders("Nombre","Email","Perfil");
+		usersTable.setVisibleColumns("nombres","apellidoPaterno","rol.nombre","estadoUsuario");
+		usersTable.setColumnHeaders("Nombre","Apellido","Perfil","Estado");
 		usersTable.setSelectable(true);
 		
 		usersTable.addItemClickListener(new ItemClickListener() {
 			
 			@Override
 			public void itemClick(ItemClickEvent event) {
-				;
+				setUser((BeanItem<Usuario>)event.getItem());
 			}
 		});
 		
@@ -216,7 +216,7 @@ public class Administration extends CssLayout implements View {
         			fieldGroup.commit();
         			Usuario user = fieldGroup.getItemDataSource().getBean();
         			boolean isNew = user.getId() == null;
-        			service.saveUsuario(user);
+        			serviceUser.saveUser(user);
         			
         			if(isNew){
 	        			BeanItem<Usuario> userItem = userContainer.addBean(user);
@@ -239,6 +239,7 @@ public class Administration extends CssLayout implements View {
         vl.setComponentAlignment(btnSave, Alignment.TOP_LEFT);
 		
 		detailLayout = new FormLayout();
+		detailLayout.setEnabled(false);
 		detailLayout.setMargin(true);
 		detailLayout.setSpacing(true);
 		
@@ -249,7 +250,7 @@ public class Administration extends CssLayout implements View {
         
         // Loop through the properties, build fields for them and add the fields
         // to this UI
-        for (Object propertyId : new String[]{"nombres","apellidoPaterno","apellidoMaterno","email","habilitado","rol","contrasena","contrasena2","tasador"}) {
+        for (Object propertyId : new String[]{"nombres","apellidoPaterno","apellidoMaterno","email","estadoUsuario","rol","contrasena","contrasena2","tasador"}) {
         	if(propertyId.equals("male"))
         		;
         	else if(propertyId.equals("rol")){
@@ -257,8 +258,8 @@ public class Administration extends CssLayout implements View {
         		cb.setItemCaptionMode(ItemCaptionMode.PROPERTY);
         		cb.setItemCaptionPropertyId("nombre");
         		cb.setWidth("100%");
-				cb.setContainerDataSource(rolContainer);				
         		fieldGroup.bind(cb, propertyId);
+				cb.setContainerDataSource(rolContainer);				
         		detailLayout.addComponent(cb);
         	}else if(propertyId.equals("contrasena")){
         		PasswordField pf = new PasswordField("Contraseña");
@@ -274,21 +275,20 @@ public class Administration extends CssLayout implements View {
         		detailLayout.addComponent(pf2);
         		fieldGroup.bind(pf2, propertyId);
         		pf2.setValue(null);
-        	}else if(propertyId.equals("habilitado")){
+        	}else if(propertyId.equals("estadoUsuario")){
         		ComboBox statusField = new ComboBox("Estado");
-        		statusField.setNullSelectionAllowed(false);
         		for(EstadoUsuario us : EstadoUsuario.values()){
         			statusField.addItem(us);
         		}
         		statusField.setWidth("100%");
         		detailLayout.addComponent(statusField);
-        		fieldGroup.bind(statusField, "habilitado");
+        		fieldGroup.bind(statusField, "estadoUsuario");
         	}else if(propertyId.equals("tasador")){
         		OptionGroup continuarField = new OptionGroup("¿Es Tasador?");
-        		continuarField.addItem(1);
-        		continuarField.addItem(2);
-        		continuarField.setItemCaption(1, "Si");
-        		continuarField.setItemCaption(2, "No");        
+        		continuarField.addItem(Boolean.TRUE);
+        		continuarField.addItem(Boolean.FALSE);
+        		continuarField.setItemCaption(Boolean.TRUE, "Si");
+        		continuarField.setItemCaption(Boolean.FALSE, "No");        
         		continuarField.setImmediate(true);
         		continuarField.addStyleName("horizontal");
         		continuarField.setWidth("100%");
@@ -353,7 +353,7 @@ public class Administration extends CssLayout implements View {
 			return;
 		}
 		
-        usersTable.select(userItem.getBean());		
+        usersTable.select(userItem.getBean());	
 		detailLayout.setEnabled(true);		
 		userItem.getBean().setContrasena(null);
 		userItem.getBean().setContrasena2(null);
@@ -364,26 +364,13 @@ public class Administration extends CssLayout implements View {
 	}
 
     @Override
-    public void detach() {
-        super.detach();
-        // A new instance of ScheduleView is created every time it's navigated
-        // to so we'll need to clean up references to it on detach.
-        ValuedEventBus.unregister(this);
-    }
-
-    @Subscribe
-    public void browserWindowResized(final BrowserResizeEvent event) {
-        if (Page.getCurrent().getBrowserWindowWidth() < 800) {
-            ;//calendar.setEndDate(calendar.getStartDate());
-        }
-    }
-
-    @Override
     public void enter(final ViewChangeEvent event) {
     	List<Rol> roles = service.getRoles();
+    	rolContainer.removeAllItems();
   		rolContainer.addAll(roles);
   		
   		List<Usuario> usuarios = service.getUsuarios();
+  		userContainer.removeAllItems();
   		userContainer.addAll(usuarios);
     }
     
@@ -427,11 +414,16 @@ public class Administration extends CssLayout implements View {
 						"Eliminar", "Cancelar", new ConfirmDialog.Listener() {
 					public void onClose(ConfirmDialog dialog) {
 						if (dialog.isConfirmed()) {
-							//si el usuario es nuevo solo lo quita de la lista
-							if(rol.getId() != null )
-								service.deleteUser(rol.getId());
-								rolContainer.removeItem(rol);				
-							setRole( rolContainer.getItem(rolContainer.firstItemId() ));
+							if(rol.getId() != null ) {
+								if(!serviceUser.findUsersByRole(rol))
+									Notification.show("El role esta siendo ocupado por usuarios habilitados.");
+								else {
+									service.deleteRol(rol.getId());
+									rolContainer.removeItem(rol);				
+									setRole( rolContainer.getItem(rolContainer.firstItemId() ));
+								}
+									
+							}
 						}
 					}
 				});	
@@ -521,6 +513,7 @@ public class Administration extends CssLayout implements View {
         vl.setComponentAlignment(btnSave, Alignment.TOP_LEFT);
 		
 		rolDetailLayout = new FormLayout();
+		rolDetailLayout.setEnabled(false);
 		rolDetailLayout.setMargin(true);
 		rolDetailLayout.setSpacing(true);
 		

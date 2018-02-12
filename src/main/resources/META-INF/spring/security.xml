@@ -21,10 +21,10 @@ http://www.springframework.org/schema/security http://www.springframework.org/sc
         <authentication-provider ref="authProvider"></authentication-provider>
     </authentication-manager>
     
-    <!-- <beans:bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
-	  <beans:property name="userDetailsService" ref="valuedService"  />
+    <beans:bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+	  <beans:property name="userDetailsService" ref="userService"  />
 	  <beans:property name="passwordEncoder" ref="encoder" />
-	</beans:bean>-->
+	</beans:bean>
 	
 	<!-- For hashing and salting user passwords -->
     <beans:bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>

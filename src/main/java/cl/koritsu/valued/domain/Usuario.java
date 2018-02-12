@@ -1,10 +1,14 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.PrePersist;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
 
@@ -16,14 +20,19 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private boolean tasador;
+	private Boolean tasador = Boolean.FALSE;
     private String nombres = "";
     private String apellidoPaterno = "";
     private String apellidoMaterno = "";
     private boolean male;
     @Email(message="El email es inválido.")
     private String email = "";
-    private EstadoUsuario habilitado;
+    
+    @Convert(converter = EstadoUsuarioConverter.class)
+    @Column(name = "estadoUsuario", nullable=false)
+    @NotNull(message="Es necesario definir el estado")
+    private EstadoUsuario estadoUsuario = EstadoUsuario.HABILITADO ;
+    
     private String contrasena = "";
     private String telefonoFijo;
     private String telefonoMovil;
@@ -31,6 +40,17 @@ public class Usuario {
     private String banco;
     @JoinColumn(name="rolId")
     private Rol rol;
+    
+    /**
+     * Obliga a que status sea activo, si no viene uno seteado
+     */
+    @PrePersist
+    void preInsert() {
+       if(estadoUsuario == null)
+    	   estadoUsuario = EstadoUsuario.HABILITADO;
+       if(tasador == null)
+    	   tasador = Boolean.FALSE;
+    }
 
 	public Long getId() {
 		return id;
@@ -40,11 +60,11 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public boolean isTasador() {
+	public Boolean getTasador() {
 		return tasador;
 	}
 
-	public void setTasador(boolean tasador) {
+	public void setTasador(Boolean tasador) {
 		this.tasador = tasador;
 	}
 
@@ -88,12 +108,12 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public EstadoUsuario getHabilitado() {
-		return habilitado;
+	public EstadoUsuario getEstadoUsuario() {
+		return estadoUsuario;
 	}
 
-	public void setHabilitado(EstadoUsuario habilitado) {
-		this.habilitado = habilitado;
+	public void setEstadoUsuario(EstadoUsuario estadoUsuario) {
+		this.estadoUsuario = estadoUsuario;
 	}
 
 	public String getContrasena() {

@@ -22,20 +22,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.vaadin.server.ErrorMessage;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 
-import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
 
+@Service(value="userService")
 @Transactional(readOnly=true)
-public class UsuarioServiceImpl implements UserDetailsService {
-	static Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+public class UserServiceImpl implements UserDetailsService, UserService {
+	static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 	
 	@Autowired
 	UsuarioRepository rep;
@@ -255,5 +254,20 @@ public class UsuarioServiceImpl implements UserDetailsService {
 	 */
 	public List<Rol> getAllRole() {
 		return (List<Rol>) repRol.findAll();
+	}
+
+	@Override
+	public Page<Usuario> findAllActiveUser(Pageable page) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean findUsersByRole(Rol rol) {
+		if(rep.findByRol(rol).isEmpty())
+			return true;
+		else
+			return false;
+		
 	}
 }

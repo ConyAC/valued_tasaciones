@@ -255,4 +255,12 @@ public class ValuedService {
 		usuarioRepo.delete(id);
 	}
 
+	public void deleteRol(Long id) {
+		rolRepo.delete(id);
+		
+	}
+	
+	public void deshabilitarUsuario(Usuario user) {
+		usuarioRepo.deshabilitar(user);		
+	}
 }

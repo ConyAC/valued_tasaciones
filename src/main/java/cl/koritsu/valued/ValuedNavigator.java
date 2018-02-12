@@ -56,10 +56,10 @@ public class ValuedNavigator extends DiscoveryNavigator {
 
             @Override
             public void afterViewChange(final ViewChangeEvent event) {
-                ValuedViewType view = ValuedViewType.getByViewName(event
-                        .getViewName());
+//                ValuedViewType view = ValuedViewType.getByViewName(event
+//                        .getViewName());
                 // Appropriate events get fired after the view is changed.
-                ValuedEventBus.post(new PostViewChangeEvent(view));
+//                ValuedEventBus.post(new PostViewChangeEvent(view));
                 ValuedEventBus.post(new BrowserResizeEvent());
                 ValuedEventBus.post(new CloseOpenWindowsEvent());
 

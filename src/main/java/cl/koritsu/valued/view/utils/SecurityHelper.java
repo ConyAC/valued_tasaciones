@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.view.LoginView;
 
 public class SecurityHelper {
 	
@@ -38,19 +40,19 @@ public class SecurityHelper {
 
 		Usuario usuario = getUser();
 		//si el usuario el nulo, lo rederidige al login
-//		if(usuario == null ) {
-//			UI.getCurrent().getNavigator().navigateTo(LoginView.NAME);
-//			return false;
-//		}
+		if(usuario == null ) {
+			UI.getCurrent().getNavigator().navigateTo(LoginView.NAME);
+			return false;
+		}
 		
-//		if(usuario.getRol() == null || usuario.getRol().getPermission() == null ){
-//			return false;
-//		}
+		if(usuario.getRol() == null || usuario.getRol().getPermisos() == null ){
+			return false;
+		}
 		
-//		for(Permission p : permissions){
-//			if(!usuario.getRol().getPermission().contains(p))
-//				return false;
-//		}
+		for(Permiso p : permissions){
+			if(!usuario.getRol().getPermisos().contains(p))
+				return false;
+		}
 
 		return true;
 	}
@@ -60,7 +62,7 @@ public class SecurityHelper {
 		//si el usuario el nulo, lo rederidige al login
 		if(usuario == null ) 
 			return true;
-
+		
 		return true;
 	}
 

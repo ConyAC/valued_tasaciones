@@ -33,7 +33,10 @@ import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.ProfilePreferencesWindow;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.view.utils.Constants;
+import cl.koritsu.valued.view.utils.SecurityHelper;
 import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
 import cl.koritsu.valued.event.ValuedEvent.PostViewChangeEvent;
 import cl.koritsu.valued.event.ValuedEvent.ProfileUpdatedEvent;
@@ -54,6 +57,9 @@ public final class ValuedMenu extends CustomComponent {
     private static final String STYLE_VISIBLE = "valo-menu-visible";
     private Label notificationsBadge;
     private Label reportsBadge;
+    private Label administrationBadge;
+    private Label verTasacionesBadge;
+    private Label ingresarTasacionBadge;
     private MenuItem settingsItem;
 
     public ValuedMenu() {
@@ -96,30 +102,23 @@ public final class ValuedMenu extends CustomComponent {
     }
 
     private Usuario getCurrentUser() {
-        return (Usuario) VaadinSession.getCurrent().getAttribute(
-                Usuario.class.getName());
+        return (Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName());
     }
 
     private Component buildUserMenu() {
         final MenuBar settings = new MenuBar();
         settings.addStyleName("user-menu");
-        final Usuario user = getCurrentUser();
+        
         settingsItem = settings.addItem("", new ThemeResource(
                 "img/profile-pic-300px.jpg"), null);
         updateUserName(null);
-        settingsItem.addItem("Editar Perfil", new Command() {
-            @Override
-            public void menuSelected(final MenuItem selectedItem) {
-                ProfilePreferencesWindow.open(user, false);
-            }
-        });
-        settingsItem.addItem("Preferencias", new Command() {
-            @Override
-            public void menuSelected(final MenuItem selectedItem) {
-                ProfilePreferencesWindow.open(user, true);
-            }
-        });
-        settingsItem.addSeparator();
+//        settingsItem.addItem("Editar Perfil", new Command() {
+//            @Override
+//            public void menuSelected(final MenuItem selectedItem) {
+//                ProfilePreferencesWindow.open(user, false);
+//            }
+//        });
+        
         settingsItem.addItem("Salir", new Command() {
             @Override
             public void menuSelected(final MenuItem selectedItem) {
@@ -150,53 +149,86 @@ public final class ValuedMenu extends CustomComponent {
     private Component buildMenuItems() {
         CssLayout menuItemsLayout = new CssLayout();
         menuItemsLayout.addStyleName("valo-menuitems");
+        
+        if(SecurityHelper.isLogged()){
+	        for (final ValuedViewType view : ValuedViewType.values()) {
+	            Component menuItemComponent = new ValoMenuItemButton(view);
 
-        for (final ValuedViewType view : ValuedViewType.values()) {
-            Component menuItemComponent = new ValoMenuItemButton(view);
-
-            if (view == ValuedViewType.REPORTS) {
-                // Add drop target to reports button
-                DragAndDropWrapper reports = new DragAndDropWrapper(
-                        menuItemComponent);
-                reports.setSizeUndefined();
-                reports.setDragStartMode(DragStartMode.NONE);
-                reports.setDropHandler(new DropHandler() {
-
-                    @Override
-                    public void drop(final DragAndDropEvent event) {
-                        UI.getCurrent()
-                                .getNavigator()
-                                .navigateTo(
-                                        ValuedViewType.REPORTS.getViewName());
-                        Table table = (Table) event.getTransferable()
-                                .getSourceComponent();
-                        ValuedEventBus.post(new TransactionReportEvent(
-                                (Collection<Transaction>) table.getValue()));
-                    }
-
-                    @Override
-                    public AcceptCriterion getAcceptCriterion() {
-                        return AcceptItem.ALL;
-                    }
-
-                });
-                menuItemComponent = reports;
-            }
-
-            if (view == ValuedViewType.DASHBOARD) {
-                notificationsBadge = new Label();
-                notificationsBadge.setId(NOTIFICATIONS_BADGE_ID);
-                menuItemComponent = buildBadgeWrapper(menuItemComponent,
-                        notificationsBadge);
-            }
-            if (view == ValuedViewType.REPORTS) {
-                reportsBadge = new Label();
-                reportsBadge.setId(REPORTS_BADGE_ID);
-                menuItemComponent = buildBadgeWrapper(menuItemComponent,
-                        reportsBadge);
-            }
-
-            menuItemsLayout.addComponent(menuItemComponent);
+	            if (view == ValuedViewType.DASHBOARD) {
+	                notificationsBadge = new Label();
+	                notificationsBadge.setId(NOTIFICATIONS_BADGE_ID);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                        notificationsBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.REPORTS && SecurityHelper.hasPermission(Permiso.VISUALIZAR_REPORTES)) {
+	                reportsBadge = new Label();
+	                reportsBadge.setId(REPORTS_BADGE_ID);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                        reportsBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.ADMINISTRATION && SecurityHelper.hasPermission(Permiso.ADMINISTRACION)) {
+	                administrationBadge = new Label();
+	                administrationBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		administrationBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.TRANSACTIONS2 && SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES)) {
+	                verTasacionesBadge = new Label();
+	                verTasacionesBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		verTasacionesBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.SALES && SecurityHelper.hasPermission(Permiso.INGRESAR_SOLICITUD)) {
+	                ingresarTasacionBadge = new Label();
+	                ingresarTasacionBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		ingresarTasacionBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            	
+//	            if (view == ValuedViewType.REPORTS) {
+//	                // Add drop target to reports button
+//	                DragAndDropWrapper reports = new DragAndDropWrapper(
+//	                        menuItemComponent);
+//	                reports.setSizeUndefined();
+//	                reports.setDragStartMode(DragStartMode.NONE);
+//	                reports.setDropHandler(new DropHandler() {
+//	
+//	                    @Override
+//	                    public void drop(final DragAndDropEvent event) {
+//	                        UI.getCurrent()
+//	                                .getNavigator()
+//	                                .navigateTo(
+//	                                        ValuedViewType.REPORTS.getViewName());
+//	                        Table table = (Table) event.getTransferable()
+//	                                .getSourceComponent();
+//	                        ValuedEventBus.post(new TransactionReportEvent(
+//	                                (Collection<Transaction>) table.getValue()));
+//	                    }
+//	
+//	                    @Override
+//	                    public AcceptCriterion getAcceptCriterion() {
+//	                        return AcceptItem.ALL;
+//	                    }
+//	
+//	                });
+//	                menuItemComponent = reports;
+//	            }
+	
+	        }
         }
         return menuItemsLayout;
 
@@ -244,7 +276,8 @@ public final class ValuedMenu extends CustomComponent {
     @Subscribe
     public void updateUserName(final ProfileUpdatedEvent event) {
         Usuario user = getCurrentUser();
-        settingsItem.setText(user.getNombres() + " " + user.getApellidoPaterno());
+        if(user != null)
+        	settingsItem.setText(user.getNombres() + " " + user.getApellidoPaterno());
     }
 
     public final class ValoMenuItemButton extends Button {
