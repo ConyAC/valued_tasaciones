@@ -133,6 +133,7 @@ public class AdministrationView extends CssLayout implements View {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				
+				detailLayout.setEnabled(true);
 				Usuario user = new Usuario();
 				user.setNombres("Nuevo Usuario");
 				user.setApellidoPaterno("");
@@ -393,6 +394,7 @@ public class AdministrationView extends CssLayout implements View {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
+				rolDetailLayout.setEnabled(true);
 				Rol rol = new Rol();
 				rol.setNombre("Nuevo Perfil");				
 		        rolFieldGroup.setItemDataSource(new BeanItem<Rol>(rol));				
