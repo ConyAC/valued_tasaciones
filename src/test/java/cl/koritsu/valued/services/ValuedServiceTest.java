@@ -1,5 +1,7 @@
 package cl.koritsu.valued.services;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,21 +55,61 @@ public class ValuedServiceTest {
 			
 			Assert.assertNotNull("el wb es nulo", wb);
 			
-			Sheet sheet = wb.getSheetAt(3);
+			Sheet sheet = wb.getSheetAt(11);
 			Assert.assertNotNull("el sheet es nulo", sheet);
 			
 			List<SolicitudTasacion> solicitudes = new ArrayList<SolicitudTasacion>( sheet.getLastRowNum());
 			
+			
+			List<String> rutInvalidos = new ArrayList<String>();
 			Row row = null;
 			//crea una solicitud por cada fila
-			for( int i = 0 ; i < sheet.getLastRowNum() ; i++ ){
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
+				
+				if(i == 0) continue; 				
+				row = sheet.getRow(i);
+				String rut_solicitante = getValueFromCell(row,3);
+				String dv_solicitante = getValueFromCell(row,4);	
+				//primero valida los rut
+				if(rut_solicitante != null && rut_solicitante.length() != 0 && !RutDigitValidator.ValidarRut(Integer.parseInt(rut_solicitante), dv_solicitante.charAt(0)))
+					rutInvalidos.add(rut_solicitante);
+				
+			}
+			if(!rutInvalidos.isEmpty()) {
+				for(String rutInvalido : rutInvalidos ) {
+					System.out.println(rutInvalido+"-"+RutDigitValidator.Digito(Integer.valueOf(rutInvalido)));
+				}
+				Assert.fail("existe rut invalidos");
+			}
+			
+			List<String> comunasInvalidas = new ArrayList<String>();
+			row = null;
+			//crea una solicitud por cada fila
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
+				
+				if(i == 0) continue; 				
+				row = sheet.getRow(i);
+				String comuna = getValueFromCell(row,19);
+				//primero valida los rutç
+				Comuna comunaBean = getComuna(comuna);
+				if(comunaBean == null )
+					comunasInvalidas.add(getValueFromCell(row,1)+", "+comuna);
+				
+			}
+			if(!comunasInvalidas.isEmpty()) {
+				for(String comunaInvalida : comunasInvalidas ) {
+					System.out.println(comunaInvalida);
+				}
+				Assert.fail("existe comunas invalidas");
+			}
+			
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
 				
 				row = sheet.getRow(i);
-				
 				System.out.println(row.getRowNum());
 				
 				//ignora la primera fila
-				if(i == 0) continue; 				i++;
+				if(i == 0) continue; 				
 				int j = 0;
 				double cliente =getDoubleFromCell(row,j++);
 				String nroEncargo = getValueFromCell(row,j++);
@@ -94,6 +136,8 @@ public class ValuedServiceTest {
 				String direccionUnidadSII =getValueFromCell(row,j++);
 				Date fechaEnviada =getDateFromCell(row,j++);
 				String obs =getValueFromCell(row,j++);
+				String nEncCliente = getValueFromCell(row, j++);
+				double montoTasacionUF= getDoubleFromCell(row, j++);
 				
 				SolicitudTasacion st = new SolicitudTasacion();
 				Bien bien = new Bien();
@@ -134,6 +178,8 @@ public class ValuedServiceTest {
 				st.setFechaEnvioCliente(fechaEnviada);
 				st.setTipoInforme(getTipoInfome(tipoInforme));
 				st.setUsuario(getUsuario());
+				st.setNumeroTasacionCliente(nEncCliente);
+				st.setMontoTasacionUF( Float.parseFloat(montoTasacionUF+""));
 				
 				System.out.println(row.getRowNum()+" "+nroEncargo);
 				//la agrega al arreglo a guardar
@@ -162,6 +208,88 @@ public class ValuedServiceTest {
 		}
 	}
 	
+	@Test
+	public void cargaTasadores() {
+		
+		try {
+			//carga el excel 
+			XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(new File(
+					ValuedServiceTest.class.getResource("/carga.xlsx").toURI())));
+			
+			Assert.assertNotNull("el wb es nulo", wb);
+			
+			Sheet sheet = wb.getSheetAt(10);
+			Assert.assertNotNull("el sheet es nulo", sheet);
+			
+			Row row = null;
+			//crea una solicitud por cada fila
+			
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
+				
+				row = sheet.getRow(i);
+				System.out.println(row.getRowNum());
+				
+				//ignora la primera fila
+				if(i == 0) continue; 				
+				int j = 0;
+				double cliente =getDoubleFromCell(row,j++);
+				String nroEncargo = getValueFromCell(row,j++);
+				String nombre_solicitante = getValueFromCell(row,j++);
+				String rut_solicitante = getValueFromCell(row,j++);
+				String dv_solicitante = getValueFromCell(row,j++);
+				String tipoInforme = getValueFromCell(row,j++);
+				String tipoBien =getValueFromCell(row,j++);
+				double honorarioCliente =getDoubleFromCell(row,j++);
+				double honorarioClienteP =getDoubleFromCell(row,j++);
+				double honorarioDespl =getDoubleFromCell(row,j++);
+				double honorarioTas =getDoubleFromCell(row,j++);
+				double honorarioTasPes =getDoubleFromCell(row,j++);
+				String ctacte = getValueFromCell(row,j++);
+				Date fechaEncargo = getDateFromCell(row,j++);
+				Date fechaTasacion =getDateFromCell(row,j++);
+				Date fechaEntregaMax =getDateFromCell(row,j++);
+				double dias = getDoubleFromCell(row,j++);
+				String direccion =getValueFromCell(row,j++);
+				String nroDireccion = getValueFromCell(row,j++);
+				String comuna =getValueFromCell(row,j++);
+				String direccionRegionalSII =getValueFromCell(row,j++);
+				String nombreUnidadSII =getValueFromCell(row,j++);
+				String direccionUnidadSII =getValueFromCell(row,j++);
+				Date fechaEnviada =getDateFromCell(row,j++);
+				String obs =getValueFromCell(row,j++);
+				String nEncCliente = getValueFromCell(row, j++);
+				double montoTasacionUF= getDoubleFromCell(row, j++);
+				String tasador= getValueFromCell(row, j++);
+				double tasadorId= getDoubleFromCell(row, j++);
+				//busca la solicitud asociada al numero de encargo
+				SolicitudTasacion st = service.getSolicitudByNumeroTasacion(nroEncargo);
+				if(st != null ) {
+					if(tasadorId != 0) {
+						Usuario usuario = service.getUsuarioById((long) tasadorId);
+						if(usuario == null ) fail("el usuario "+tasador+"-"+tasadorId+"no se encontro en la base de datos");
+						st.setTasador(usuario);
+						service.saveSolicitud(st);
+					}
+				}
+				
+			}
+			Assert.assertNotNull("el row es nulo", wb.getSheetAt(0).getRow(0));
+			
+			System.out.println(""+wb.getSheetAt(0).getRow(0).getCell(0).getStringCellValue());
+			
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	private double getDoubleFromCell(Row row, int rownum) {
 		Cell cell = row.getCell(rownum);
 		if(cell == null )return 0;
@@ -174,6 +302,9 @@ public class ValuedServiceTest {
 	private Date getDateFromCell(Row row, int rownum) {
 		Cell cell = row.getCell(rownum);
 		if(cell == null )return null;
+		
+		System.out.println(cell);
+		
 		if( cell.getCellType() == Cell.CELL_TYPE_NUMERIC )
 			return row.getCell(rownum).getDateCellValue();
 		else 

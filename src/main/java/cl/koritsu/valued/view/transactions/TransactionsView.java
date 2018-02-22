@@ -51,6 +51,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.MovieDetailsWindow;
+import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
@@ -218,7 +219,7 @@ public final class TransactionsView extends VerticalLayout implements View {
 
 				// Image as a file resource
 				FileResource resource = new FileResource(new File(basepath +
-				                        "/VAADIN/img/pin_tas_ing.png"));
+				                        "/VAADIN/img/pin_tas_asignada.png"));
 				return new Image(null,resource);
 			}
 		});
@@ -302,8 +303,10 @@ public final class TransactionsView extends VerticalLayout implements View {
     	//limpia la tabla
     	table.removeAllItems();
     	//llena con las tasaciones
-    	List<SolicitudTasacion> solicitudes = service.getTasaciones();
-    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);
+    	Comuna comuna = new Comuna();
+    	comuna.setId(13101L);
+    	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);    	
+    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes);   
     }
 
     private class TransactionsActionHandler implements Handler {

@@ -1,11 +1,18 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.PrePersist;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
+
+import cl.koritsu.valued.domain.enums.EstadoUsuario;
 
 @Entity
 public class Usuario {
@@ -13,24 +20,37 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private boolean tasador;
+	private Boolean tasador = Boolean.FALSE;
     private String nombres = "";
     private String apellidoPaterno = "";
     private String apellidoMaterno = "";
     private boolean male;
     @Email(message="El email es inválido.")
     private String email = "";
-    private boolean habilitado;
+    
+    @Convert(converter = EstadoUsuarioConverter.class)
+    @Column(name = "estadoUsuario", nullable=false)
+    @NotNull(message="Es necesario definir el estado")
+    private EstadoUsuario estadoUsuario = EstadoUsuario.HABILITADO ;
+    
     private String contrasena = "";
     private String telefonoFijo;
     private String telefonoMovil;
     private String nroCuentaBancaria;
     private String banco;
+    @JoinColumn(name="rolId")
+    private Rol rol;
     
     /**
-     * @deprecated se cambiará por perfil
+     * Obliga a que status sea activo, si no viene uno seteado
      */
-    private String rol;
+    @PrePersist
+    void preInsert() {
+       if(estadoUsuario == null)
+    	   estadoUsuario = EstadoUsuario.HABILITADO;
+       if(tasador == null)
+    	   tasador = Boolean.FALSE;
+    }
 
 	public Long getId() {
 		return id;
@@ -40,11 +60,11 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public boolean isTasador() {
+	public Boolean getTasador() {
 		return tasador;
 	}
 
-	public void setTasador(boolean tasador) {
+	public void setTasador(Boolean tasador) {
 		this.tasador = tasador;
 	}
 
@@ -88,12 +108,12 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public boolean isHabilitado() {
-		return habilitado;
+	public EstadoUsuario getEstadoUsuario() {
+		return estadoUsuario;
 	}
 
-	public void setHabilitado(boolean habilitado) {
-		this.habilitado = habilitado;
+	public void setEstadoUsuario(EstadoUsuario estadoUsuario) {
+		this.estadoUsuario = estadoUsuario;
 	}
 
 	public String getContrasena() {
@@ -136,13 +156,25 @@ public class Usuario {
 		this.banco = banco;
 	}
 
-	public String getRol() {
+	public Rol getRol() {
 		return rol;
 	}
 
-	public void setRol(String rol) {
+	public void setRol(Rol rol) {
 		this.rol = rol;
 	}
+	
+	//atributo para crear el registro
+    transient String contrasena2;
+    
+	public String getContrasena2() {
+		return contrasena2;
+	}
+
+	public void setContrasena2(String contrasena2) {
+		this.contrasena2 = contrasena2;
+	}
+
 
 	public String getFullname(){
     	return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");

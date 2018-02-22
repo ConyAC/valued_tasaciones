@@ -11,7 +11,7 @@ import cl.koritsu.valued.domain.SolicitudTasacion;
 public interface SolicitudTasacionRepository extends PagingAndSortingRepository<SolicitudTasacion, Long> {
 	
 	
-	@Query("select s from SolicitudTasacion s where s.bien.comuna = ?1 ")
+	@Query("select s from SolicitudTasacion s join fetch s.tasador t where s.bien.comuna = ?1 order by s.fechaEncargo ASC")
 	List<SolicitudTasacion> findByRegionAndComuna(Comuna comuna);
 
 }

@@ -18,7 +18,9 @@ import javax.persistence.TemporalType;
 import org.hibernate.validator.constraints.Email;
 
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.TipoPersona;
 import cl.koritsu.valued.domain.validator.RutDigit;
+import cl.koritsu.valued.view.utils.Utils;
 
 @Entity
 @Table(name="solicitud_tasacion")
@@ -35,7 +37,8 @@ public class SolicitudTasacion {
 	@Temporal(TemporalType.DATE)
 	Date fechaEnvioCliente;
 	
-	float montoCompraEstimado;
+	float montoCompraEstimadoUF;
+	float montoCompraEstimadoPesos;
 	float montoTasacionPesos;
 	float montoTasacionUF;
 	
@@ -123,12 +126,18 @@ public class SolicitudTasacion {
 	}
 	public void setFechaEnvioCliente(Date fechaEnvioCliente) {
 		this.fechaEnvioCliente = fechaEnvioCliente;
+	}	
+	public float getMontoCompraEstimadoUF() {
+		return montoCompraEstimadoUF;
 	}
-	public float getMontoCompraEstimado() {
-		return montoCompraEstimado;
+	public void setMontoCompraEstimadoUF(float montoCompraEstimadoUF) {
+		this.montoCompraEstimadoUF = montoCompraEstimadoUF;
 	}
-	public void setMontoCompraEstimado(float montoCompraEstimado) {
-		this.montoCompraEstimado = montoCompraEstimado;
+	public float getMontoCompraEstimadoPesos() {
+		return montoCompraEstimadoPesos;
+	}
+	public void setMontoCompraEstimadoPesos(float montoCompraEstimadoPesos) {
+		this.montoCompraEstimadoPesos = montoCompraEstimadoPesos;
 	}
 	public float getMontoTasacionPesos() {
 		return montoTasacionPesos;
@@ -317,5 +326,31 @@ public class SolicitudTasacion {
 	public void setTasador(Usuario tasador) {
 		this.tasador = tasador;
 	}
+
+	public String getFechaEncargoFormateada() {
+		return Utils.formatoFecha(getFechaEncargo());
+	}
+	public String getNombreCliente() {
+		if(getCliente() != null) {
+			if(getCliente().getTipoPersona() == TipoPersona.NATURAL)
+				return getCliente().getNombres()+" "+getCliente().getApellidoPaterno()+" "+getCliente().getApellidoMaterno();
+			else
+				return getCliente().getRazonSocial();
+		}
+		return "Cliente no definido";
+	}
 	
+	public String getTipoInformeString() {
+		return tipoInforme != null && tipoInforme.getNombre() != null ? tipoInforme.getNombre() : "Sin Tipo Informe";
+	}
+	
+	public String getClaseBienString() {
+		return (bien != null)?bien.getClase().name() : "Sin Clase";
+	}
+	
+	public String getDireccionCompleta() {
+		return getBien().getDireccion() + " " + getBien().getNumeroManzana() + ", "
+		+ getBien().getComuna().getNombre() + ", "
+		+ getBien().getComuna().getRegion().getNombre();
+	}
 }

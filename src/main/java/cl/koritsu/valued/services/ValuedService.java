@@ -13,8 +13,10 @@ import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.HonorarioCliente;
+import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.RazonSocial;
 import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.Solicitante;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Sucursal;
@@ -27,8 +29,10 @@ import cl.koritsu.valued.repositories.ClienteRepository;
 import cl.koritsu.valued.repositories.ComunaRepository;
 import cl.koritsu.valued.repositories.ContactoRepository;
 import cl.koritsu.valued.repositories.HonorarioClienteRepository;
+import cl.koritsu.valued.repositories.ObraComplementariaRepository;
 import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
+import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
 import cl.koritsu.valued.repositories.SolicitudRepository;
 import cl.koritsu.valued.repositories.SolicitudTasacionRepository;
@@ -72,6 +76,11 @@ public class ValuedService {
 	CargoRepository cargoRepo;
 	@Autowired
 	private RazonSocialRepository razonSocialRepo;
+	@Autowired
+	ObraComplementariaRepository obrasRepo;
+	@Autowired
+	RolRepository rolRepo;
+	
 	
 	public List<Region> getRegiones() {
 		return (List<Region>) regionRepo.findAll();
@@ -149,9 +158,19 @@ public class ValuedService {
 		//setea los bean controlados
 		bean.setBien(bien);
 		bean.setHonorarioCliente(honorarioCliente);
-		//genera un nùmero de solicitud para valued
-		String nroValued = bean.getCliente().getNombreCliente() +"-"+  ai.getAndIncrement()+"";
-		bean.setNumeroTasacion(nroValued);
+		//genera un nùmero de solicitud para valued si es que viene nulo
+		String nroValued = null;
+		if(bean.getNumeroTasacion() == null || bean.getNumeroTasacion().trim().length() == 0 ) {
+			long nuevoNumero = (bean.getCliente().getCorrelativoActual() + 1);
+			//guarda el numero generado en el cliente
+			bean.getCliente().setCorrelativoActual(nuevoNumero);
+			clienteRepo.save(bean.getCliente());
+			// luego asigna dicho número a la solicitud
+			nroValued = bean.getCliente().getPrefijo() + String.format("%05d", nuevoNumero);
+			bean.setNumeroTasacion(nroValued);
+		}else {
+			nroValued = bean.getNumeroTasacion();
+		}
 		//guarda la solicitud
 		solicitudRepo.save(bean);
 		
@@ -217,4 +236,45 @@ public class ValuedService {
 		return comunaRepo.findByNombre(comuna);
 	}
 
+	public Cliente getClienteById(long id) {
+		return clienteRepo.findOne(id);
+	}
+	
+	public SolicitudTasacion getSolicitudByNumeroTasacion(String nroEncargo) {
+		return solicitudRepo.findFirstByNumeroTasacion(nroEncargo);
+	}
+		
+	public Usuario findUsuarioByUsername(String email) {
+		return usuarioRepo.findByEmail(email);
+		
+	}
+
+	public List<ObraComplementaria> findObrasComplementariasByBien(long bienId) {	
+		return obrasRepo.findByBien(bienId);
+	}
+	
+	public List<Rol> getRoles() {
+		return (List<Rol>) rolRepo.findAll();
+	}
+	
+	public List<Usuario> getUsuarios() {
+		return (List<Usuario>) usuarioRepo.findAll();
+	}
+	
+	public void saveRol(Rol bean) {
+		rolRepo.save(bean);
+	}
+
+	public void deleteUser(Long id){
+		usuarioRepo.delete(id);
+	}
+
+	public void deleteRol(Long id) {
+		rolRepo.delete(id);
+		
+	}
+	
+	public void deshabilitarUsuario(Usuario user) {
+		usuarioRepo.deshabilitar(user);		
+	}
 }
