@@ -16,6 +16,7 @@ import cl.koritsu.valued.domain.HonorarioCliente;
 import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.RazonSocial;
 import cl.koritsu.valued.domain.Region;
+import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.Solicitante;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Sucursal;
@@ -31,6 +32,7 @@ import cl.koritsu.valued.repositories.HonorarioClienteRepository;
 import cl.koritsu.valued.repositories.ObraComplementariaRepository;
 import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
+import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
 import cl.koritsu.valued.repositories.SolicitudRepository;
 import cl.koritsu.valued.repositories.SolicitudTasacionRepository;
@@ -76,6 +78,8 @@ public class ValuedService {
 	private RazonSocialRepository razonSocialRepo;
 	@Autowired
 	ObraComplementariaRepository obrasRepo;
+	@Autowired
+	RolRepository rolRepo;
 	
 	
 	public List<Region> getRegiones() {
@@ -247,5 +251,30 @@ public class ValuedService {
 
 	public List<ObraComplementaria> findObrasComplementariasByBien(long bienId) {	
 		return obrasRepo.findByBien(bienId);
+	}
+	
+	public List<Rol> getRoles() {
+		return (List<Rol>) rolRepo.findAll();
+	}
+	
+	public List<Usuario> getUsuarios() {
+		return (List<Usuario>) usuarioRepo.findAll();
+	}
+	
+	public void saveRol(Rol bean) {
+		rolRepo.save(bean);
+	}
+
+	public void deleteUser(Long id){
+		usuarioRepo.delete(id);
+	}
+
+	public void deleteRol(Long id) {
+		rolRepo.delete(id);
+		
+	}
+	
+	public void deshabilitarUsuario(Usuario user) {
+		usuarioRepo.deshabilitar(user);		
 	}
 }

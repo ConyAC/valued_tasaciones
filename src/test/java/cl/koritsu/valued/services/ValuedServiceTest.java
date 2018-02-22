@@ -55,7 +55,7 @@ public class ValuedServiceTest {
 			
 			Assert.assertNotNull("el wb es nulo", wb);
 			
-			Sheet sheet = wb.getSheetAt(8);
+			Sheet sheet = wb.getSheetAt(11);
 			Assert.assertNotNull("el sheet es nulo", sheet);
 			
 			List<SolicitudTasacion> solicitudes = new ArrayList<SolicitudTasacion>( sheet.getLastRowNum());
@@ -80,6 +80,27 @@ public class ValuedServiceTest {
 					System.out.println(rutInvalido+"-"+RutDigitValidator.Digito(Integer.valueOf(rutInvalido)));
 				}
 				Assert.fail("existe rut invalidos");
+			}
+			
+			List<String> comunasInvalidas = new ArrayList<String>();
+			row = null;
+			//crea una solicitud por cada fila
+			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
+				
+				if(i == 0) continue; 				
+				row = sheet.getRow(i);
+				String comuna = getValueFromCell(row,19);
+				//primero valida los rutç
+				Comuna comunaBean = getComuna(comuna);
+				if(comunaBean == null )
+					comunasInvalidas.add(getValueFromCell(row,1)+", "+comuna);
+				
+			}
+			if(!comunasInvalidas.isEmpty()) {
+				for(String comunaInvalida : comunasInvalidas ) {
+					System.out.println(comunaInvalida);
+				}
+				Assert.fail("existe comunas invalidas");
 			}
 			
 			for( int i = 0 ; i < sheet.getLastRowNum() + 1 ; i++ ){
@@ -197,7 +218,7 @@ public class ValuedServiceTest {
 			
 			Assert.assertNotNull("el wb es nulo", wb);
 			
-			Sheet sheet = wb.getSheetAt(9);
+			Sheet sheet = wb.getSheetAt(10);
 			Assert.assertNotNull("el sheet es nulo", sheet);
 			
 			Row row = null;

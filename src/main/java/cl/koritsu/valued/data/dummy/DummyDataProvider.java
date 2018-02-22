@@ -387,7 +387,7 @@ public class DummyDataProvider implements DataProvider {
         user.setId(1L);
         user.setNombres(DummyDataGenerator.randomFirstName());
         user.setApellidoPaterno(DummyDataGenerator.randomLastName());
-        user.setRol("admin");
+        //user.getRol().setNombre("admin");
         String email = user.getNombres().toLowerCase() + "."
                 + user.getApellidoPaterno().toLowerCase() + "@"
                 + DummyDataGenerator.randomCompanyName().toLowerCase() + ".com";

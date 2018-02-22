@@ -125,5 +125,9 @@ public class Cliente {
 	public void setCorrelativoActual(long correlativoActual) {
 		this.correlativoActual = correlativoActual;
 	}
+	@Override
+	public String toString() {
+		return "Cliente [id=" + id + "]";
+	}
     
 }
