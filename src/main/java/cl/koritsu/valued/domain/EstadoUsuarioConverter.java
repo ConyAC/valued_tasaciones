@@ -10,11 +10,13 @@ public class EstadoUsuarioConverter implements AttributeConverter<EstadoUsuario,
 
 	@Override
 	public Integer convertToDatabaseColumn(EstadoUsuario arg0) {
+		if(arg0 == null ) return 1; 
 		return arg0.getCorrelative();
 	}
 
 	@Override
 	public EstadoUsuario convertToEntityAttribute(Integer arg0) {
+		if(arg0 == null) return EstadoUsuario.HABILITADO;
 		return EstadoUsuario.getUserStatus(arg0);
 	}
 }
