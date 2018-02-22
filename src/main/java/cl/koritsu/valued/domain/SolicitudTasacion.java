@@ -341,7 +341,7 @@ public class SolicitudTasacion {
 	}
 	
 	public String getTipoInformeString() {
-		return tipoInforme != null && tipoInforme.getDescripcion() != null ? tipoInforme.getDescripcion() : "Sin Tipo Informe";
+		return tipoInforme != null && tipoInforme.getNombre() != null ? tipoInforme.getNombre() : "Sin Tipo Informe";
 	}
 	
 	public String getClaseBienString() {

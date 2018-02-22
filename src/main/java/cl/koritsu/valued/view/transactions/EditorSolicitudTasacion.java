@@ -366,6 +366,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	 */
 	public void setSolicitud(SolicitudTasacion solicitud) {
         bfg.setItemDataSource(solicitud);
+        
+        bfg.getField("estado").setReadOnly(true);
         //setea los elementos de los containers
         dsObraComplementaria.removeAllItems();
         dsObraComplementaria.addAll(solicitud.getBien().getObrasComplementarias());
