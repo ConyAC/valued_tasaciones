@@ -33,7 +33,7 @@ public abstract class ValuedEvent {
     }
 
     public static class UserLoggedOutEvent {
-
+    	
     }
 
     public static class NotificationsCountUpdatedEvent {

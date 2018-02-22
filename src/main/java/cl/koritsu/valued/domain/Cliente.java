@@ -110,6 +110,9 @@ public class Cliente {
 		else 
 			return getRazonSocial();
 	}
+	@Override
+	public String toString() {
+		return "Cliente [id=" + id + "]";
+	}
     
-	
 }
