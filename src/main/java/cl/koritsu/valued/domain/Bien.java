@@ -29,10 +29,16 @@ public class Bien {
 	String numeroManzana = "";
 	String numeroPredial = "";
 	String direccion = "";
+	
 	float superficieTerreno;
+	float ufSuperficieTerreno;
+	
 	float superficieConstruida;
+	float ufSuperficieConstruida;
+	
 	@Column(name="superficieTerraza")
 	float superficieTerraza;
+	float ufSuperficieTerraza;
 	
 	String antecedentes = "";
 	@JoinColumn(name="comunaId")
@@ -121,6 +127,24 @@ public class Bien {
 	}
 	public void setProgramas(Set<ProgramaBien> programas) {
 		this.programas = programas;
+	}
+	public float getUfSuperficieTerreno() {
+		return ufSuperficieTerreno;
+	}
+	public void setUfSuperficieTerreno(float ufSuperficieTerreno) {
+		this.ufSuperficieTerreno = ufSuperficieTerreno;
+	}
+	public float getUfSuperficieConstruida() {
+		return ufSuperficieConstruida;
+	}
+	public void setUfSuperficieConstruida(float ufSuperficieConstruida) {
+		this.ufSuperficieConstruida = ufSuperficieConstruida;
+	}
+	public float getUfSuperficieTerraza() {
+		return ufSuperficieTerraza;
+	}
+	public void setUfSuperficieTerraza(float ufSuperficieTerraza) {
+		this.ufSuperficieTerraza = ufSuperficieTerraza;
 	}
 	
 }

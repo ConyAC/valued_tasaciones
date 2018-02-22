@@ -121,6 +121,7 @@ public class MapToolBox extends Window {
 			public void onClick(BeanItem<SolicitudTasacion> sol) {
 				doClickSiguiente(sol);
 				//si el estado es tasada y TODO es tasador, retorna a la tabla
+				solicitudContainer.getItem(sol.getBean()).getItemProperty("estado").setValue(sol.getBean().getEstado());
 				setContent(table);
 			}
 		});
@@ -199,8 +200,8 @@ public class MapToolBox extends Window {
 			}
 		});
 
-		table.setVisibleColumns("acceder", "numeroTasacion", "fechaEncargo", "direccion");
-		table.setColumnHeaders("Acceder", "N° Tasación", "Fecha Encargo", "Dirección");
+		table.setVisibleColumns("acceder","estado", "numeroTasacion", "fechaEncargo", "direccion");
+		table.setColumnHeaders("Acceder", "Estado","N° Tasación", "Fecha Encargo", "Dirección");
 		table.setFilterBarVisible(true);
 		table.setFooterVisible(true);
 

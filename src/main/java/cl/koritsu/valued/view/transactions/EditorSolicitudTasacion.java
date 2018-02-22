@@ -42,6 +42,7 @@ import cl.koritsu.valued.domain.ProgramaBien;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.enums.Adicional;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Programa;
 import cl.koritsu.valued.view.utils.Utils;
 
 public class EditorSolicitudTasacion extends VerticalLayout {
@@ -56,7 +57,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	
     OptionGroup continuar;
     Button btnRegresar = new Button("Regresar");
-    Button btnGuadar = new Button("Aceptar");
+    Button btnGuadar = new Button("Guardar");
     Component footer;
     VerticalLayout agendar,confirmar,llenar,root,resumen;
     
@@ -148,33 +149,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    vl.addComponent(cliente);
 	    
 	    TextField estado = new TextField();
-	    estado.setCaption("Estado");/*
-	    estado.setConverter(new Converter<String,EstadoSolicitud>() {
-
-			@Override
-			public EstadoSolicitud convertToModel(String value, Class<? extends EstadoSolicitud> targetType,
-					Locale locale) throws ConversionException {
-				
-				return null;
-			}
-
-			@Override
-			public String convertToPresentation(EstadoSolicitud value, Class<? extends String> targetType,
-					Locale locale) throws ConversionException {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public Class<EstadoSolicitud> getModelType() {
-				return EstadoSolicitud.class;
-			}
-
-			@Override
-			public Class<String> getPresentationType() {
-				return String.class;
-			}
-		});*/
+	    estado.setCaption("Estado");
 	    Utils.bind(bfg, estado, "estado");
 //	    informe.setValue(solicitud.getTipoInforme().getNombre().toString());
 	    vl.addComponent(estado);
@@ -212,6 +187,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    vl.addComponent(sectionBien);
 		
 		PopupDateField fechaVisita = new PopupDateField();
+		fechaVisita.setDateFormat("dd/MM/yyyy");
 	    bfg.bind(fechaVisita, "fechaTasacion");
 	    fechaVisita.setCaption("Fecha Visita");
         vl.addComponent(fechaVisita);
@@ -286,20 +262,21 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    superTerreno.setCaption("Mts Superficie Terreno");
 	    Utils.bind(bfg, superTerreno, "bien.superficieTerreno");
         hl.addComponent(superTerreno);
-        
 	    TextField valorSuperTerreno = new TextField();
-	    valorSuperTerreno.setCaption("Valor Mts Superficie Terreno");
+	    valorSuperTerreno.setCaption("Valor UF Superficie Terreno");
+	    Utils.bind(bfg, valorSuperTerreno, "bien.ufSuperficieTerreno");
         hl.addComponent(valorSuperTerreno);
         
 	    HorizontalLayout hl2 = new HorizontalLayout();
 	    hl2.setSpacing(true);
 	    detailsIngreso.addComponent(hl2);
 	    TextField superEdif = new TextField();
-	    Utils.bind(bfg, superEdif, "bien.superficieConstruida");
 	    superEdif.setCaption("Mts Superficie Edificado");
+	    Utils.bind(bfg, superEdif, "bien.superficieConstruida");
         hl2.addComponent(superEdif);
 	    TextField valorSuperEdif = new TextField();
-	    valorSuperEdif.setCaption("Valor Mts Superficie Edificado");
+	    valorSuperEdif.setCaption("Valor UF Superficie Edificado");
+	    Utils.bind(bfg, valorSuperEdif, "bien.ufSuperficieConstruida");
         hl2.addComponent(valorSuperEdif);
         
 	    HorizontalLayout hl3 = new HorizontalLayout();
@@ -308,8 +285,9 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    TextField superficieBalcon = new TextField("Superficie Balcón/Terraza");
 	    Utils.bind(bfg, superficieBalcon, "bien.superficieTerraza");
 	    hl3.addComponent(superficieBalcon);
-	    TextField superficieTerraza = new TextField("Valor UF Balcón/Terraza");
-	    hl3.addComponent(superficieTerraza);
+	    TextField  valorSuperficieBalcon = new TextField("Valor UF Balcón/Terraza");
+	    Utils.bind(bfg, valorSuperficieBalcon, "bien.ufSuperficieTerraza");
+	    hl3.addComponent(valorSuperficieBalcon);
         
         Label obras = new Label("Adicionales");
         obras.addStyleName(ValoTheme.LABEL_H3);
@@ -329,8 +307,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 			public void buttonClick(ClickEvent event) {
 				ObraComplementaria obra = new ObraComplementaria();
 				obra.setAdicional(Adicional.ESTACIONAMIENTO);
-				((BeanItemContainer<ObraComplementaria>) tableObras.getContainerDataSource()).addBean(obra);
-								
+				obra.setBien(bfg.getItemDataSource().getBean().getBien());
+				dsObraComplementaria.addBean(obra);
 			}
 		});	
 		
@@ -343,13 +321,16 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    
 	    Button btnPrograma = new Button(null,FontAwesome.PLUS);
 	    detailsIngreso.addComponent(btnPrograma);
-//		btnPrograma.addClickListener(new Button.ClickListener() {
-//
-//			@Override
-//			public void buttonClick(ClickEvent event) {
-//				;				
-//			}
-//		});	
+		btnPrograma.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				ProgramaBien programa = new ProgramaBien();
+				programa.setPrograma(Programa.BAÑO);
+				programa.setBien(bfg.getItemDataSource().getBean().getBien());
+				dsProgramaBien.addBean(programa);			
+			}
+		});	
 		
 	    detailsIngreso.addComponent(buildTablePrograma());
 		
@@ -385,6 +366,13 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	 */
 	public void setSolicitud(SolicitudTasacion solicitud) {
         bfg.setItemDataSource(solicitud);
+        //setea los elementos de los containers
+        dsObraComplementaria.removeAllItems();
+        dsObraComplementaria.addAll(solicitud.getBien().getObrasComplementarias());
+        
+        dsProgramaBien.removeAllItems();
+        dsProgramaBien.addAll(solicitud.getBien().getProgramas());
+        
         definirVista(solicitud.getEstado());
 	}
 	

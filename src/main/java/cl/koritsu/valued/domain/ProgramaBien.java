@@ -21,7 +21,7 @@ public class ProgramaBien {
 	Long id;
 	@Enumerated(EnumType.STRING)
 	Programa programa;
-	long cantidadSuperficie;
+	float cantidadSuperficie;
 	@JoinColumn(name="bienId")
 	@ManyToOne
 	Bien bien;
@@ -38,10 +38,10 @@ public class ProgramaBien {
 	public void setPrograma(Programa programa) {
 		this.programa = programa;
 	}
-	public long getCantidadSuperficie() {
+	public float getCantidadSuperficie() {
 		return cantidadSuperficie;
 	}
-	public void setCantidadSuperficie(long cantidadSuperficie) {
+	public void setCantidadSuperficie(float cantidadSuperficie) {
 		this.cantidadSuperficie = cantidadSuperficie;
 	}
 	public Bien getBien() {

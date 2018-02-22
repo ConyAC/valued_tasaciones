@@ -94,3 +94,17 @@ CREATE TABLE `valued`.`obra_complementaria` (
 
 ALTER TABLE `valued`.`bien` 
 ADD COLUMN `superficieTerraza` FLOAT NULL AFTER `comunaId`;
+
+
+CREATE TABLE `valued`.`programa_bien` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `programa` VARCHAR(100) NOT NULL,
+  `cantidadSuperficie` FLOAT NULL,
+  `bienId` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
+
+
+
+ALTER TABLE `valued_migracion`.`cliente` 
+ADD COLUMN `prefijo` VARCHAR(10) NOT NULL AFTER `multirut`,
+ADD COLUMN `correlativoActual` INT NULL AFTER `prefijo`;

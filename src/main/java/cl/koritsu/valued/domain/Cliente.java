@@ -30,6 +30,9 @@ public class Cliente {
     private String tipo = "";
     private boolean multiRut = false;
     
+    private String prefijo;
+    long correlativoActual;
+    
     
 	public Long getId() {
 		return id;
@@ -110,6 +113,17 @@ public class Cliente {
 		else 
 			return getRazonSocial();
 	}
+	public String getPrefijo() {
+		return prefijo;
+	}
+	public void setPrefijo(String prefijo) {
+		this.prefijo = prefijo;
+	}
+	public long getCorrelativoActual() {
+		return correlativoActual;
+	}
+	public void setCorrelativoActual(long correlativoActual) {
+		this.correlativoActual = correlativoActual;
+	}
     
-	
 }
