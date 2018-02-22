@@ -160,8 +160,13 @@ public class ValuedService {
 		bean.setHonorarioCliente(honorarioCliente);
 		//genera un nùmero de solicitud para valued si es que viene nulo
 		String nroValued = null;
-		if(bean.getNumeroTasacion() == null ) {
-			nroValued = bean.getCliente().getNombreCliente() +"-"+  ai.getAndIncrement()+"";
+		if(bean.getNumeroTasacion() == null || bean.getNumeroTasacion().trim().length() == 0 ) {
+			long nuevoNumero = (bean.getCliente().getCorrelativoActual() + 1);
+			//guarda el numero generado en el cliente
+			bean.getCliente().setCorrelativoActual(nuevoNumero);
+			clienteRepo.save(bean.getCliente());
+			// luego asigna dicho número a la solicitud
+			nroValued = bean.getCliente().getPrefijo() + String.format("%05d", nuevoNumero);
 			bean.setNumeroTasacion(nroValued);
 		}else {
 			nroValued = bean.getNumeroTasacion();

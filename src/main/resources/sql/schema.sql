@@ -96,18 +96,15 @@ ALTER TABLE `valued`.`bien`
 ADD COLUMN `superficieTerraza` FLOAT NULL AFTER `comunaId`;
 
 
-ALTER TABLE `valued_migracion`.`usuario` 
-ADD COLUMN `estadoUsuario` INT NULL AFTER `tasador`
-ADD COLUMN `rolId` INT UNSIGNED NULL AFTER `estadoUsuario`;
+CREATE TABLE `valued`.`programa_bien` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `programa` VARCHAR(100) NOT NULL,
+  `cantidadSuperficie` FLOAT NULL,
+  `bienId` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`));
 
 
-CREATE TABLE `valued_migracion`.`rol` (
-  `rolId` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(500) NULL,
-  `descripcion` VARCHAR(200) NULL,
-  PRIMARY KEY (`rolId`));
 
-
-CREATE TABLE `valued_migracion`.`permisos` (
-  `rolId` INT UNSIGNED NOT NULL,
-  `rol_permisos` VARCHAR(500) NOT NULL);
+ALTER TABLE `valued_migracion`.`cliente` 
+ADD COLUMN `prefijo` VARCHAR(10) NOT NULL AFTER `multirut`,
+ADD COLUMN `correlativoActual` INT NULL AFTER `prefijo`;
