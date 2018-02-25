@@ -43,8 +43,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	RolRepository repRol;
 	
 //	@PostConstruct
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#init()
+	/*
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#init()
 	 */
 	public void init(){
 		//si no existe un usuario admin, lo crea
@@ -86,8 +87,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#loadUserByUsername(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
 	 */
 	@Override
 	  public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
@@ -133,8 +135,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
                 ll);
 	}
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#saveUser(cl.magal.asistencia.entities.User)
+	/*
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#saveUser(cl.koritsu.valued.domain.Usuario)
 	 */
 	@Transactional
 	public void saveUser(Usuario user) {
@@ -164,44 +167,50 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 		usuario.setContrasena(hashedPassword);
 	}
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#findUser(java.lang.Long)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#findUser(java.lang.Long)
 	 */
 	public Usuario findUser(Long id){
 		return rep.findOne(id);
 	}
 
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#findRawRoleUser(java.lang.Long)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#findRawRoleUser(java.lang.Long)
 	 */
 	public Integer findRawRoleUser(Long id) {
 		return (Integer) rep.findRawRoleUser(id);
 	}
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#deleteUser(java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#deleteUser(java.lang.Long)
 	 */
 	public void deleteUser(Long id){
 		rep.delete(id);
 	}
 
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#findAllUser(org.springframework.data.domain.Pageable)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#findAllUser()
 	 */
-	public Page<Usuario> findAllUser(Pageable page) {
-		return rep.findAllNotDeteled(page);
+	public List<Usuario> findAllUser() {
+		return rep.findAllNotDeteled();
 	}
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#getAuthorities(java.util.Set)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#getAuthorities(java.util.Set)
 	 */
 	public Collection<GrantedAuthority> getAuthorities(Set<Permiso> permisos) {
         List<GrantedAuthority> authList = getGrantedAuthorities(getPermission(permisos));
         return authList;
     }
    
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#getPermission(java.util.Set)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#getPermission(java.util.Set)
 	 */
 	public List<String> getPermission(Set<Permiso> permisos) {
 
@@ -227,43 +236,41 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return authorities;
     }
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#findUsuarioByUsername(java.lang.String)
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#findUsuarioByUsername(java.lang.String)
 	 */
 	public Usuario findUsuarioByUsername(String username) {
 		return rep.findByEmail(username);
 	}
 	
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#saveRole(cl.magal.asistencia.entities.Role)
+	/*
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#saveRole(cl.koritsu.valued.domain.Rol)
 	 */
 	public void saveRole(Rol role) {
 		repRol.save(role);
 	}
 
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#clear()
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#clear()
 	 */
 	public void clear() {
 		rep.deleteAll();
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see cl.magal.asistencia.services.UserService#getAllRole()
+	/* 
+	 * (non-Javadoc)
+	 * @see cl.koritsu.valued.services.UserService#getAllRole()
 	 */
 	public List<Rol> getAllRole() {
 		return (List<Rol>) repRol.findAll();
 	}
 
 	@Override
-	public Page<Usuario> findAllActiveUser(Pageable page) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean findUsersByRole(Rol rol) {
+	public boolean findUsersByRol(Rol rol) {
 		if(rep.findByRol(rol).isEmpty())
 			return true;
 		else

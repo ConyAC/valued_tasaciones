@@ -277,4 +277,8 @@ public class ValuedService {
 	public void deshabilitarUsuario(Usuario user) {
 		usuarioRepo.deshabilitar(user);		
 	}
+	
+	public void eliminarUsuario(Usuario user) {
+		usuarioRepo.eliminar(user);		
+	}
 }

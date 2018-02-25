@@ -1,5 +1,6 @@
 package cl.koritsu.valued.domain;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import cl.koritsu.valued.domain.enums.EstadoUsuario;
 
@@ -21,11 +23,21 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Boolean tasador = Boolean.FALSE;
+	
+    @NotNull(message="El nombre es requerido.")
     private String nombres = "";
+    
+    @Column(name = "apellidoPaterno", nullable=false)
     private String apellidoPaterno = "";
+    
+    @Column(name = "apellidoMaterno", nullable=false)
     private String apellidoMaterno = "";
     private boolean male;
+    
+    @Column(name = "email",nullable = false,unique = true)
     @Email(message="El email es inválido.")
+    @NotNull(message="El email es obligatorio.")
+    @NotEmpty(message="El email es obligatorio.")
     private String email = "";
     
     @Convert(converter = EstadoUsuarioConverter.class)
@@ -38,8 +50,13 @@ public class Usuario {
     private String telefonoMovil;
     private String nroCuentaBancaria;
     private String banco;
+    
     @JoinColumn(name="rolId")
+    @NotNull(message="Es necesario definir un perfil de usuario.")
     private Rol rol;
+    
+    @Column(name = "eliminado")
+    private Boolean eliminado = Boolean.FALSE;
     
     /**
      * Obliga a que status sea activo, si no viene uno seteado
@@ -50,6 +67,8 @@ public class Usuario {
     	   estadoUsuario = EstadoUsuario.HABILITADO;
        if(tasador == null)
     	   tasador = Boolean.FALSE;
+       if(eliminado == null)
+    	   eliminado = Boolean.FALSE;
     }
 
 	public Long getId() {
@@ -175,6 +194,13 @@ public class Usuario {
 		this.contrasena2 = contrasena2;
 	}
 
+	public Boolean getEliminado() {
+		return eliminado;
+	}
+
+	public void setEliminado(Boolean eliminado) {
+		this.eliminado = eliminado;
+	}
 
 	public String getFullname(){
     	return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");
