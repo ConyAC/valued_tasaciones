@@ -12,6 +12,7 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.Responsive;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.ui.Component;
@@ -25,12 +26,14 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
 import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
+import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -227,9 +230,16 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     @Override
     public void enter(final ViewChangeEvent event) {
     	//llena con las tasaciones
-    	Comuna comuna = new Comuna();
-    	comuna.setId(13101L);
-    	List<SolicitudTasacion> solicitudes = service.getTasacionesByRegionAndComuna(comuna);
+    	//si el usuario es admin@admin.com llena con la comuna por defecto
+    	 Usuario user  = (Usuario) VaadinSession.getCurrent().getAttribute(Constants.SESSION_USUARIO);
+    	 List<SolicitudTasacion> solicitudes = null;
+    	if(user.getEmail().equals("admin@admin.com")){
+	    	Comuna comuna = new Comuna();
+	    	comuna.setId(13101L);
+	    	solicitudes = service.getTasacionesByRegionAndComuna(comuna);
+    	}else { // si no, toma las tasaciones asociadas al usuario 
+    		solicitudes = service.getTasacionesByTasador(user);
+    	}
     	mapToolBox.setSolicitudes(solicitudes);
     	
     }

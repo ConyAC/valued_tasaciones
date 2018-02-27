@@ -281,4 +281,8 @@ public class ValuedService {
 	public void eliminarUsuario(Usuario user) {
 		usuarioRepo.eliminar(user);		
 	}
+
+	public List<SolicitudTasacion> getTasacionesByTasador(Usuario user) {
+		return solicitudTasacionRepo.findByTasador(user);
+	}
 }
