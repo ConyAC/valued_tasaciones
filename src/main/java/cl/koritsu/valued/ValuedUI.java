@@ -144,6 +144,7 @@ public final class ValuedUI extends UI implements ErrorHandler {
         // page gets reloaded on the login screen. Do notice the this doesn't
         // invalidate the current HttpSession.
         VaadinSession.getCurrent().setAttribute(Constants.SESSION_USUARIO, null);
+        VaadinSession.getCurrent().setAttribute(Constants.SESSION_CLIENTE, null);
         VaadinSession.getCurrent().close();
         Page.getCurrent().reload();
     }

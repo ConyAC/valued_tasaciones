@@ -4,6 +4,7 @@ package cl.koritsu.valued.view.utils;
 public final class Constants {
 
 	public static final String SESSION_USUARIO = "usuario";
+	public static final String SESSION_CLIENTE = "cliente";
 	public static final String PERSISTENCE_UNIT = "persistenceUnit";
 	public static final String MENU_ADMINISTRACION = "Administracion";
 	public static final String MENU_LOGOUT = "Salir";

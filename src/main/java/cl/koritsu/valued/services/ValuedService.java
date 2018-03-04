@@ -1,5 +1,6 @@
 package cl.koritsu.valued.services;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,6 +41,7 @@ import cl.koritsu.valued.repositories.SucursalRepository;
 import cl.koritsu.valued.repositories.TipoInformeRepository;
 import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
+import cl.koritsu.valued.repositories.ValorUFRepository;
 
 @Service
 public class ValuedService {
@@ -80,6 +82,8 @@ public class ValuedService {
 	ObraComplementariaRepository obrasRepo;
 	@Autowired
 	RolRepository rolRepo;
+	@Autowired
+	ValorUFRepository valorUFRepo;
 	
 	
 	public List<Region> getRegiones() {
@@ -280,5 +284,9 @@ public class ValuedService {
 
 	public List<SolicitudTasacion> getTasacionesByTasador(Usuario user) {
 		return solicitudTasacionRepo.findByTasador(user);
+	}
+	
+	public Double getValorUFporFecha(Date fecha){
+		return valorUFRepo.getValorUF(fecha);
 	}
 }

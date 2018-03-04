@@ -35,3 +35,15 @@ insert into permisos (rolId, rol_permisos)values(1,'ENVIAR_A_CLIENTE');
 insert into permisos (rolId, rol_permisos)values(1,'VISUALIZAR_REPORTES');
 insert into permisos (rolId, rol_permisos)values(1,'VISUALIZAR_TASACIONES');
 insert into permisos (rolId, rol_permisos)values(1,'BUSCAR_TASACIONES');
+
+CREATE  TABLE `valued`.`valor_uf` (
+  `fecha` DATE NOT NULL ,
+  `valor` DOUBLE NOT NULL ,
+  PRIMARY KEY (`fecha`) );
+
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('04/03/2018', '%d/%m/%Y'), '26.942,89');
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('05/03/2018', '%d/%m/%Y'), '26.947,69');
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('06/03/2018', '%d/%m/%Y'), '26.952,49');
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('07/03/2018', '%d/%m/%Y'), '26.957,29');
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('08/03/2018', '%d/%m/%Y'), '26.962,09');
+INSERT INTO `valued`.`valor_uf` (`fecha`, `valor`) VALUES (STR_TO_DATE('09/03/2018', '%d/%m/%Y'), '26.966,89');

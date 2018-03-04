@@ -10,6 +10,7 @@ import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
@@ -41,6 +42,7 @@ import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.view.utils.Utils;
 
 
@@ -690,6 +692,8 @@ public class ClienteStep implements WizardStep {
 			
 			@Override
 			public void valueChange(ValueChangeEvent event) {
+				
+				VaadinSession.getCurrent().setAttribute(Constants.SESSION_CLIENTE, null);
 				Cliente cliente = (Cliente)event.getProperty().getValue();
 				
 				//carga las sucursales del cliente
@@ -710,6 +714,8 @@ public class ClienteStep implements WizardStep {
 				((BeanItemContainer<Solicitante>)cbSolicitante.getContainerDataSource()).addAll(solicitantes);
 				cbSolicitante.setEnabled(true);
 				
+				VaadinSession.getCurrent().setAttribute(Constants.SESSION_CLIENTE, cliente);
+
 				enableButtons();
 			}
 		});

@@ -1,12 +1,20 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
+import java.util.Date;
+
 import org.vaadin.teemu.wizards.Wizard;
 import org.vaadin.teemu.wizards.WizardStep;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
+import cl.koritsu.valued.domain.Cliente;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Constants;
+import cl.koritsu.valued.view.utils.Utils;
+
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
@@ -17,14 +25,14 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.utils.Utils;
-
 public class HonorarioClienteStep implements WizardStep {
 	
 	final String montoFijo = "Por monto fijo";
 	final String montoKM = "Por KM de desplazamiento";
+	final Label lb2FactorEmpresa = new Label();
+	final TextField tfDesplazamientoUF = new TextField();
+	final TextField tfDesplazamientoPesos = new TextField();
+	final TextField tfKMTotal = new TextField();
 	BeanFieldGroup<SolicitudTasacion> fg;
 	ValuedService service;
 	
@@ -118,30 +126,38 @@ public class HonorarioClienteStep implements WizardStep {
 			
 			@Override
 			public void valueChange(ValueChangeEvent event) {
+				Cliente cliente  = (Cliente) VaadinSession.getCurrent().getAttribute(Constants.SESSION_CLIENTE);
+				if(cliente != null && cliente.getFactorKm() != null)
+					lb2FactorEmpresa.setValue(cliente.getFactorKm());
+
 				String opcion= (String)event.getProperty().getValue();
 				mostrarOcultarPanel(opcion,glMontoDesplazamientoFijo,glPorDesplazamiento);
 			}
 		});
 		
 		final Label lbFactorEmpresa = new Label("Factor UF/KM - Empresa");
-		final Label lb2FactorEmpresa = new Label("1.1");
+		final Label lbFactor = new Label("Factor UF/KM");
+		final TextField tfFactor = new TextField();
 		
 		CheckBox cb2 = new CheckBox("¿Utilizar otro Factor UF/KM?");
 		glPorDesplazamiento.addComponent(cb2,0,0,1,0);
 		
 		glPorDesplazamiento.addComponents(lbFactorEmpresa);
 		glPorDesplazamiento.addComponents(lb2FactorEmpresa);
-
-		final Label lbFactor = new Label("Factor UF/KM");
-		final TextField tfFactor = new TextField();
 		
 		glPorDesplazamiento.addComponents(lbFactor);
 		glPorDesplazamiento.addComponents(tfFactor);
+		Utils.bind(fg, tfFactor, "honorarioCliente.factorKmUf");
 		
 		cb2.addValueChangeListener(new ValueChangeListener() {
 			
 			@Override
 			public void valueChange(ValueChangeEvent event) {
+				tfFactor.setValue("0");
+				tfKMTotal.setValue("0");
+				tfDesplazamientoPesos.setValue("0");
+				tfDesplazamientoUF.setValue("0");
+				
 				Boolean isSelected = (Boolean)event.getProperty().getValue();
 				lbFactorEmpresa.setVisible(!isSelected);
 				lb2FactorEmpresa.setVisible(!isSelected);
@@ -153,13 +169,34 @@ public class HonorarioClienteStep implements WizardStep {
 		});
 		
 		glPorDesplazamiento.addComponents(new Label("Km Total"));
-		glPorDesplazamiento.addComponents(new TextField());
+		glPorDesplazamiento.addComponents(tfKMTotal);
+		Utils.bind(fg, tfKMTotal, "honorarioCliente.kmTotal");
+		
 		
 		glPorDesplazamiento.addComponents(new Label("Monto por\nDesplazamiento UF"));
-		glPorDesplazamiento.addComponents(new TextField());
+		glPorDesplazamiento.addComponents(tfDesplazamientoUF);
+		Utils.bind(fg, tfDesplazamientoUF, "honorarioCliente.montoHonorarioDesplazamientoUF");
+		
 		
 		glPorDesplazamiento.addComponents(new Label("Monto por\nDesplazamiento $"));
-		glPorDesplazamiento.addComponents(new TextField(){{setEnabled(false);}});
+		tfDesplazamientoPesos.setEnabled(false);
+		glPorDesplazamiento.addComponents(tfDesplazamientoPesos);
+		Utils.bind(fg, tfDesplazamientoPesos, "honorarioCliente.montoHonorarioDesplazamientoPesos");
+		
+		tfKMTotal.addValueChangeListener(new ValueChangeListener() {
+		    public void valueChange(ValueChangeEvent event) {
+		    	if(tfKMTotal.getValue() != null && lb2FactorEmpresa.getValue() != null){
+		    		float desplazamiento = Float.parseFloat(tfKMTotal.getValue().toString()) * Float.parseFloat(lb2FactorEmpresa.getValue().toString());
+					tfDesplazamientoUF.setValue(String.valueOf(desplazamiento));
+				}
+		    	
+				Double valorUF = service.getValorUFporFecha(new Date());
+		    	if(valorUF != null && tfDesplazamientoUF.getValue() != null){
+		    		float pesos = valorUF.floatValue() * Float.parseFloat(tfDesplazamientoUF.getValue().toString());		
+					tfDesplazamientoPesos.setValue(String.valueOf(pesos));
+				}
+		    }
+		});
 		
 		//return gl;
 		root.addComponent(glIngresoSolicitud);

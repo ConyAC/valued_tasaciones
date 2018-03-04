@@ -1,5 +1,7 @@
 package cl.koritsu.valued.view.utils;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -15,6 +17,19 @@ import com.vaadin.ui.Notification.Type;
 
 public class Utils {
 
+	
+	static DecimalFormatSymbols decimalFormatSymbols;
+	static DecimalFormat decimalFormatSinDecimal,decimalFormat;
+	
+	public static DecimalFormatSymbols getDecimalFormatSymbols(){
+		if(decimalFormatSymbols == null){
+			decimalFormatSymbols = new DecimalFormatSymbols();
+			decimalFormatSymbols.setDecimalSeparator(',');
+			decimalFormatSymbols.setGroupingSeparator('.');
+		}
+		return decimalFormatSymbols;
+	}
+	
 	/**
 	 * Permite asegurarse de que el campo no este bindeado antes de bindearlo de nuevo
 	 * @param fg
@@ -54,5 +69,24 @@ public class Utils {
 		
 		return format.format(date);
 	}
+	
+	public static DecimalFormat getDecimalFormatSinDecimal(){
+		if(decimalFormatSinDecimal == null){
+			decimalFormatSinDecimal = new DecimalFormat("#,###", getDecimalFormatSymbols());
+		}
+		return decimalFormatSinDecimal;
+	}
+	
+	public static DecimalFormat getDecimalFormat(){
+		if(decimalFormat == null){
+			decimalFormat = new DecimalFormat("#,###.####", getDecimalFormatSymbols());
+		}
+			return decimalFormat;
+	}	
 
+	public static String formatInteger(Double number) {
+		if(number == null )
+			return "0";
+		return getDecimalFormat().format(number);
+	}
 }

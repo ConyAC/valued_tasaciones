@@ -39,6 +39,7 @@ import cl.koritsu.valued.domain.Movie;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.view.utils.Utils;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -105,12 +106,6 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 		};
 	}
 
-	private void initMovieSelect() {
-        Collection<Movie> movies = ValuedUI.getDataProvider().getMovies();
-        Container movieContainer = new ListContainer<Movie>(Movie.class, movies);
-        movieSelect.setContainerDataSource(movieContainer);
-    }
-
     private Component buildHeader() {
         HorizontalLayout header = new HorizontalLayout();
         header.addStyleName("viewheader");
@@ -139,6 +134,7 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
     private void reset() {
     	fg.discard();
 		//TODO confimar que se perderán los cambios
+    	VaadinSession.getCurrent().setAttribute(Constants.SESSION_CLIENTE, null);
         SolicitudTasacion nuevaTasacion = new SolicitudTasacion();
         nuevaTasacion.setBien(new Bien());
         nuevaTasacion.setHonorarioCliente(new HonorarioCliente());
@@ -171,7 +167,7 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 			//crea el objeto de solicitud tasacion
 			String nroValued = service.saveSolicitud(fg.getItemDataSource().getBean());
 			endWizard("Se ha ingresado la solicitud con el siguiente número asociado "+nroValued);
-			
+			VaadinSession.getCurrent().setAttribute(Constants.SESSION_CLIENTE, null);
 			reset();
 		}catch(CommitException ce) {
 			
