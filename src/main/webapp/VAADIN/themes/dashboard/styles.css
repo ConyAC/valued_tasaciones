@@ -1579,6 +1579,11 @@ div.v-layout.v-horizontal.v-widget {
 	}
 	}
 
+.v-table-cell-content-visita-pendiente {
+	background-color: red;
+	color: white;
+}
+
 .dashboard {
 	@media screen and (max-width: 480px) {
 	.notifications.v-window {
@@ -10846,6 +10851,11 @@ div.v-layout.v-horizontal.v-widget {
 	display: inline-block;
 	width: 19px;
 	overflow: hidden;
+}
+
+.dashboard .v-table-cell-content-visita-pendiente {
+	background-color: red;
+	color: white;
 }
 
 .dashboard .valo-menu {

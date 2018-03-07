@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
@@ -42,6 +44,8 @@ import ru.xpoft.vaadin.VaadinView;
 @Scope("prototype")
 @VaadinView(value = MisSolicitudesView.NAME, cached = true)
 public class MisSolicitudesView extends VerticalLayout implements View {
+	
+	Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 	
 	public static final String NAME = "en_proceso";
 
@@ -98,7 +102,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 				googleMap.setZoom(20);
 				
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
-					cargarTasaciones(sol.getBien().getComuna());
+					cargarTasaciones(sol);
 				
 			}
 		});
@@ -234,11 +238,9 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     	 Usuario user  = (Usuario) VaadinSession.getCurrent().getAttribute(Constants.SESSION_USUARIO);
     	 List<SolicitudTasacion> solicitudes = null;
     	if(user.getEmail().equals("admin@admin.com")){
-	    	Comuna comuna = new Comuna();
-	    	comuna.setId(13101L);
-	    	solicitudes = service.getTasacionesByRegionAndComuna(comuna);
+	    	solicitudes = service.getTasacionesEnProceso();
     	}else { // si no, toma las tasaciones asociadas al usuario 
-    		solicitudes = service.getTasacionesByTasador(user);
+    		solicitudes = service.getTasacionesEnProcesoByTasador(user);
     	}
     	mapToolBox.setSolicitudes(solicitudes);
     	
@@ -247,9 +249,10 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     /*
      * Permite cargar en el mapa las tasaciones historicas.
      */
-    private void cargarTasaciones(Comuna c){		
+    private void cargarTasaciones(SolicitudTasacion sol){		
 		//obtiene las solicitud pasadas en base a la comuna y región
-		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(c);
+		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(sol.getBien().getComuna());
+    	//List<SolicitudTasacion> tasaciones = service.getTasacionesByCoordenadas(sol.getBien().getComuna().getId(),sol.getNorteY(), sol.getEsteX());
 	
 		//agrega las tasaciones realizadas
 		for(SolicitudTasacion tasacion : tasaciones) {

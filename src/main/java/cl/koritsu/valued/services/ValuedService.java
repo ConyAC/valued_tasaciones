@@ -286,6 +286,18 @@ public class ValuedService {
 		return solicitudTasacionRepo.findByTasador(user);
 	}
 	
+		public List<SolicitudTasacion> getTasacionesEnProcesoByTasador(Usuario user) {
+		return solicitudTasacionRepo.findByTasadorEnProceso(user);
+	}
+	
+	public List<SolicitudTasacion> getTasacionesEnProceso() {
+		return solicitudTasacionRepo.findAllTasaciones();
+	}
+	
+	public List<SolicitudTasacion> getTasacionesByCoordenadas(Long id, Float norteY, Float esteX) {
+		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
+	}
+	
 	public Double getValorUFporFecha(Date fecha){
 		return valorUFRepo.getValorUF(fecha);
 	}
