@@ -20,8 +20,7 @@ public interface SolicitudTasacionRepository extends PagingAndSortingRepository<
 	List<SolicitudTasacion> findByTasador(Usuario user);	
 
 	@Query(value= "select s.* from solicitud_tasacion s join bien b on b.id = s.bienId"
-			+ " where b.comunaId = :id and s.id in "
-			+ " (select st.id from solicitud_tasacion st where acos(sin(:norteY) * sin(st.norteY) + cos(:norteY) * cos(st.norteY) * cos(st.esteX - (:esteX))) * 6371 <= 10) "
+			+ " where b.comunaId = :id and (acos(sin(:norteY) * sin(s.norteY) + cos(:norteY) * cos(s.norteY) * cos(s.esteX - (:esteX))) * 6371 <= 10 ) "
 			+ " order by s.fechaEncargo ASC " , nativeQuery=true)
 	List<SolicitudTasacion> findByCoordenadas(@Param("id") Long id, @Param("norteY") Float norteY, @Param("esteX") Float esteX);
 

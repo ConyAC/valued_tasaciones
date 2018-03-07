@@ -251,8 +251,8 @@ public class MisSolicitudesView extends VerticalLayout implements View {
      */
     private void cargarTasaciones(SolicitudTasacion sol){		
 		//obtiene las solicitud pasadas en base a la comuna y región
-		//List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(c);
-    	List<SolicitudTasacion> tasaciones = service.getTasacionesByCoordenadas(sol.getBien().getComuna().getId(),sol.getNorteY(), sol.getEsteX());
+		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(sol.getBien().getComuna());
+    	//List<SolicitudTasacion> tasaciones = service.getTasacionesByCoordenadas(sol.getBien().getComuna().getId(),sol.getNorteY(), sol.getEsteX());
 	
 		//agrega las tasaciones realizadas
 		for(SolicitudTasacion tasacion : tasaciones) {

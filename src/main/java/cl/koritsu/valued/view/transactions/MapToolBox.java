@@ -247,7 +247,6 @@ public class MapToolBox extends Window {
 						.getValue()
 						: new Date();
 						
-						System.out.println("LALALAL "+fechaTasacion.after(new Date()) +" "+fechaTasacion.before(new Date()));
 				if (fechaTasacion.before(new Date()) && table.getItem(itemId).getItemProperty("estado").getValue().equals(EstadoSolicitud.AGENDADA))
 					return "visita-pendiente";
 				else
