@@ -35,3 +35,8 @@ $valo-menu-background-color: #414B56;
   @include dashboard-transactions-view;
   @include dashboard-reports-view;
 }
+
+  .v-table-cell-content-visita-pendiente{
+		background-color: red;
+		color: white;
+	}

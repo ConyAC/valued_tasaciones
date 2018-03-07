@@ -281,4 +281,17 @@ public class ValuedService {
 	public List<SolicitudTasacion> getTasacionesByTasador(Usuario user) {
 		return solicitudTasacionRepo.findByTasador(user);
 	}
+	
+	public List<SolicitudTasacion> getTasacionesEnProcesoByTasador(Usuario user) {
+		return solicitudTasacionRepo.findByTasadorEnProceso(user);
+	}
+	
+	public List<SolicitudTasacion> getTasacionesEnProceso() {
+		return solicitudTasacionRepo.findAllTasaciones();
+	}
+	
+	public List<SolicitudTasacion> getTasacionesByCoordenadas(Long id, Float norteY, Float esteX) {
+		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
+	}
+	
 }

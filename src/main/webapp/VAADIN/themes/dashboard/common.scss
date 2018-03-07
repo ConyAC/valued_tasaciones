@@ -6,6 +6,12 @@
 
 @mixin dashboard-common {
 
+
+  .v-table-cell-content-visita-pendiente{
+		background-color: red;
+		color: white;
+	}
+
   .valo-menu {
     border-right: none;
 
