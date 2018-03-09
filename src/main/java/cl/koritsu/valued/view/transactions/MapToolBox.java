@@ -235,7 +235,7 @@ public class MapToolBox extends Window {
 				}
 				
 				if( SecurityHelper.hasPermission(Permiso.ENVIAR_CORREO)){
-					hl.setSpacing(true);
+					hl.setSpacing(true);						
 						
 					//Marcar como eliminada una obra
 					Button enviarCorreo = new Button(null,FontAwesome.SEND);
@@ -259,6 +259,18 @@ public class MapToolBox extends Window {
 							}
 					});
 					hl.addComponent(enviarCorreo);
+					
+					
+					Date fechaTasacion = table.getItem(itemId)
+							.getItemProperty("fechaTasacion").getValue() != null ? (Date) table
+							.getItem(itemId).getItemProperty("fechaTasacion")
+							.getValue()
+							: new Date();
+							
+					if (fechaTasacion.before(new Date()) && table.getItem(itemId).getItemProperty("estado").getValue().equals(EstadoSolicitud.AGENDADA))
+						enviarCorreo.setEnabled(true);
+					else
+						enviarCorreo.setEnabled(false);
 				}
 				return hl;
 			}
