@@ -33,6 +33,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CustomTable;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
@@ -248,8 +249,12 @@ public class MapToolBox extends Window {
 
 							            public void onClose(ConfirmDialog dialog) {
 							                if (dialog.isConfirmed()) {
-							                	BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));	
-												doClickEmail(sol);
+							                	BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+							                	if(sol.getBean() != null && sol.getBean().getTasador() != null && sol.getBean().getTasador().getEmail() != null) {
+							                		doClickEmail(sol);
+							                		Notification.show("Se ha enviado el correo al tasador: "+sol.getBean().getTasador().getFullname());
+							                	}else
+							                		Notification.show("No se ha podido enviar el correo ya que no existe email ingresado para el repsonsable de la tasación.");
 							                } else {
 							                    // User did not confirm
 							                   ;

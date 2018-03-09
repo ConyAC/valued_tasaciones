@@ -60,6 +60,7 @@ public final class ValuedMenu extends CustomComponent {
     private Label administrationBadge;
     private Label verTasacionesBadge;
     private Label ingresarTasacionBadge;
+    private Label buscarTasacionBadge;
     private MenuItem settingsItem;
 
     public ValuedMenu() {
@@ -195,6 +196,15 @@ public final class ValuedMenu extends CustomComponent {
 	                ingresarTasacionBadge.setId(STYLE_VISIBLE);
 	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
 	                		ingresarTasacionBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.BUSQUEDA_TASACIONES && SecurityHelper.hasPermission(Permiso.BUSCAR_TASACIONES)) {
+	            	buscarTasacionBadge = new Label();
+	            	buscarTasacionBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		buscarTasacionBadge);
 	                
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }

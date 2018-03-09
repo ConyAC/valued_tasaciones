@@ -10,6 +10,7 @@ import cl.koritsu.valued.view.reports.ReportsView;
 import cl.koritsu.valued.view.schedule.AdministrationView;
 import cl.koritsu.valued.view.transactions.TransactionsView;
 import cl.koritsu.valued.view.transactions.MisSolicitudesView;
+import cl.koritsu.valued.view.busqueda.BusquedaTasacionesView;
 
 public enum ValuedViewType {
     DASHBOARD(DashboardView.NAME/*"reportería"*/, DashboardView.class, FontAwesome.PIE_CHART, true), 
@@ -17,7 +18,9 @@ public enum ValuedViewType {
     TRANSACTIONS(TransactionsView.NAME/*"tasaciones en curso"*/, TransactionsView.class, FontAwesome.TABLE, false), 
     TRANSACTIONS2(MisSolicitudesView.NAME/*"tasaciones en curso"*/, MisSolicitudesView.class, FontAwesome.TABLE, false), 
     REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SEARCH, true), 
-    ADMINISTRATION(AdministrationView.NAME/*"Administración"*/, AdministrationView.class, FontAwesome.GEAR, false);
+    ADMINISTRATION(AdministrationView.NAME/*"Administración"*/, AdministrationView.class, FontAwesome.GEAR, false),
+    BUSQUEDA_TASACIONES(BusquedaTasacionesView.NAME/*"Buscar Tasación"*/, BusquedaTasacionesView.class, FontAwesome.SEARCH, true)
+    ;
 
     private final String viewName;
     private final Class<? extends View> viewClass;
