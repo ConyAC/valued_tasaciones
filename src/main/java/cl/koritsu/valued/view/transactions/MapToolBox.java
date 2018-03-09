@@ -7,6 +7,21 @@ import java.util.Date;
 import java.util.List;
 
 import org.tepi.filtertable.FilterTable;
+import org.vaadin.dialogs.ConfirmDialog;
+
+import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Transaction;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
+import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.view.ValuedViewType;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
+import cl.koritsu.valued.view.utils.SecurityHelper;
+import cl.koritsu.valued.view.utils.Utils;
 
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.data.Property;
@@ -17,22 +32,11 @@ import com.vaadin.server.Page;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CustomTable;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
-import cl.koritsu.valued.domain.Bien;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.enums.EstadoSolicitud;
-import cl.koritsu.valued.domain.enums.EstadoTasacion;
-import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
-import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.view.ValuedViewType;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
-import cl.koritsu.valued.view.utils.Constants;
-import cl.koritsu.valued.view.utils.Utils;
+
 
 public class MapToolBox extends Window {
 
@@ -52,6 +56,19 @@ public class MapToolBox extends Window {
 	EditorSolicitudTasacion editorSolicitud;
 
 	/** CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
+	// enviar correo
+	List<OnClickTasacionEvent> onClickEmailEvents = new ArrayList<OnClickTasacionEvent>();
+
+	public void sendEmailOnClickEvent(OnClickTasacionEvent listener) {
+		onClickEmailEvents.add(listener);
+	}
+
+	private void doClickEmail(BeanItem<SolicitudTasacion> sol) {
+		for (OnClickTasacionEvent listener : onClickEmailEvents) {
+			listener.onClick(sol);
+		}
+	}
+	
 	// seleccionar tasaciones
 	List<OnClickTasacionEvent> onClickTasacionEvents = new ArrayList<OnClickTasacionEvent>();
 
@@ -172,27 +189,13 @@ public class MapToolBox extends Window {
 		table.setColumnReorderingAllowed(true);
 		table.setSortAscending(false);
 
-		table.addGeneratedColumn("nombrecliente",
-				new CustomTable.ColumnGenerator() {
-
-					@Override
-					public Object generateCell(CustomTable source,
-							Object itemId, Object columnId) {
-						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
-								.getItem(itemId)).getBean();
-						return sol.getCliente() != null ? sol.getCliente()
-								.getNombreCliente() : "";
-					}
-				});
-
 		table.addGeneratedColumn("direccion",
 				new CustomTable.ColumnGenerator() {
 
 					@Override
 					public Object generateCell(CustomTable source,
 							Object itemId, Object columnId) {
-						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
-								.getItem(itemId)).getBean();
+						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId)).getBean();
 						Bien bien = sol.getBien();
 						return (bien != null && bien.getDireccion() != null) ? bien
 								.getDireccion()
@@ -205,34 +208,96 @@ public class MapToolBox extends Window {
 								: "";
 					}
 				});
-
-		table.addGeneratedColumn("acceder", new CustomTable.ColumnGenerator() {
-
+		
+		table.addGeneratedColumn("acciones", new CustomTable.ColumnGenerator() {
+			
 			@Override
-			public Object generateCell(final CustomTable source,
-					final Object itemId, Object columnId) {
-				Button editarTasacion = new Button(null, FontAwesome.MAP_MARKER);
-				editarTasacion.addClickListener(new Button.ClickListener() {
+			public Object generateCell(CustomTable source, final Object itemId,Object columnId) {
+				HorizontalLayout hl = new HorizontalLayout();
+				
+				if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES)){
+					//Editar datos de una obra
+					Button editarTasacion = new Button(null, FontAwesome.MAP_MARKER);
+					editarTasacion.addClickListener(new Button.ClickListener() {
+	
+						@Override
+						public void buttonClick(ClickEvent event) {
+							BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+							// cambia la vista para mostrar el formulario de
+							// modificaciòn de solicitudes
+							setSolTasacion(sol.getBean());
+							doClickTasacion(sol);
+	
+						}
+					});
+					
+					hl.addComponent(editarTasacion);
+				}
+				
+				if( SecurityHelper.hasPermission(Permiso.ENVIAR_CORREO)){
+					hl.setSpacing(true);
+						
+					//Marcar como eliminada una obra
+					Button enviarCorreo = new Button(null,FontAwesome.SEND);
+					enviarCorreo.addClickListener(new Button.ClickListener() {
+						
+						@Override
+						public void buttonClick(ClickEvent event) {	
+							ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro que desea enviar correo alertando tardanza en el registro de la visita?",
+							        "Si", "Cancelar", new ConfirmDialog.Listener() {
 
-					@Override
-					public void buttonClick(ClickEvent event) {
-						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source
-								.getItem(itemId));
-						// cambia la vista para mostrar el formulario de
-						// modificaciòn de solicitudes
-						setSolTasacion(sol.getBean());
-						doClickTasacion(sol);
-
-					}
-				});
-				return editarTasacion;
+							            public void onClose(ConfirmDialog dialog) {
+							                if (dialog.isConfirmed()) {
+							                	BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));	
+												doClickEmail(sol);
+							                } else {
+							                    // User did not confirm
+							                   ;
+							                }
+							            }
+							        });		
+							}
+					});
+					hl.addComponent(enviarCorreo);
+				}
+				return hl;
 			}
 		});
-
-		table.setVisibleColumns("acceder", "estado", "numeroTasacion",
-				"fechaEncargo", "fechaTasacion", "direccion");
-		table.setColumnHeaders("Acceder", "Estado", "N° Tasación",
-				"Fecha Encargo", "Fecha Visista", "Dirección");
+		
+		if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) ){
+			
+			table.addGeneratedColumn("nombrecliente",
+					new CustomTable.ColumnGenerator() {
+	
+						@Override
+						public Object generateCell(CustomTable source,
+								Object itemId, Object columnId) {
+							SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
+									.getItem(itemId)).getBean();
+							return sol.getCliente() != null ? sol.getCliente()
+									.getNombreCliente() : "";
+						}
+					});
+			
+			table.addGeneratedColumn("tasador",
+					new CustomTable.ColumnGenerator() {
+	
+						@Override
+						public Object generateCell(CustomTable source,
+								Object itemId, Object columnId) {
+							SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId)).getBean();
+							return sol.getTasador() != null ? sol.getTasador().getFullname() : "";
+						}
+					});
+			
+			table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "tasador", "direccion","numeroTasacion","nombrecliente");
+			table.setColumnHeaders("Acciones", "Estado","Fecha Encargo", "Fecha Visista", "Tasador","Dirección", "N° Tasación","Cliente");
+			
+		}
+		
+		table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "direccion","numeroTasacion");
+		table.setColumnHeaders("Acceder", "Estado","Fecha Encargo", "Fecha Visista", "Dirección", "N° Tasación");
+		
 		table.setFilterBarVisible(true);
 		table.setFooterVisible(true);
 

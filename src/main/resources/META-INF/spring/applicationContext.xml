@@ -29,7 +29,7 @@
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
  
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url" value="jdbc:mysql://localhost:3306/valued_migracion" />
+		<property name="url" value="jdbc:mysql://localhost:3306/valued" />
 		<property name="username" value="root" />
 		<property name="password" value="" />
 	</bean>
@@ -81,6 +81,33 @@
 	    <property name="maxPoolSize" value="10" />
 	    <property name="queueCapacity" value="25" />
 	</bean>
+	
+	<!-- Velocity -->
+	
+     <bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean"> 
+	  <property name="velocityProperties">
+	   <props>
+	    <prop key="resource.loader">class</prop>
+	    <prop key="class.resource.loader.class">org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader</prop>
+	   </props>
+	  </property>
+	 </bean>
+	
+	 <!-- Mail -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="smtp.gmail.com"/>
+        <property name="port" value="587"/>
+        <property name="username" value="valued.tasaciones@gmail.com"/>
+        <property name="password" value="valued2018"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.transport.protocol">smtp</prop>
+                <prop key="mail.smtp.auth">true</prop>
+                <prop key="mail.smtp.starttls.enable">true</prop>
+                <prop key="mail.debug">true</prop>
+            </props>
+        </property>
+    </bean>
 
 	<import resource="security.xml" />
 </beans>

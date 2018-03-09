@@ -181,7 +181,7 @@ public final class ValuedMenu extends CustomComponent {
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }
 	            
-	            if (view == ValuedViewType.TRANSACTIONS2 && SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES)) {
+	            if (view == ValuedViewType.TRANSACTIONS2 && (SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES))) {
 	                verTasacionesBadge = new Label();
 	                verTasacionesBadge.setId(STYLE_VISIBLE);
 	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
