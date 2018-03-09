@@ -3,7 +3,9 @@
         <h3>Hola ${usuario.fullname}, 
 
         <div>
-            Tiene pendiente la visita para tasación agendada el ${solicitud.fechaTasacion} en ${solicitud.bien.direccion} solicitada por el cliente ${solicitud.cliente.razonSocial}.
+            Tiene pendiente la visita para tasación agendada el ${solicitud.fechaVisitaoFormateada} en ${solicitud.bien.direccion} solicitada por el cliente ${solicitud.cliente.razonSocial}.
+            <br>
+            Saludos.
         </div>
     </body>
 </html>

@@ -330,6 +330,11 @@ public class SolicitudTasacion {
 	public String getFechaEncargoFormateada() {
 		return Utils.formatoFecha(getFechaEncargo());
 	}
+	
+	public String getFechaVisitaoFormateada() {
+		return Utils.formatoFecha(getFechaTasacion());
+	}
+	
 	public String getNombreCliente() {
 		if(getCliente() != null) {
 			if(getCliente().getTipoPersona() == TipoPersona.NATURAL)

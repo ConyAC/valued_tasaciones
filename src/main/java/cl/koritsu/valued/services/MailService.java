@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.generic.DateTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ public class MailService {
 				MimeMessagePreparator preparator = new MimeMessagePreparator() {
 					public void prepare(MimeMessage mimeMessage) throws Exception {
 						MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
-						//message.setTo("constanza.aravenac@gmail.com");
+						message.setSubject("Alerta Visita Pendiente");
 						message.setTo(usuario.getEmail());
 						message.setFrom("noreply@valued.cl");
 						Map model = new HashMap();
