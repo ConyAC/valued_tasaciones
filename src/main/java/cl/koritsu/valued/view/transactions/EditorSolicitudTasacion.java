@@ -14,12 +14,17 @@ import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.tapio.googlemaps.GoogleMap;
+import com.vaadin.tapio.googlemaps.client.LatLon;
+import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -60,6 +65,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
     Button btnGuadar = new Button("Guardar");
     Component footer;
     VerticalLayout agendar,confirmar,llenar,root,resumen;
+    GoogleMap googleMap;
+	private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     
     
     /** CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
@@ -106,6 +113,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	public EditorSolicitudTasacion() {
 		
 		setSizeFull();
+		
+		googleMap = new GoogleMap(apiKey, null, "english");
 		
 		Panel rootPanel = new Panel();
 		rootPanel.setSizeFull();
@@ -248,7 +257,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    sectionBien.addStyleName(ValoTheme.LABEL_COLORED);	    
 	    vl.addComponent(sectionBien);
     	
-		FormLayout detailsIngreso = new FormLayout();
+		final FormLayout detailsIngreso = new FormLayout();
        // details.addStyleName(ValoTheme.FORMLAYOUT_LIGHT);
     	//detailsIngreso.setMargin(true);
     	detailsIngreso.setSizeFull();
@@ -339,23 +348,27 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		coor.addStyleName(ValoTheme.LABEL_COLORED);	    
 		detailsIngreso.addComponent(coor);
 	    
+		Panel console = new Panel();
+        console.setHeight("100px");
+        final CssLayout consoleLayout = new CssLayout();
+        console.setContent(consoleLayout);
+        detailsIngreso.addComponent(console);
 		/*
 		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
 		 * se arrastraron los puntos (draggable)
 		 */    
-//		googleMap.addMarkerDragListener(new MarkerDragListener() {
-//			@Override
-//			public void markerDragged(GoogleMapMarker draggedMarker,
-//                LatLon oldPosition) {
-//                consoleEntry = new Label();
-//                consoleEntry.setValue("Marcador arrastrado desde ("
-//                    + oldPosition.getLat() + ", " + oldPosition.getLon()
-//                    + ") hacia (" + draggedMarker.getPosition().getLat()
-//                    + ", " + draggedMarker.getPosition().getLon() + ")");
-//                detailsIngreso.addComponent(consoleEntry);
-//            }
-//        });
-		
+		googleMap.addMarkerDragListener(new MarkerDragListener() {
+			@Override
+			public void markerDragged(GoogleMapMarker draggedMarker,
+                LatLon oldPosition) {
+                Label consoleEntry = new Label();
+                consoleEntry.setValue("Marcador arrastrado desde ("
+                    + oldPosition.getLat() + ", " + oldPosition.getLon()
+                    + ") hacia (" + draggedMarker.getPosition().getLat()
+                    + ", " + draggedMarker.getPosition().getLon() + ")");
+                consoleLayout.addComponent(consoleEntry);
+            }
+        });
 		
 		return vl;
 	}
@@ -661,26 +674,37 @@ public class EditorSolicitudTasacion extends VerticalLayout {
     private VerticalLayout buildTablePrograma() {
     	VerticalLayout vll = new VerticalLayout();
  
-    	final Table tablePrograma = new Table();
-    	
-    	tablePrograma.setContainerDataSource(dsProgramaBien);
-    	
-    	Utils.bind(bfg, tablePrograma, "bien.programas");
-    	
+    	final Table tablePrograma = new Table();    	
+    	tablePrograma.setContainerDataSource(dsProgramaBien);   	
 		tablePrograma.setHeight("100px");
-		/*
-		tablePrograma.addContainerProperty("Elementos", ComboBox.class, null);
-		tablePrograma.addContainerProperty("Cantidad/Superficie",  Integer.class, null);
 		
-		ComboBox cbProg = new ComboBox();
-		cbProg.setWidth("150px");
-		cbProg.setNullSelectionAllowed(false);
-		for(Programa p : Programa.values()){
-			cbProg.addItem(p);
-		}
+		tablePrograma.setTableFieldFactory(new TableFieldFactory() {
+			
+			@Override
+			public Field<?> createField(Container container, Object itemId,
+					Object propertyId, Component uiContext) {
+				Field<?> field = null; 
+				if(propertyId.equals("cantidadSuperficie")){
+					field = new TextField();
+					((TextField)field).setImmediate(true);
+				} else if(  propertyId.equals("programa") ){
+						field = new ComboBox();
+						field.setWidth("150px");
+						((ComboBox)field).setNullSelectionAllowed(false);
+						for(Programa p : Programa.values()){
+							((ComboBox)field).addItem(p);
+						}
+				} else if( propertyId.equals("eliminar")) {
+					return null;
+				}
+				
+				field.setPropertyDataSource(container.getContainerProperty(itemId, propertyId));
+					
+				return field;
+			}
+		});	
 		
-		tablePrograma.addItem(new Object[]{cbProg,2}, 1);
-		*/
+
 		tablePrograma.addGeneratedColumn("eliminar", new Table.ColumnGenerator() {
 
 			@Override
@@ -694,7 +718,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 
 							public void onClose(ConfirmDialog dialog) {
 								if (dialog.isConfirmed()) {
-									;
+									dsProgramaBien.removeItem(itemId);
 								}
 							}
 						});
@@ -702,6 +726,12 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 				}){{setIcon(FontAwesome.TRASH_O);}};
 			}
 		});
+		
+    	Utils.bind(bfg, tablePrograma, "bien.programas");
+		
+		tablePrograma.setEditable(true);
+		tablePrograma.setVisibleColumns("programa","cantidadSuperficie","eliminar");
+		tablePrograma.setColumnHeaders("Programa","Cant. Superficie","Eliminar");
 		
 		vll.addComponent(tablePrograma);
 		vll.setComponentAlignment(tablePrograma, Alignment.MIDDLE_LEFT);
@@ -754,7 +784,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 
 							public void onClose(ConfirmDialog dialog) {
 								if (dialog.isConfirmed()) {
-									source.removeItem(itemId);
+									dsObraComplementaria.removeItem(itemId);
 								}
 							}
 						});
@@ -766,6 +796,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		tableObras.setContainerDataSource(dsObraComplementaria);
 		tableObras.setEditable(true);
 		tableObras.setVisibleColumns("adicional","cantidadSuperficie","valorTotalUF","eliminar");
+		tableObras.setColumnHeaders("Adicional","Cant. Superficie","Total UF","Eliminar");
 		
 		return tableObras;
     }

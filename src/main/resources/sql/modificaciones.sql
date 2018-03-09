@@ -35,3 +35,7 @@ insert into permisos (rolId, rol_permisos)values(1,'ENVIAR_A_CLIENTE');
 insert into permisos (rolId, rol_permisos)values(1,'VISUALIZAR_REPORTES');
 insert into permisos (rolId, rol_permisos)values(1,'VISUALIZAR_TASACIONES');
 insert into permisos (rolId, rol_permisos)values(1,'BUSCAR_TASACIONES');
+
+
+ALTER TABLE `valued`.`usuario` 
+CHANGE COLUMN `habilitado` `eliminado` INT(11) NOT NULL ;
