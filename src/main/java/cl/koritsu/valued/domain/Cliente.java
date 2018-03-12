@@ -130,4 +130,10 @@ public class Cliente {
 		return "Cliente [id=" + id + "]";
 	}
     
+	public String getFullname(){
+		if(razonSocial != null)
+			return razonSocial;
+		else
+			return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");
+    }   
 }

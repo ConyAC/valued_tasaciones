@@ -17,7 +17,7 @@ public enum ValuedViewType {
     SALES(NuevaTasacionView.NAME/*"nueva solicitud"*/, NuevaTasacionView.class, FontAwesome.BUILDING, false), 
     TRANSACTIONS(TransactionsView.NAME/*"tasaciones en curso"*/, TransactionsView.class, FontAwesome.TABLE, false), 
     TRANSACTIONS2(MisSolicitudesView.NAME/*"tasaciones en curso"*/, MisSolicitudesView.class, FontAwesome.TABLE, false), 
-    REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SEARCH, true), 
+    REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SIGNAL, true), 
     ADMINISTRATION(AdministrationView.NAME/*"Administración"*/, AdministrationView.class, FontAwesome.GEAR, false),
     BUSQUEDA_TASACIONES(BusquedaTasacionesView.NAME/*"Buscar Tasación"*/, BusquedaTasacionesView.class, FontAwesome.SEARCH, true)
     ;

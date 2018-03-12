@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,12 +36,12 @@ import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
 import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
-import cl.koritsu.valued.repositories.SolicitudRepository;
 import cl.koritsu.valued.repositories.SolicitudTasacionRepository;
 import cl.koritsu.valued.repositories.SucursalRepository;
 import cl.koritsu.valued.repositories.TipoInformeRepository;
 import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
+import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
 
 @Service
 public class ValuedService {
@@ -62,8 +64,6 @@ public class ValuedService {
 	ContactoRepository ejecutivoRepo;
 	@Autowired
 	SolicitanteRepository solicitanteRepo;
-	@Autowired
-	SolicitudRepository solicitudRepo;
 	@Autowired
 	HonorarioClienteRepository honorariosClienteRepo;
 	@Autowired
@@ -172,7 +172,7 @@ public class ValuedService {
 			nroValued = bean.getNumeroTasacion();
 		}
 		//guarda la solicitud
-		solicitudRepo.save(bean);
+		solicitudTasacionRepo.save(bean);
 		
 		return nroValued;
 		
@@ -228,7 +228,7 @@ public class ValuedService {
 	}
 
 	public void saveSolicitudes(List<SolicitudTasacion> solicitudes) {
-		solicitudRepo.save(solicitudes);
+		solicitudTasacionRepo.save(solicitudes);
 	}
 	
 
@@ -241,7 +241,7 @@ public class ValuedService {
 	}
 	
 	public SolicitudTasacion getSolicitudByNumeroTasacion(String nroEncargo) {
-		return solicitudRepo.findFirstByNumeroTasacion(nroEncargo);
+		return solicitudTasacionRepo.findFirstByNumeroTasacion(nroEncargo);
 	}
 		
 	public Usuario findUsuarioByUsername(String email) {
@@ -298,4 +298,7 @@ public class ValuedService {
 		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
 	}
 	
+	public Page<SolicitudTasacion> getBuscarTasaciones(Pageable page, BuscarSolicitudVO vo) {
+		return solicitudTasacionRepo.findTasaciones(vo.getEstado(), vo.getNroTasacion(), vo.getTasador(), vo.getRegion(), vo.getComuna(), page);
+	}
 }
