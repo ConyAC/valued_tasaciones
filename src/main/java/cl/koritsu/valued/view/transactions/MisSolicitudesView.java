@@ -20,9 +20,9 @@ import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegres
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
 import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
 import cl.koritsu.valued.view.utils.Constants;
-import cl.koritsu.valued.view.utils.Utils;
+import cl.koritsu.valued.view.utils.OpenInfoWindowOnMarkerClickListener;
+import cl.koritsu.valued.view.utils.ResumenTasacion;
 
-import com.vaadin.data.Item;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
@@ -30,6 +30,9 @@ import com.vaadin.server.Responsive;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
+import com.vaadin.tapio.googlemaps.client.events.MarkerClickListener;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
@@ -53,7 +56,10 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     Label consoleEntry;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
-
+    
+    private GoogleMapInfoWindow infoWindow;
+    
+    OpenInfoWindowOnMarkerClickListener infoWindowOpener;
     @Autowired
     ValuedService service;
 	@Autowired
@@ -82,8 +88,25 @@ public class MisSolicitudesView extends VerticalLayout implements View {
         mapsPanel.setSizeFull();
         mapsPanel.setHeight("800px");
         mapsPanel.setContent(googleMap);
-        addComponent(mapsPanel);
+        addComponent(mapsPanel);   
+  		
+        //permite identificar el punto que se esta clickeando para levantar la ventana de resumen.
+        googleMap.addMarkerClickListener(new MarkerClickListener() {
+		
+			@Override
+			public void markerClicked(GoogleMapMarker clickedMarker) {				
+				infoWindow = new GoogleMapInfoWindow("Solicitud Tasación", clickedMarker);
+				
+				SolicitudTasacion sol = service.getSolicitudByNumeroTasacion(clickedMarker.getCaption());
+			    infoWindow.setPosition(clickedMarker.getPosition());
+				
+				googleMap.setInfoWindowContents(infoWindow, new ResumenTasacion(sol, service, false,false));
+				googleMap.openInfoWindow(infoWindow);				
+			}
+        });
        
+      
+        
         //situamos, inicialmente, el mapa en Santiago.
       	googleMap.setCenter(new LatLon(-33.448779, -70.668551));
         
@@ -105,7 +128,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 				
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
 					cargarTasaciones(sol);
-				
+			
 			}
 		});
     	
@@ -164,86 +187,9 @@ public class MisSolicitudesView extends VerticalLayout implements View {
         title.addStyleName(ValoTheme.LABEL_H1);
         title.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(title);
-
-//        HorizontalLayout tools = new HorizontalLayout(buildFilter());
-//        tools.setSpacing(true);
-//        tools.addStyleName("toolbar");
-//        header.addComponent(tools);
         
         return header;
-    }
-    
-    /*
-     * Cambiar filtro segun perfil
-     */
-//    private Component buildFilter() {
-//        final TextField filter = new TextField();
-//        filter.addTextChangeListener(new TextChangeListener() {
-//            @Override
-//            public void textChange(final TextChangeEvent event) {
-//                Filterable data = (Filterable) table.getContainerDataSource();
-//                data.removeAllContainerFilters();
-//                data.addContainerFilter(new Filter() {
-//                    @Override
-//                    public boolean passesFilter(final Object itemId,
-//                            final Item item) {
-//
-//                        if (event.getText() == null
-//                                || event.getText().equals("")) {
-//                            return true;
-//                        }
-//
-//                        return filterByProperty("numeroTasacion", item,
-//                                event.getText())
-//                                || filterByProperty("estado", item,
-//                                        event.getText())
-//                                || filterByProperty("bien.direccion", item,
-//                                        event.getText());
-//
-//                    }
-//
-//                    @Override
-//                    public boolean appliesToProperty(final Object propertyId) {
-//                        if (propertyId.equals("numeroTasacion")
-//                                || propertyId.equals("estado")
-//                                || propertyId.equals("bien.direccion")) {
-//                            return true;
-//                        }
-//                        return false;
-//                    }
-//                });
-//            }
-//        });
-//
-//        filter.setInputPrompt("Filter");
-//        filter.setIcon(FontAwesome.SEARCH);
-//        filter.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
-//        filter.addShortcutListener(new ShortcutListener("Clear",
-//                KeyCode.ESCAPE, null) {
-//            @Override
-//            public void handleAction(final Object sender, final Object target) {
-//                filter.setValue("");
-//                ((Filterable) table.getContainerDataSource())
-//                        .removeAllContainerFilters();
-//            }
-//        });
-//        return filter;
-//    }
-    
-    private boolean filterByProperty(final String prop, final Item item,
-            final String text) {
-        if (item == null || item.getItemProperty(prop) == null
-                || item.getItemProperty(prop).getValue() == null) {
-            return false;
-        }
-        String val = item.getItemProperty(prop).getValue().toString().trim()
-                .toLowerCase();
-        if (val.contains(text.toLowerCase().trim())) {
-            return true;
-        }
-        return false;
-    }
-    
+    }    
     
     @Override
     public void enter(final ViewChangeEvent event) {
@@ -287,11 +233,13 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 					break;			
 				}
 				
-				googleMap.addMarker("Tasación "+tasacion.getNumeroTasacion()+" "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
-									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
-									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
-									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
-									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
+//				GoogleMapMarker marker = googleMap.addMarker("Tasación "+tasacion.getNumeroTasacion()+" "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
+//									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
+//									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
+//									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
+//									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);				
+				
+				googleMap.addMarker(tasacion.getNumeroTasacion(), new LatLon(tasacion.getNorteY(),tasacion.getEsteX()),false,ruta_img);
 			}
 		}
 		

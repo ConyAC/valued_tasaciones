@@ -1,5 +1,7 @@
 package cl.koritsu.valued.view.busqueda;
 
+import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.Usuario;
@@ -13,6 +15,8 @@ public class BuscarSolicitudVO {
 	Usuario tasador;
 	Region region;
 	Comuna comuna;
+	Cliente cliente;
+	Bien direccion;
 	
 	public String getNroTasacion() {
 		return nroTasacion;
@@ -43,5 +47,17 @@ public class BuscarSolicitudVO {
 	}
 	public void setComuna(Comuna comuna) {
 		this.comuna = comuna;
+	}
+	public Cliente getCliente() {
+		return cliente;
+	}
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+	public Bien getDireccion() {
+		return direccion;
+	}
+	public void setDireccion(Bien direccion) {
+		this.direccion = direccion;
 	}
 }

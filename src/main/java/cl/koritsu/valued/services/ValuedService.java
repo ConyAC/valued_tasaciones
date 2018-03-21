@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -298,7 +296,11 @@ public class ValuedService {
 		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
 	}
 	
-	public Page<SolicitudTasacion> getBuscarTasaciones(Pageable page, BuscarSolicitudVO vo) {
-		return solicitudTasacionRepo.findTasaciones(vo.getEstado(), vo.getNroTasacion(), vo.getTasador(), vo.getRegion(), vo.getComuna(), page);
+	public List<Bien> getDirecciones() {
+		return (List<Bien>) bienRepo.findAll();
 	}
+	
+	public List<SolicitudTasacion> getTasacionesFiltradas(BuscarSolicitudVO vo) {
+		return (List<SolicitudTasacion>) solicitudTasacionRepo.findTasaciones(vo);
+    }
 }
