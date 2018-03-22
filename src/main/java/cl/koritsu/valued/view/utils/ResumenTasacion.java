@@ -210,6 +210,18 @@ public class ResumenTasacion extends FormLayout {
 	    	fl.addComponent(mensaje1);
 	    }
 	    
+	    if(!sol.getObservacionReparo().isEmpty()){	    	
+		    Label sectionObs = new Label("Observaciones Reparo");
+		    sectionObs.addStyleName(ValoTheme.LABEL_H3);
+		    sectionObs.addStyleName(ValoTheme.LABEL_COLORED);
+		    fl.addComponent(sectionObs);
+		    
+		    Label obs = new Label();
+		    obs.setCaption("Observación Reparo");
+		    obs.setValue(sol.getObservacionReparo());
+		    fl.addComponent(obs);
+	    }
+	    
 	    if(ubicacion){	    	
 		    Label sectionUbicacion = new Label("Ubicación");
 		    sectionUbicacion.addStyleName(ValoTheme.LABEL_H3);

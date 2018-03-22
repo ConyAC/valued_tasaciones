@@ -39,3 +39,7 @@ insert into permisos (rolId, rol_permisos)values(1,'BUSCAR_TASACIONES');
 
 ALTER TABLE `valued`.`usuario` 
 CHANGE COLUMN `habilitado` `eliminado` INT(11) NOT NULL ;
+
+/*observacion reparo*/
+ALTER TABLE `valued`.`solicitud_tasacion` ADD COLUMN `observacionReparo` TEXT NULL DEFAULT NULL  AFTER `tasadorId` ;
+

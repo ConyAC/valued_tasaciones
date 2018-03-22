@@ -16,8 +16,10 @@ import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.utils.ResumenTasacion;
+import cl.koritsu.valued.view.utils.SecurityHelper;
 import cl.koritsu.valued.view.utils.Utils;
 
 import com.vaadin.data.Property;
@@ -36,13 +38,17 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SuppressWarnings("serial")
@@ -324,6 +330,8 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 			@Override
 			public Object generateCell(Table source, Object itemId, Object columnId) {
 				
+				HorizontalLayout hl = new HorizontalLayout();
+				hl.setSpacing(true);
 				Button verTasacion = new Button(null, FontAwesome.LIST_ALT);
 				verTasacion.addClickListener(new Button.ClickListener() {
 
@@ -332,8 +340,24 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
 						final ResumenTasacion resumen = new ResumenTasacion(sol.getBean(), service, true, true);
 					}
+				});				
+				hl.addComponent(verTasacion);
+				
+			if( SecurityHelper.hasPermission(Permiso.MARCAR_REPARO)){
+				Button cambiarEstado = new Button(null, FontAwesome.RECYCLE);
+				cambiarEstado.addClickListener(new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+						buildReparo(sol.getBean());
+					}
 				});
-				return verTasacion;
+				
+				hl.addComponent(cambiarEstado);
+			}			
+				
+				return hl;
 			}
 		});
         
@@ -352,5 +376,51 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
     public void enter(final ViewChangeEvent event) {
     	//limpia la tabla
     	table.removeAllItems();  
+    }
+    
+    private Window buildReparo(SolicitudTasacion sol) {
+    	Window window = new Window(sol.getNumeroTasacion());
+    	window.setWidth("500px");
+    	window.setHeight("500px");
+	    window.setModal(true);
+		window.setResizable(false);
+		window.center();
+		 
+		VerticalLayout vl = new VerticalLayout();        
+		FormLayout fl = new FormLayout();
+		vl.addComponent(fl);
+		fl.setMargin(true);
+		
+      	Label sectionCliente = new Label("Tasación en Reparo");
+      	sectionCliente.addStyleName(ValoTheme.LABEL_H3);
+      	sectionCliente.addStyleName(ValoTheme.LABEL_COLORED);	    
+      	fl.addComponent(sectionCliente);
+	    
+      	TextArea reparo = new TextArea("Observación Cliente");
+      	reparo.setRows(10);
+      	reparo.setWordwrap(false);
+	    fl.addComponent(reparo);
+	    
+	    Button btnGuardar = new Button("Guardar", FontAwesome.SAVE);
+	    btnGuardar.addStyleName(ValoTheme.BUTTON_PRIMARY);
+	    btnGuardar.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				sol.setObservacionReparo(reparo.getValue());
+				sol.setEstado(EstadoSolicitud.EN_REPARO);
+				service.saveSolicitud(sol);
+				
+				Notification.show("La tasación ha cambiado de estado, puede encontrarla disponible en el modulo de en procesos.");
+				
+				((UI)window.getParent()).removeWindow(window);
+			}
+		});
+	    fl.addComponent(btnGuardar);
+	    
+	    window.setContent(vl);
+		UI.getCurrent().addWindow(window);
+	    
+	    return window;
     }
 }

@@ -217,7 +217,6 @@ public class MapToolBox extends Window {
 				HorizontalLayout hl = new HorizontalLayout();
 				
 				if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES)){
-					//Editar datos de una obra
 					Button editarTasacion = new Button(null, FontAwesome.MAP_MARKER);
 					editarTasacion.addClickListener(new Button.ClickListener() {
 	
@@ -238,7 +237,6 @@ public class MapToolBox extends Window {
 				if( SecurityHelper.hasPermission(Permiso.ENVIAR_CORREO)){
 					hl.setSpacing(true);						
 						
-					//Marcar como eliminada una obra
 					Button enviarCorreo = new Button(null,FontAwesome.SEND);
 					enviarCorreo.addClickListener(new Button.ClickListener() {
 						

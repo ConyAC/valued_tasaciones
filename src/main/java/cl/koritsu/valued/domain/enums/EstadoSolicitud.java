@@ -1,7 +1,7 @@
 package cl.koritsu.valued.domain.enums;
 
 public enum EstadoSolicitud {
-	CREADA,TASADA,VISADA,VISADA_CLIENTE,FACTURA, VISITADA, AGENDADA,AGENDADA_CON_INCIDENCIA;
+	CREADA,TASADA,VISADA,VISADA_CLIENTE,FACTURA, VISITADA, AGENDADA,AGENDADA_CON_INCIDENCIA,EN_REPARO;
 	
 	@Override
 	public String toString() {
@@ -22,6 +22,8 @@ public enum EstadoSolicitud {
 			return "Visitada con incidencia";
 		case AGENDADA:
 			return "Agendada";
+		case EN_REPARO:
+			return "En Reparo";
 
 		}
 		return super.toString();

@@ -94,6 +94,7 @@ public class SolicitudTasacion {
 	
 	
 	String observaciones = "";
+	String observacionReparo = "";
 	float norteY;
 	float esteX;
 	
@@ -325,8 +326,13 @@ public class SolicitudTasacion {
 	}
 	public void setTasador(Usuario tasador) {
 		this.tasador = tasador;
+	}	
+	public String getObservacionReparo() {
+		return observacionReparo;
 	}
-
+	public void setObservacionReparo(String observacionReparo) {
+		this.observacionReparo = observacionReparo;
+	}
 	public String getFechaEncargoFormateada() {
 		return Utils.formatoFecha(getFechaEncargo());
 	}
