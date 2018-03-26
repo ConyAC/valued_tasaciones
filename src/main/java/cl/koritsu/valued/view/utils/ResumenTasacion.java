@@ -210,7 +210,7 @@ public class ResumenTasacion extends FormLayout {
 	    	fl.addComponent(mensaje1);
 	    }
 	    
-	    if(!sol.getObservacionReparo().isEmpty()){	    	
+	    if(sol.getObservacionReparo() != null){	    	
 		    Label sectionObs = new Label("Observaciones Reparo");
 		    sectionObs.addStyleName(ValoTheme.LABEL_H3);
 		    sectionObs.addStyleName(ValoTheme.LABEL_COLORED);

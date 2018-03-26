@@ -161,7 +161,6 @@ public class MapToolBox extends Window {
 			@Override
 			protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
 				String result = super.formatPropertyValue(rowId, colId,property);
-				System.out.println("LALALAL "+colId.toString());
 				if (colId.equals("fechaEncargo") || colId.equals("fechaTasacion")) {
 					if (property.getValue() != null)
 						result = Utils.formatoFecha(((Date) property.getValue()));
