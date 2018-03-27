@@ -271,6 +271,7 @@ public final class TransactionsView extends VerticalLayout implements View {
         // enough to make the table fit better.
         if (defaultColumnsVisible()) {
             for (String propertyId : DEFAULT_COLLAPSIBLE) {
+            	System.out.println(propertyId);
                 table.setColumnCollapsed(propertyId, Page.getCurrent()
                         .getBrowserWindowWidth() < 800);
             }
