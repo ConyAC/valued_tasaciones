@@ -8,7 +8,6 @@ import java.util.List;
 import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
-import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
@@ -161,7 +160,6 @@ public class MapToolBox extends Window {
 			@Override
 			protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
 				String result = super.formatPropertyValue(rowId, colId,property);
-				System.out.println("LALALAL "+colId.toString());
 				if (colId.equals("fechaEncargo") || colId.equals("fechaTasacion")) {
 					if (property.getValue() != null)
 						result = Utils.formatoFecha(((Date) property.getValue()));
