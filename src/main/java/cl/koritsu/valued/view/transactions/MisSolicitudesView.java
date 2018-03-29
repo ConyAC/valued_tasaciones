@@ -1,5 +1,6 @@
 package cl.koritsu.valued.view.transactions;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Scope;
 import ru.xpoft.vaadin.VaadinView;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.EstadoTasacion;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.services.MailService;
 import cl.koritsu.valued.services.ValuedService;
@@ -23,6 +23,12 @@ import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.view.utils.OpenInfoWindowOnMarkerClickListener;
 import cl.koritsu.valued.view.utils.ResumenTasacion;
 
+import com.google.code.geocoder.Geocoder;
+import com.google.code.geocoder.GeocoderRequestBuilder;
+import com.google.code.geocoder.model.GeocodeResponse;
+import com.google.code.geocoder.model.GeocoderComponent;
+import com.google.code.geocoder.model.GeocoderRequest;
+import com.google.code.geocoder.model.GeocoderStatus;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
@@ -120,10 +126,20 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 
 				SolicitudTasacion sol = solicitudBean.getBean();
 				double lat = sol.getNorteY();
-				double lon = sol.getEsteX();			
-				googleMap.setCenter(new LatLon(lat,lon));
-				googleMap.addMarker(EstadoTasacion.NUEVA_TASACION.toString(), new LatLon(
-						lat, lon), true, "VAADIN/img/pin_tas_asignada.png");
+				double lon = sol.getEsteX();
+				
+				//cuando las coordenadas son igual a 0 tenemos que ir a buscarlas para almacenarla en la solicitud.
+				if(lat == 0 || lon == 0){
+					LatLon coordenadas = recuperarCoordenadas(sol);
+					if(coordenadas.getLat() > 0 && coordenadas.getLon() > 0){
+						googleMap.setCenter(new LatLon(coordenadas.getLat(),coordenadas.getLon()));
+						googleMap.addMarker(sol.getNumeroTasacion(), new LatLon(coordenadas.getLat(), coordenadas.getLon()), true, "VAADIN/img/pin_tas_asignada.png");
+					}
+				}else{
+					googleMap.setCenter(new LatLon(lat,lon));
+					googleMap.addMarker(sol.getNumeroTasacion(), new LatLon(lat, lon), true, "VAADIN/img/pin_tas_asignada.png");
+				}
+				
 				googleMap.setZoom(20);
 				
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
@@ -168,7 +184,38 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 
   
     
-    @Override
+    private LatLon recuperarCoordenadas(SolicitudTasacion sol) {
+		Geocoder geo = new Geocoder();
+		LatLon coord = new LatLon();
+		double lat = 0;
+		double lon = 0;
+		GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(sol.getBien().getDireccion()+" "+sol.getBien().getNumeroManzana()+" "+sol.getBien().getComuna().getNombre()).getGeocoderRequest();
+		geocoderRequest.addComponent(GeocoderComponent.COUNTRY, "cl");
+			try {
+				GeocodeResponse geocoderResponse = geo.geocode(geocoderRequest);
+				System.out.println(sol.getId() +" "+ geocoderResponse);
+				
+				if(geocoderResponse.getStatus() != null && geocoderResponse.getStatus().equals(GeocoderStatus.OK)) {
+					lat = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLat().doubleValue();
+					lon = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLng().doubleValue();
+					
+					sol.setNorteY((float) lat);
+					sol.setEsteX((float) lon);
+					
+					service.saveSolicitud(sol);					
+				}
+				
+				coord.setLat(lat);
+				coord.setLon(lon);
+				
+			}catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return coord; 
+	}
+
+	@Override
     public void detach() {
         super.detach();
         // A new instance of TransactionsView is created every time it's
@@ -239,7 +286,9 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 //									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
 //									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);				
 				
-				googleMap.addMarker(tasacion.getNumeroTasacion(), new LatLon(tasacion.getNorteY(),tasacion.getEsteX()),false,ruta_img);
+				//no consideramos la tasación que ha sido seleccionada
+				if(!sol.getNumeroTasacion().equals(tasacion.getNumeroTasacion()))
+					googleMap.addMarker(tasacion.getNumeroTasacion(), new LatLon(tasacion.getNorteY(),tasacion.getEsteX()),false,ruta_img);
 			}
 		}
 		

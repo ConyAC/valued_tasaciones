@@ -8,7 +8,6 @@ import java.util.List;
 import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
-import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Transaction;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
