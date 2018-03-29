@@ -1,17 +1,16 @@
 package cl.koritsu.valued.view;
 
-import com.vaadin.navigator.View;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Resource;
-
+import cl.koritsu.valued.view.busqueda.BusquedaTasacionesView;
 import cl.koritsu.valued.view.dashboard.DashboardView;
 import cl.koritsu.valued.view.facturacion.FacturacionView;
 import cl.koritsu.valued.view.nuevatasacion.NuevaTasacionView;
 import cl.koritsu.valued.view.reports.ReportsView;
 import cl.koritsu.valued.view.schedule.AdministrationView;
 import cl.koritsu.valued.view.transactions.TransactionsView;
-import cl.koritsu.valued.view.transactions.MisSolicitudesView;
-import cl.koritsu.valued.view.busqueda.BusquedaTasacionesView;
+
+import com.vaadin.navigator.View;
+import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Resource;
 
 public enum ValuedViewType {
     DASHBOARD(DashboardView.NAME/*"reportería"*/, DashboardView.class, FontAwesome.PIE_CHART, true), 
