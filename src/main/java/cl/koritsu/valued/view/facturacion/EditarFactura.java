@@ -3,7 +3,6 @@ package cl.koritsu.valued.view.facturacion;
 import java.util.List;
 
 import cl.koritsu.valued.domain.Cliente;
-import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.enums.EstadoFactura;
 import cl.koritsu.valued.services.ValuedService;
 
@@ -28,13 +27,15 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class EditarFactura extends FormLayout {
+public class EditarFactura extends Window {
 
-	/**
+
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 5035241314130096444L;
-    public static final String ID = "editarfactura";	
+	private static final long serialVersionUID = 5105531810318816883L;
+
+	public static final String ID = "editarfactura";	
 
     ValuedService service;
     FormLayout windows;
@@ -46,7 +47,7 @@ public class EditarFactura extends FormLayout {
     }
 	
 	 public void init(ValuedService service) {
-	        //addStyleName("profile-window");
+	        addStyleName("profile-window");
 	    	this.service = service;
 	        setId(ID);
 	        Responsive.makeResponsive(this);
@@ -57,7 +58,7 @@ public class EditarFactura extends FormLayout {
 	 
 	 private Window buildResumenWindow(){			
 		 Window window = new Window();
-		 window.setHeight("500px");
+		 //window.setHeight("500px");
 	     window.setModal(true);
 		 window.setResizable(false);
 		 window.center();
@@ -114,8 +115,6 @@ public class EditarFactura extends FormLayout {
 	    Button btnAgregar = new Button("Agregar",FontAwesome.SEARCH);
 	    btnAgregar.addClickListener(new Button.ClickListener() {
 			
-			private static final long serialVersionUID = 3844920778615955739L;
-
 			public void buttonClick(ClickEvent event) {
 				Notification.show("click Agregar");
 			}
@@ -157,18 +156,17 @@ public class EditarFactura extends FormLayout {
 
 		fl.addComponent(tableTasaciones);	
 	    
-		 fl.addComponent(buildFooter());
+		 fl.addComponent(buildFooter(window));
 		 
 		 UI.getCurrent().addWindow(window);	
 
 		return window;
 	}
 
-	 private HorizontalLayout buildFooter() {
+	 private HorizontalLayout buildFooter(Window w) {
 	    HorizontalLayout footer = new HorizontalLayout();
 	    footer.setSpacing(true);
 	    footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-	   // footer.setWidth(100.0f, Unit.PERCENTAGE);
 	    
 	    Button btnGuardar = new Button("Guardar");
 	    btnGuardar.addClickListener(new Button.ClickListener() {
@@ -187,14 +185,16 @@ public class EditarFactura extends FormLayout {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				Notification.show("Próximamente",Type.WARNING_MESSAGE);
+				((UI)w.getParent()).removeWindow(w);
 			}
 		});
 	    
 	    btnCerrar.setIcon(FontAwesome.CLOSE);
 	    btnCerrar.addStyleName(ValoTheme.BUTTON_PRIMARY);	    
 	    
+	    footer.addComponent(btnGuardar);
 	    footer.addComponent(btnCerrar);
+	    footer.setComponentAlignment(btnGuardar, Alignment.BOTTOM_LEFT);
 	    footer.setComponentAlignment(btnCerrar, Alignment.BOTTOM_RIGHT);
 	    
 	    return footer;

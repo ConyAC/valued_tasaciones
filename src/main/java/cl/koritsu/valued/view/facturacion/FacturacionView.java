@@ -1,5 +1,7 @@
 package cl.koritsu.valued.view.facturacion;
 
+import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -13,16 +15,22 @@ import ru.xpoft.vaadin.VaadinView;
 import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
+import cl.koritsu.valued.domain.Factura;
 import cl.koritsu.valued.domain.Region;
-import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.nuevatasacion.ClienteEditor;
 import cl.koritsu.valued.view.transactions.MisSolicitudesView;
+import cl.koritsu.valued.view.utils.SecurityHelper;
+import cl.koritsu.valued.view.utils.Utils;
 
+import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.fieldgroup.BeanFieldGroup;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
@@ -41,6 +49,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -73,7 +82,10 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 
 	@Override
 	public void enter(ViewChangeEvent event) {
-		// TODO Auto-generated method stub
+		//limpia la tabla
+    	table.removeAllItems();
+    	List<Factura> facturas = service.getFacturas();    	
+    	((BeanItemContainer<Factura>)table.getContainerDataSource()).addAll(facturas); 
 		
 	}
 
@@ -81,7 +93,6 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
     public void init(){
         setSizeFull();
         addStyleName("transactions");
-//        ValuedEventBus.register(this);	
 		
         addComponent(buildToolbar());
         
@@ -207,8 +218,6 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 		hl.addComponent(btnLimpiar);
 		btnLimpiar.addClickListener(new Button.ClickListener() {
 
-			private static final long serialVersionUID = 3844920778615955739L;
-
 			@Override
 			public void buttonClick(ClickEvent event) {
 				limpiarTabla();
@@ -221,67 +230,117 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 		
 		Button btnAgregar = new Button("Agregar", FontAwesome.FILE);
 		hl.addComponent(btnAgregar);
+		hl.setComponentAlignment(btnAgregar, Alignment.BOTTOM_RIGHT);
 		btnAgregar.addClickListener(new Button.ClickListener() {
-
-			private static final long serialVersionUID = 3844920778615955739L;
-
+			
 			@Override
 			public void buttonClick(ClickEvent event) {
 				final EditarFactura editor = new EditarFactura(service);
+				editor.center();
 			}
 		});
 
 		return vl;
 	}
 	
-	 private Table buildTable() {
-	    	Table table = new Table();
-	    	table.setWidth("100%");
+	private Table buildTable() {
+        final Table table = new Table() {
+            @Override
+            protected String formatPropertyValue(final Object rowId,
+                    final Object colId, final Property<?> property) {
+                String result = super.formatPropertyValue(rowId, colId,
+                        property);
+                if (colId.equals("fecha")) {
+                	if (property.getValue() != null)
+						result = Utils.formatoFecha(((Date) property.getValue()));
+                } else if (colId.equals("montoCalculado") || colId.equals("montoManual")) {
+                    if (property != null && property.getValue() != null) {
+                        return "$" + Utils.getDecimalFormatSinDecimal().format(property.getValue());
+                    } else {
+                        return "";
+                    }
+                }
+                return result;
+            }
+        };
+        
+        table.setSizeFull();
+        table.setSelectable(true);
 
-	    	table.addContainerProperty("Factura", String.class, null);
-	    	table.addContainerProperty("N° Factura",  String.class, null);
-	    	table.addContainerProperty("Cliente",  String.class, null);
-	    	table.addContainerProperty("Acciones",  HorizontalLayout.class, null);
-	    	
-	    	HorizontalLayout hl = new HorizontalLayout();
-	    	hl.setSpacing(true);
-	    	Button btnEditar = new Button(null,FontAwesome.EDIT);
-	    	btnEditar.setDescription("Editar");
-	    	btnEditar.addClickListener(new Button.ClickListener() {
-				
-				public void buttonClick(ClickEvent event) {
-					Notification.show("click editar");
-				}
-			});
-	    	hl.addComponent(btnEditar);
-	    	
-	    	Button btnFacturar = new Button(null,FontAwesome.CHECK);
-	    	btnFacturar.setDescription("Facturar");
-	    	btnFacturar.addClickListener(new Button.ClickListener() {
-				
-				public void buttonClick(ClickEvent event) {
-					facturar();
-				}
-			});
-	    	hl.addComponent(btnFacturar);
-	    	
-	    	// Add a few other rows using shorthand addItem()
-	    	table.addItem(new Object[]{"Factura Chile", "345554", "Banco de Chile", hl}, 1);
+        table.setColumnReorderingAllowed(true);
+        table.setContainerDataSource(new BeanItemContainer<Factura>(Factura.class));
+        table.setSortAscending(false);
+        
+        table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				Factura f = ((BeanItem<Factura>)source.getItem(itemId)).getBean();
+				return f.getCliente() != null ? f.getCliente().getNombreCliente() : "";
+			}
+		});
+    	
+    	table.addGeneratedColumn("estado",	new ColumnGenerator() {
 
-	    	// Show exactly the currently contained rows (items)
-	    	table.setPageLength(table.size());
-	    	
-	    	return table;
-	 }
+			@Override
+			public Object generateCell(Table source, Object itemId,
+					Object columnId) {
+				Factura f = ((BeanItem<Factura>) source.getItem(itemId)).getBean();
+				return f.getEstado() != null ? f.getEstado().toString(): "";
+			}
+		});
+    	
+        table.addGeneratedColumn("acciones", new ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(Table source, Object itemId, Object columnId) {
+				
+				HorizontalLayout hl = new HorizontalLayout();
+				hl.setSpacing(true);
+				Button btnEditar = new Button(null, FontAwesome.LIST_ALT);
+				btnEditar.addClickListener(new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						BeanItem<Factura> f = ((BeanItem<Factura>) source.getItem(itemId));
+						;
+					}
+				});				
+				hl.addComponent(btnEditar);
+				
+			if( SecurityHelper.hasPermission(Permiso.FACTURAR)){
+				Button btnFacturar = new Button(null, FontAwesome.CHECK);
+				btnFacturar.addClickListener(new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						BeanItem<Factura> f = ((BeanItem<Factura>) source.getItem(itemId));
+						buildFacturar(f.getBean());
+					}
+				});
+				
+				hl.addComponent(btnFacturar);
+			}			
+				
+				return hl;
+			}
+		});
+        
+        table.setVisibleColumns("estado", "numero", "nombrecliente", "fecha","montoCalculado","montoManual","acciones");
+        table.setColumnHeaders("Estado", "N° Factura", "Cliente","Fecha", "Monto Calculado","Monto Manual","Acciones");
+        
+        return table;
+    }
 	
 	 public void limpiarTabla() {
-	    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).removeAllItems();
-	    }
+		 ((BeanItemContainer<Factura>)table.getContainerDataSource()).removeAllItems();
+	 }
 	 
-	 private Window facturar(){			 
-		Window window = new Window(); 
+	 /*Funcion que permite marcar como pagada o anulada una factura*/
+	 private Window buildFacturar(Factura f){			 
+		Window window = new Window(f.getNumero()); 
 	    window.setHeight("600px");
-	    window.setWidth("450px");
+	    window.setWidth("550px");
         window.setModal(true);
 	    window.setResizable(false);
 	    window.center();
@@ -297,61 +356,56 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 	    
 	    Label nombre = new Label();
 	    nombre.setCaption("Nombre Factura");
-	    nombre.setValue("Factura Chile");
+	    nombre.setValue((f.getNombre()!=null)?f.getNombre():"No registrado");
 	    fl.addComponent(nombre);
 	    
 	    Label numero = new Label();
 	    numero.setCaption("N° Factura");
-	    numero.setValue("333434");
+	    numero.setValue(f.getNumero());
 	    fl.addComponent(numero);
 	    
 	    Label cliente = new Label();
 	    cliente.setCaption("Cliente");
-	    cliente.setValue("Banco de Chile");
+	    cliente.setValue(f.getCliente().getNombreCliente());
 	    fl.addComponent(cliente);
 	    
 	    Label fecha = new Label();
 	    fecha.setCaption("Fecha");
-	    fecha.setValue("23/02/2018");
+	    fecha.setValue(Utils.formatoFecha(f.getFecha()));
 	    fl.addComponent(fecha);
 	    
-	    Label monto = new Label();
-	    monto.setCaption("Monto");
-	    monto.setValue("$24.500.000");
-	    fl.addComponent(monto);
+	    Label montoCalculado = new Label();
+	    montoCalculado.setCaption("Monto Calculado");
+	    montoCalculado.setValue(Utils.getDecimalFormatSinDecimal().format(f.getMontoCalculado()));
+	    fl.addComponent(montoCalculado);
 	    
-	    Label sectionPRograma = new Label("Infromación Tasaciones");
+	    Label montoManual = new Label();
+	    montoManual.setCaption("Monto Manual");
+	    montoManual.setValue(Utils.getDecimalFormatSinDecimal().format(f.getMontoManual()));
+	    fl.addComponent(montoManual);
+	    
+	    Label sectionPRograma = new Label("Información Tasaciones");
 	    sectionPRograma.addStyleName(ValoTheme.LABEL_H3);
 	    sectionPRograma.addStyleName(ValoTheme.LABEL_COLORED);	    
 	    fl.addComponent(sectionPRograma);
 
-	    Label t1 = new Label();
-	    t1.setCaption("Tasación 1: ");
-	    t1.setValue("BCH002, Av. Alameda 720");
-	    fl.addComponent(t1);
+	    //TODO
 	    
-	    Label t2 = new Label();
-	    t2.setCaption("Tasación 2: ");
-	    t2.setValue("BCH0036, Av. Alameda 720");
-	    fl.addComponent(t2);
-	    
-	    Label t3 = new Label();
-	    t3.setCaption("Tasación 3: ");
-	    t3.setValue(" BCH008, Av. Alameda 720");
-	    fl.addComponent(t3);
-	    
-	    fl.addComponent(buildFooter());
+	    fl.addComponent(buildFooter(window));
 	    
 	    UI.getCurrent().addWindow(window);
 
 		return window;		 
 	 }
 	 
-	 private HorizontalLayout buildFooter() {
+	 private HorizontalLayout buildFooter(Window w) {
+		 
+		final BeanFieldGroup<Factura> fgFactura = new BeanFieldGroup<Factura>(Factura.class);
+		fgFactura.setItemDataSource(new Factura());
+			
 	    HorizontalLayout footer = new HorizontalLayout();
 	    footer.setSpacing(true);
 	    footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
-	   // footer.setWidth(100.0f, Unit.PERCENTAGE);
 	    
 	    Button btnFacturar = new Button("Facturar");
 	    btnFacturar.addClickListener(new Button.ClickListener() {
@@ -365,12 +419,24 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 	    btnFacturar.setIcon(FontAwesome.DOLLAR);
 	    btnFacturar.addStyleName(ValoTheme.BUTTON_PRIMARY);
 	    
+	    Button btnAnular = new Button("Anular");
+	    btnAnular.addClickListener(new Button.ClickListener() {
+
+			@Override
+			public void buttonClick(ClickEvent event) {
+				Notification.show("Próximamente",Type.WARNING_MESSAGE);
+			}
+		});
+	    
+	    btnAnular.setIcon(FontAwesome.REMOVE);
+	    btnAnular.addStyleName(ValoTheme.BUTTON_PRIMARY);
+	    
 	    Button btnCerrar = new Button("Cancelar");
 	    btnCerrar.addClickListener(new Button.ClickListener() {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				Notification.show("Próximamente",Type.WARNING_MESSAGE);
+				((UI)w.getParent()).removeWindow(w);
 			}
 		});
 	    
@@ -379,7 +445,9 @@ Logger logger = LoggerFactory.getLogger(MisSolicitudesView.class);
 	    
 	    footer.addComponent(btnFacturar);
 	    footer.addComponent(btnCerrar);
-	    footer.setComponentAlignment(btnCerrar, Alignment.BOTTOM_LEFT);
+	    footer.addComponent(btnAnular);
+	    footer.setComponentAlignment(btnFacturar, Alignment.BOTTOM_LEFT);
+	    footer.setComponentAlignment(btnAnular, Alignment.BOTTOM_CENTER);
 	    footer.setComponentAlignment(btnCerrar, Alignment.BOTTOM_RIGHT);
 	    
 	    return footer;
