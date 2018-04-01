@@ -43,6 +43,8 @@ import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
 import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
 
+import com.vaadin.server.VaadinSession;
+
 @Service
 public class ValuedService {
 
@@ -311,5 +313,18 @@ public class ValuedService {
 	public List<Factura> getFacturas() {
 		return (List<Factura>) facturaRepo.findAll();
 	}
-
+	
+	public Factura getFacturaById(Long id) {
+		return facturaRepo.findOne(id);
+	}
+	
+	@Transactional
+	public void saveFactura(Factura bean) {
+		bean.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+		Factura factura = facturaRepo.save(bean);		
+	}
+	
+	public List<Factura> getFacturasFiltradas(BuscarSolicitudVO vo) {
+		return (List<Factura>) facturaRepo.findFacturas(vo);
+    }
 }

@@ -1,18 +1,17 @@
 package cl.koritsu.valued.domain;
 
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -43,8 +42,28 @@ public class Factura {
 	@JoinColumn(name="clienteId")
 	Cliente cliente;
 	
-	@OneToMany(mappedBy="factura",fetch=FetchType.LAZY,cascade={CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval=true )
-	List<SolicitudTasacion> solicitudesTable = new LinkedList<SolicitudTasacion>();
+//	@OneToMany(mappedBy="factura",fetch=FetchType.LAZY,cascade={CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval=true )
+//	List<SolicitudTasacion> solicitudesTable = new LinkedList<SolicitudTasacion>();
+	
+	//tabla intermedia entre factura y tasacion    
+//	@OneToMany(mappedBy="factura",fetch=FetchType.LAZY,cascade={CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval=true)
+//    @CollectionTable(name="solicitud_tasacion", joinColumns = @JoinColumn(name = "facturaId"))
+//    @JoinColumn(name="factura_solicitud")
+    Set<SolicitudTasacion> solicitud = new HashSet<SolicitudTasacion>(); 
+	
+    
+    @OneToMany
+    @JoinTable(
+            name="factura_solicitud_tasacion",
+            joinColumns = @JoinColumn( name="factura_Id"),
+            inverseJoinColumns = @JoinColumn( name="solicitud_Id")
+    )
+	public Set<SolicitudTasacion> getSolicitudes() {
+		return solicitud;
+	}
+	public void setSolicitudes(Set<SolicitudTasacion> solicitud) {
+		this.solicitud = solicitud;
+	}
 	
 	public Long getId() {
 		return id;
@@ -82,12 +101,12 @@ public class Factura {
 	public void setNumero(String numero) {
 		this.numero = numero;
 	}
-	public List<SolicitudTasacion> getSolicitudesTable() {
-		return solicitudesTable;
-	}
-	public void setSolicitudesTable(List<SolicitudTasacion> solicitudesTable) {
-		this.solicitudesTable = solicitudesTable;
-	}
+//	public List<SolicitudTasacion> getSolicitudesTable() {
+//		return solicitudesTable;
+//	}
+//	public void setSolicitudesTable(List<SolicitudTasacion> solicitudesTable) {
+//		this.solicitudesTable = solicitudesTable;
+//	}
 	public EstadoFactura getEstado() {
 		return estado;
 	}

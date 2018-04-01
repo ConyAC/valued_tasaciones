@@ -98,9 +98,9 @@ public class SolicitudTasacion {
 	float norteY;
 	float esteX;
 	
-	@ManyToOne
-	@JoinColumn(name ="solicitud_and_facturaId",updatable=false,nullable=false)
-	Factura factura;
+//	@ManyToOne
+//	@JoinColumn(name ="facturaId",updatable=false,nullable=false)
+//	Factura factura;
 	
 	public Long getId() {
 		return id;

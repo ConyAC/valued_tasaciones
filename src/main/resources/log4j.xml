@@ -16,19 +16,19 @@
     <level value='DEBUG' />
   </logger>
   <logger name='cl.koritsu.valued.domain'>
-    <level value='ERROR' />
+    <level value='DEBUG' />
   </logger>
   <logger name='cl.koritsu.valued.services'>
     <level value='DEBUG' />
   </logger>
   <logger name='cl.koritsu.valued.schedule'>
-    <level value='ERROR' />
+    <level value='DEBUG' />
   </logger>
   <logger name='cl.koritsu.valued.utils'>
-      <level value='ERROR' />
+      <level value='DEBUG' />
   </logger>
   <root>
-    <level value='ERROR' />
+    <level value='DEBUG' />
     <appender-ref ref='CONSOLE' />
   </root>
 </log4j:configuration>  

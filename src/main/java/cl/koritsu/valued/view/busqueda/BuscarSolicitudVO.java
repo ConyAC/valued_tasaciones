@@ -11,6 +11,7 @@ import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 public class BuscarSolicitudVO {
 
 	String nroTasacion;
+	String nroFactura;
 	EstadoSolicitud estado;
 	Usuario tasador;
 	Region region;
@@ -59,5 +60,11 @@ public class BuscarSolicitudVO {
 	}
 	public void setDireccion(Bien direccion) {
 		this.direccion = direccion;
+	}
+	public String getNroFactura() {
+		return nroFactura;
+	}
+	public void setNroFactura(String nroFactura) {
+		this.nroFactura = nroFactura;
 	}
 }

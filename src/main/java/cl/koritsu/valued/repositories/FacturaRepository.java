@@ -4,6 +4,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import cl.koritsu.valued.domain.Factura;
 
-public interface FacturaRepository extends PagingAndSortingRepository<Factura, Long> {
+public interface FacturaRepository extends PagingAndSortingRepository<Factura, Long>, FacturaRepositoryCustom {
 	
 }

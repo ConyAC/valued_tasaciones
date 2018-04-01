@@ -55,4 +55,12 @@ CREATE  TABLE `factura` (
   `estado` VARCHAR(45) NULL ,
   PRIMARY KEY (`id`) );
 
-ALTER TABLE `valued_2`.`factura` ADD COLUMN `usuarioId` INT(10) NOT NULL  AFTER `estado` ;
+ALTER TABLE `factura` ADD COLUMN `usuarioId` INT(10) NOT NULL  AFTER `estado` ;
+ALTER TABLE `factura` CHANGE COLUMN `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT  ;
+
+CREATE TABLE `factura_solicitud_tasacion` (
+  `factura_Id` int(10) NOT NULL,
+  `solicitud_Id` int(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1$$
+
+
