@@ -43,3 +43,24 @@ CHANGE COLUMN `habilitado` `eliminado` INT(11) NOT NULL ;
 /*observacion reparo*/
 ALTER TABLE `valued`.`solicitud_tasacion` ADD COLUMN `observacionReparo` TEXT NULL DEFAULT NULL  AFTER `tasadorId` ;
 
+/* facturación */
+CREATE  TABLE `factura` (
+  `id` INT(10) NOT NULL ,
+  `nombre` VARCHAR(45) NULL ,
+  `numero` VARCHAR(45) NOT NULL ,
+  `clienteId` INT(10) NOT NULL ,
+  `montoManual` FLOAT NULL ,
+  `montoCalculado` FLOAT NULL ,
+  `fecha` DATETIME NULL ,
+  `estado` VARCHAR(45) NULL ,
+  PRIMARY KEY (`id`) );
+
+ALTER TABLE `factura` ADD COLUMN `usuarioId` INT(10) NOT NULL  AFTER `estado` ;
+ALTER TABLE `factura` CHANGE COLUMN `id` `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT  ;
+
+CREATE TABLE `factura_solicitud_tasacion` (
+  `factura_Id` int(10) NOT NULL,
+  `solicitud_Id` int(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1$$
+
+

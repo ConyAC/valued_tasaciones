@@ -29,7 +29,7 @@
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
  
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url" value="jdbc:mysql://localhost:3306/valued_migracion" />
+		<property name="url" value="jdbc:mysql://localhost:3306/valued_2" />
 		<property name="username" value="root" />
 		<property name="password" value="Ss59j!JfH2.kd" />
 	</bean>
@@ -108,6 +108,6 @@
             </props>
         </property>
     </bean>
-
+    
 	<import resource="security.xml" />
 </beans>
