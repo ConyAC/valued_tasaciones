@@ -1,6 +1,5 @@
 package cl.koritsu.valued.domain;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;

@@ -327,4 +327,9 @@ public class ValuedService {
 	public List<Factura> getFacturasFiltradas(BuscarSolicitudVO vo) {
 		return (List<Factura>) facturaRepo.findFacturas(vo);
     }
+	
+	public Usuario findUsuarioExistenteByUsername(String email, Long id) {
+		return usuarioRepo.findExistenteByEmail(id, email);
+		
+	}
 }

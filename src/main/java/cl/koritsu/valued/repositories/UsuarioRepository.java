@@ -36,4 +36,7 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, L
 	@Transactional
 	@Query(value="UPDATE Usuario u SET u.eliminado = true WHERE u = ?1 ")
 	void eliminar(Usuario user);
+	
+	@Query(value="SELECT u FROM Usuario u WHERE u.id not in (?1) and u.email = ?2 and u.eliminado = false")
+	Usuario findExistenteByEmail(Long id,String email); 
 }

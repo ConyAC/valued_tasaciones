@@ -11,6 +11,16 @@ import org.springframework.context.annotation.Scope;
 import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 
+import ru.xpoft.vaadin.VaadinView;
+import cl.koritsu.valued.domain.Rol;
+import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EstadoUsuario;
+import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.UserService;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Utils;
+
 import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitEvent;
@@ -47,16 +57,6 @@ import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
-
-import cl.koritsu.valued.domain.Rol;
-import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.EstadoUsuario;
-import cl.koritsu.valued.domain.enums.Permiso;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.services.UserService;
-import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.utils.Utils;
-import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
@@ -229,7 +229,7 @@ public class AdministrationView extends CssLayout implements View {
         			fieldGroup.getField("contrasena2").setValue(null);
         			Notification.show("Usuario guardado correctamente",Type.TRAY_NOTIFICATION);
         		} catch (CommitException e) {
-        			Utils.validateEditor("usuario detail",e);
+        			Utils.validateEditor("el detalle de usuario",e);
         		}
 
         	}
@@ -315,15 +315,18 @@ public class AdministrationView extends CssLayout implements View {
 				
 				Long id = fieldGroup.getItemDataSource().getBean().getId();
 				//si es un nuevo usuario, valida que no exista un usuario con el mismo email
-				if( id == null ){
-					Field<?> email = fieldGroup.getField("email");					
-					Usuario user = service.findUsuarioByUsername((String)email.getValue());
-					if(user != null ){
-						Map<Field<?>,InvalidValueException> map = new HashMap<Field<?>,InvalidValueException>();
-						map.put(email, new InvalidValueException("Ya existe un usuario con el mismo email."));
-						throw new FieldGroupInvalidValueException(map);
-					}
-				}
+				Field<?> email = fieldGroup.getField("email");
+				Usuario user;
+				if( id == null )								
+					user = service.findUsuarioByUsername((String)email.getValue());
+				else
+					user = service.findUsuarioExistenteByUsername((String)email.getValue(), id);
+					
+				if(user != null ){
+					Map<Field<?>,InvalidValueException> map = new HashMap<Field<?>,InvalidValueException>();
+					map.put(email, new InvalidValueException("Ya existe un usuario con el mismo email."));
+					throw new FieldGroupInvalidValueException(map);
+				}				
 				
 				//antes de comitear revisa que los passwords sean iguales si alguno es distinto de null
 				Field<?> pf = fieldGroup.getField("contrasena");
@@ -338,7 +341,7 @@ public class AdministrationView extends CssLayout implements View {
 				if( pf.getValue() != null || pf2.getValue() != null ){
 					if(!pf.getValue().equals(pf2.getValue())){
 						Map<Field<?>,InvalidValueException> map = new HashMap<Field<?>,InvalidValueException>();
-						map.put(pf, new InvalidValueException("Los passwords deben coincidir"));
+						map.put(pf, new InvalidValueException("Los passwords deben coincidir."));
 						throw new FieldGroupInvalidValueException(map);
 					}
 				}
