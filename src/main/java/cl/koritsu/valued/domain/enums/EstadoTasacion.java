@@ -6,7 +6,8 @@ public enum EstadoTasacion {
 	FACTURADA("Facturada"),
 	NUEVA_TASACION("Nueva Tasación"),
 	VISITADA("Visitada"),
-	VISADA("Visada"),;
+	VISADA("Visada"),
+	EN_REPARO("En Reparo");
 	
 	String label;
 	EstadoTasacion(String label){

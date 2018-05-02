@@ -4,10 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,8 +32,7 @@ public interface UserService {
 
 	public abstract void deleteUser(Long id);
 
-	public abstract Page<Usuario> findAllUser(
-			Pageable page);
+	public abstract List<Usuario> findAllUser();
 
 	/**
 	 * 
@@ -65,14 +60,6 @@ public interface UserService {
 	public abstract void saveRole(Rol role);
 
 	/**
-	 * TODO filtrar por usuarios activos solamente
-	 * @param page
-	 * @return
-	 */
-	public abstract Page<Usuario> findAllActiveUser(
-			Pageable page);
-
-	/**
 	 * Elimina todos los datos de la tabla USADO PRINCIPALMENTE POR LOS TEST 
 	 */
 	public abstract void clear();
@@ -83,6 +70,6 @@ public interface UserService {
 	 */
 	public abstract List<Rol> getAllRole();
 
-	public abstract boolean findUsersByRole(Rol rol);
+	public abstract boolean findUsersByRol(Rol rol);
 
 }

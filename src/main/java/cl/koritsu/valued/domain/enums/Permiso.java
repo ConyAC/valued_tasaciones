@@ -10,7 +10,10 @@ public enum Permiso {
 	ENVIAR_A_CLIENTE(6,"Enviar a Cliente"),
 	VISUALIZAR_REPORTES(7,"Visualizar Reportes"),
 	VISUALIZAR_TASACIONES(8,"Visualizar Todas las Tasaciones"),
-	BUSCAR_TASACIONES(9,"Buscar Tasaciones")
+	VISUALIZAR_MIS_TASACIONES(9,"Visualizar Mis Tasaciones"),
+	BUSCAR_TASACIONES(10,"Buscar Tasaciones"),
+	ENVIAR_CORREO(11,"Enviar Correo"),
+	MARCAR_REPARO(12,"Marcar tasación en reparo")
 	;
 	
 	int i;

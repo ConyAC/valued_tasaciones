@@ -1,12 +1,25 @@
 package cl.koritsu.valued.view.transactions;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.tepi.filtertable.FilterTable;
+import org.vaadin.dialogs.ConfirmDialog;
+
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Transaction;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
+import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.view.ValuedViewType;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
+import cl.koritsu.valued.view.utils.SecurityHelper;
+import cl.koritsu.valued.view.utils.Utils;
 
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.data.Property;
@@ -17,22 +30,11 @@ import com.vaadin.server.Page;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CustomTable;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
-import cl.koritsu.valued.domain.Bien;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.enums.EstadoSolicitud;
-import cl.koritsu.valued.domain.enums.EstadoTasacion;
-import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
-import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.view.ValuedViewType;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
-import cl.koritsu.valued.view.utils.Constants;
-import cl.koritsu.valued.view.utils.Utils;
 
 public class MapToolBox extends Window {
 
@@ -40,7 +42,6 @@ public class MapToolBox extends Window {
 	 * 
 	 */
 	private static final long serialVersionUID = -1172954522393568753L;
-	private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
 	private static final String[] DEFAULT_COLLAPSIBLE = { "country", "city",
 			"theater", "room", "title", "seats" };
 
@@ -52,6 +53,19 @@ public class MapToolBox extends Window {
 	EditorSolicitudTasacion editorSolicitud;
 
 	/** CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
+	// enviar correo
+	List<OnClickTasacionEvent> onClickEmailEvents = new ArrayList<OnClickTasacionEvent>();
+
+	public void sendEmailOnClickEvent(OnClickTasacionEvent listener) {
+		onClickEmailEvents.add(listener);
+	}
+
+	private void doClickEmail(BeanItem<SolicitudTasacion> sol) {
+		for (OnClickTasacionEvent listener : onClickEmailEvents) {
+			listener.onClick(sol);
+		}
+	}
+	
 	// seleccionar tasaciones
 	List<OnClickTasacionEvent> onClickTasacionEvents = new ArrayList<OnClickTasacionEvent>();
 
@@ -143,25 +157,19 @@ public class MapToolBox extends Window {
 	private FilterTable buildTable() {
 		final FilterTable table = new FilterTable() {
 			@Override
-			protected String formatPropertyValue(final Object rowId,
-					final Object colId, final Property<?> property) {
-				String result = super.formatPropertyValue(rowId, colId,
-						property);
-				if (colId.equals("fechaEncargo")
-						|| colId.equals("fechaTasacion")) {
+			protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
+				String result = super.formatPropertyValue(rowId, colId,property);
+				if (colId.equals("fechaEncargo") || colId.equals("fechaTasacion")) {
 					if (property.getValue() != null)
-						result = Utils
-								.formatoFecha(((Date) property.getValue()));
-				} else if (colId.equals("price")) {
-					if (property != null && property.getValue() != null) {
-						return "$" + DECIMALFORMAT.format(property.getValue());
-					} else {
-						return "";
-					}
+						result = Utils.formatoFecha(((Date) property.getValue()));
 				}
 				return result;
 			}
 		};
+		
+		solicitudContainer.addNestedContainerProperty("bien.direccion");
+		solicitudContainer.addNestedContainerProperty("bien.comuna.nombre");
+		solicitudContainer.addNestedContainerProperty("bien.comuna.region.nombre");
 		table.setImmediate(true);
 		table.setContainerDataSource(solicitudContainer);
 		table.setSizeFull();
@@ -172,6 +180,97 @@ public class MapToolBox extends Window {
 		table.setColumnReorderingAllowed(true);
 		table.setSortAscending(false);
 
+//		table.addGeneratedColumn("direccion",
+//				new CustomTable.ColumnGenerator() {
+//
+//					@Override
+//					public Object generateCell(CustomTable source,
+//							Object itemId, Object columnId) {
+//						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId)).getBean();
+//						Bien bien = sol.getBien();
+//						return (bien != null && bien.getDireccion() != null) ? bien
+//								.getDireccion()
+//								+ " "
+//								+ bien.getNumeroManzana()
+//								+ " "
+//								+ bien.getComuna().getNombre()
+//								+ " "
+//								+ bien.getComuna().getRegion().getNombre()
+//								: "";
+//					}
+//				});
+		
+		table.addGeneratedColumn("acciones", new CustomTable.ColumnGenerator() {
+			
+			@Override
+			public Object generateCell(CustomTable source, final Object itemId,Object columnId) {
+				HorizontalLayout hl = new HorizontalLayout();
+				
+				if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES)){
+					Button editarTasacion = new Button(null, FontAwesome.MAP_MARKER);
+					editarTasacion.addClickListener(new Button.ClickListener() {
+	
+						@Override
+						public void buttonClick(ClickEvent event) {
+							BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+							// cambia la vista para mostrar el formulario de
+							// modificaciòn de solicitudes
+							setSolTasacion(sol.getBean());
+							doClickTasacion(sol);
+	
+						}
+					});
+					
+					hl.addComponent(editarTasacion);
+				}
+				
+				if( SecurityHelper.hasPermission(Permiso.ENVIAR_CORREO)){
+					hl.setSpacing(true);						
+						
+					Button enviarCorreo = new Button(null,FontAwesome.SEND);
+					enviarCorreo.addClickListener(new Button.ClickListener() {
+						
+						@Override
+						public void buttonClick(ClickEvent event) {	
+							ConfirmDialog.show(UI.getCurrent(), "Confirmar Acción:", "¿Está seguro que desea enviar correo alertando tardanza en el registro de la visita?",
+							        "Si", "Cancelar", new ConfirmDialog.Listener() {
+
+							            public void onClose(ConfirmDialog dialog) {
+							                if (dialog.isConfirmed()) {
+							                	BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+							                	if(sol.getBean() != null && sol.getBean().getTasador() != null && sol.getBean().getTasador().getEmail() != null) {
+							                		doClickEmail(sol);
+							                		Notification.show("Se ha enviado el correo al tasador: "+sol.getBean().getTasador().getFullname());
+							                	}else
+							                		Notification.show("No se ha podido enviar el correo ya que no existe email ingresado para el repsonsable de la tasación.");
+							                } else {
+							                    // User did not confirm
+							                   ;
+							                }
+							            }
+							        });		
+							}
+					});
+					hl.addComponent(enviarCorreo);
+					
+					
+					Date fechaTasacion = table.getItem(itemId)
+							.getItemProperty("fechaTasacion").getValue() != null ? (Date) table
+							.getItem(itemId).getItemProperty("fechaTasacion")
+							.getValue()
+							: new Date();
+							
+					if (fechaTasacion.before(new Date()) && table.getItem(itemId).getItemProperty("estado").getValue().equals(EstadoSolicitud.AGENDADA))
+						enviarCorreo.setEnabled(true);
+					else
+						enviarCorreo.setEnabled(false);
+				}
+				return hl;
+			}
+		});
+		
+		if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) ){
+			
 		table.addGeneratedColumn("nombrecliente",
 				new CustomTable.ColumnGenerator() {
 
@@ -185,54 +284,26 @@ public class MapToolBox extends Window {
 					}
 				});
 
-		table.addGeneratedColumn("direccion",
+			table.addGeneratedColumn("tasador",
 				new CustomTable.ColumnGenerator() {
 
 					@Override
 					public Object generateCell(CustomTable source,
 							Object itemId, Object columnId) {
-						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
-								.getItem(itemId)).getBean();
-						Bien bien = sol.getBien();
-						return (bien != null && bien.getDireccion() != null) ? bien
-								.getDireccion()
-								+ " "
-								+ bien.getNumeroManzana()
-								+ " "
-								+ bien.getComuna().getNombre()
-								+ " "
-								+ bien.getComuna().getRegion().getNombre()
-								: "";
+							SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId)).getBean();
+							return sol.getTasador() != null ? sol.getTasador().getFullname() : "";
 					}
 				});
+		}
 
-		table.addGeneratedColumn("acceder", new CustomTable.ColumnGenerator() {
-
-			@Override
-			public Object generateCell(final CustomTable source,
-					final Object itemId, Object columnId) {
-				Button editarTasacion = new Button(null, FontAwesome.MAP_MARKER);
-				editarTasacion.addClickListener(new Button.ClickListener() {
-
-					@Override
-					public void buttonClick(ClickEvent event) {
-						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source
-								.getItem(itemId));
-						// cambia la vista para mostrar el formulario de
-						// modificaciòn de solicitudes
-						setSolTasacion(sol.getBean());
-						doClickTasacion(sol);
-
-					}
-				});
-				return editarTasacion;
+		if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES)){
+			table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "tasador", "bien.direccion","bien.comuna.nombre","bien.comuna.region.nombre","numeroTasacion","nombrecliente");
+			table.setColumnHeaders("Acciones", "Estado","Fecha Encargo", "Fecha Visista", "Tasador","Dirección","Comuna","Región","N° Tasación","Cliente");
+		}else{
+			table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "bien.direccion","bien.comuna.nombre","bien.comuna.region.nombre","numeroTasacion");
+			table.setColumnHeaders("Acceder", "Estado","Fecha Encargo", "Fecha Visita", "Dirección", "Comuna","Región","N° Tasación");
 			}
-		});
 
-		table.setVisibleColumns("acceder", "estado", "numeroTasacion",
-				"fechaEncargo", "fechaTasacion", "direccion");
-		table.setColumnHeaders("Acceder", "Estado", "N° Tasación",
-				"Fecha Encargo", "Fecha Visita", "Dirección");
 		table.setFilterBarVisible(true);
 		table.setFooterVisible(true);
 

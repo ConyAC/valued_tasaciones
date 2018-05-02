@@ -94,8 +94,13 @@ public class SolicitudTasacion {
 	
 	
 	String observaciones = "";
+	String observacionReparo = "";
 	float norteY;
 	float esteX;
+	
+//	@ManyToOne
+//	@JoinColumn(name ="facturaId",updatable=false,nullable=false)
+//	Factura factura;
 	
 	public Long getId() {
 		return id;
@@ -325,11 +330,21 @@ public class SolicitudTasacion {
 	}
 	public void setTasador(Usuario tasador) {
 		this.tasador = tasador;
+	}	
+	public String getObservacionReparo() {
+		return observacionReparo;
 	}
-
+	public void setObservacionReparo(String observacionReparo) {
+		this.observacionReparo = observacionReparo;
+	}
 	public String getFechaEncargoFormateada() {
 		return Utils.formatoFecha(getFechaEncargo());
 	}
+	
+	public String getFechaVisitaoFormateada() {
+		return Utils.formatoFecha(getFechaTasacion());
+	}
+	
 	public String getNombreCliente() {
 		if(getCliente() != null) {
 			if(getCliente().getTipoPersona() == TipoPersona.NATURAL)

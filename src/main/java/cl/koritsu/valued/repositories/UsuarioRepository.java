@@ -2,8 +2,6 @@ package cl.koritsu.valued.repositories;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -17,14 +15,14 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, L
 
 	List<Usuario> findByTasadorTrue();
 	
-	@Query(value="SELECT u FROM Usuario u WHERE u.email = ?1 ")
+	@Query(value="SELECT u FROM Usuario u WHERE u.email = ?1 and u.eliminado = false")
 	Usuario findByEmail(String email); 
 	
 	@Query(value="SELECT u.rol FROM Usuario u WHERE u.id = :id " , nativeQuery=true)
 	Integer findRawRoleUser(@Param("id") Long id);	
 	
-	@Query(value="SELECT u FROM Usuario u WHERE u.estadoUsuario = cl.koritsu.valued.domain.enums.EstadoUsuario.HABILITADO ")
-	Page<Usuario> findAllNotDeteled(Pageable page);
+	@Query(value="SELECT u FROM Usuario u WHERE u.eliminado = false ORDER BY u.estadoUsuario ASC ")
+	List<Usuario> findAllNotDeteled();
 	
 	@Query(value="SELECT u FROM Usuario u WHERE u.rol = ?1 ")
 	List<Usuario> findByRol(Rol rol); 
@@ -33,5 +31,9 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, L
 	@Transactional
 	@Query(value="UPDATE Usuario u SET u.estadoUsuario = cl.koritsu.valued.domain.enums.EstadoUsuario.DESHABILITADO WHERE u = ?1 ")
 	void deshabilitar(Usuario user);
-
+	
+	@Modifying
+	@Transactional
+	@Query(value="UPDATE Usuario u SET u.eliminado = true WHERE u = ?1 ")
+	void eliminar(Usuario user);
 }

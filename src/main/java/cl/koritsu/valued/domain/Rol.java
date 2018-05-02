@@ -14,6 +14,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import cl.koritsu.valued.domain.enums.Permiso;
 
@@ -27,6 +30,9 @@ public class Rol {
     @Column(name = "rolId")
     private Long id;
     
+    @Column(name = "nombre",nullable = false,unique = true)
+    @NotNull(message="El nombre es obligatorio.")
+    @NotEmpty(message="El nombre es obligatorio.")
     private String nombre;
     
     private String descripcion;

@@ -12,6 +12,7 @@ import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Contacto;
+import cl.koritsu.valued.domain.Factura;
 import cl.koritsu.valued.domain.HonorarioCliente;
 import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.RazonSocial;
@@ -28,18 +29,21 @@ import cl.koritsu.valued.repositories.CargoRepository;
 import cl.koritsu.valued.repositories.ClienteRepository;
 import cl.koritsu.valued.repositories.ComunaRepository;
 import cl.koritsu.valued.repositories.ContactoRepository;
+import cl.koritsu.valued.repositories.FacturaRepository;
 import cl.koritsu.valued.repositories.HonorarioClienteRepository;
 import cl.koritsu.valued.repositories.ObraComplementariaRepository;
 import cl.koritsu.valued.repositories.RazonSocialRepository;
 import cl.koritsu.valued.repositories.RegionRepository;
 import cl.koritsu.valued.repositories.RolRepository;
 import cl.koritsu.valued.repositories.SolicitanteRepository;
-import cl.koritsu.valued.repositories.SolicitudRepository;
 import cl.koritsu.valued.repositories.SolicitudTasacionRepository;
 import cl.koritsu.valued.repositories.SucursalRepository;
 import cl.koritsu.valued.repositories.TipoInformeRepository;
 import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
+import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
+
+import com.vaadin.server.VaadinSession;
 
 @Service
 public class ValuedService {
@@ -63,8 +67,6 @@ public class ValuedService {
 	@Autowired
 	SolicitanteRepository solicitanteRepo;
 	@Autowired
-	SolicitudRepository solicitudRepo;
-	@Autowired
 	HonorarioClienteRepository honorariosClienteRepo;
 	@Autowired
 	BienRepository bienRepo;
@@ -80,6 +82,8 @@ public class ValuedService {
 	ObraComplementariaRepository obrasRepo;
 	@Autowired
 	RolRepository rolRepo;
+	@Autowired
+	FacturaRepository facturaRepo;
 	
 	
 	public List<Region> getRegiones() {
@@ -172,7 +176,7 @@ public class ValuedService {
 			nroValued = bean.getNumeroTasacion();
 		}
 		//guarda la solicitud
-		solicitudRepo.save(bean);
+		solicitudTasacionRepo.save(bean);
 		
 		return nroValued;
 		
@@ -228,7 +232,7 @@ public class ValuedService {
 	}
 
 	public void saveSolicitudes(List<SolicitudTasacion> solicitudes) {
-		solicitudRepo.save(solicitudes);
+		solicitudTasacionRepo.save(solicitudes);
 	}
 	
 
@@ -241,7 +245,7 @@ public class ValuedService {
 	}
 	
 	public SolicitudTasacion getSolicitudByNumeroTasacion(String nroEncargo) {
-		return solicitudRepo.findFirstByNumeroTasacion(nroEncargo);
+		return solicitudTasacionRepo.findFirstByNumeroTasacion(nroEncargo);
 	}
 		
 	public Usuario findUsuarioByUsername(String email) {
@@ -277,6 +281,10 @@ public class ValuedService {
 	public void deshabilitarUsuario(Usuario user) {
 		usuarioRepo.deshabilitar(user);		
 	}
+	
+	public void eliminarUsuario(Usuario user) {
+		usuarioRepo.eliminar(user);		
+	}
 
 	public List<SolicitudTasacion> getTasacionesByTasador(Usuario user) {
 		return solicitudTasacionRepo.findByTasador(user);
@@ -294,4 +302,29 @@ public class ValuedService {
 		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
 	}
 	
+	public List<Bien> getDirecciones() {
+		return (List<Bien>) bienRepo.findAll();
+	}
+	
+	public List<SolicitudTasacion> getTasacionesFiltradas(BuscarSolicitudVO vo) {
+		return (List<SolicitudTasacion>) solicitudTasacionRepo.findTasaciones(vo);
+    }
+	
+	public List<Factura> getFacturas() {
+		return (List<Factura>) facturaRepo.findAll();
+	}
+	
+	public Factura getFacturaById(Long id) {
+		return facturaRepo.findOne(id);
+	}
+	
+	@Transactional
+	public void saveFactura(Factura bean) {
+		bean.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+		Factura factura = facturaRepo.save(bean);		
+	}
+	
+	public List<Factura> getFacturasFiltradas(BuscarSolicitudVO vo) {
+		return (List<Factura>) facturaRepo.findFacturas(vo);
+    }
 }

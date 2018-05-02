@@ -24,11 +24,12 @@ import com.vaadin.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.combobox.FilteringMode;
+import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Field;
@@ -36,6 +37,7 @@ import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.PasswordField;
@@ -44,17 +46,16 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoUsuario;
 import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.UserService;
 import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.utils.Utils;
-import cl.koritsu.valued.services.UserService;
-import cl.koritsu.valued.event.ValuedEventBus;
 import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
@@ -162,7 +163,7 @@ public class AdministrationView extends CssLayout implements View {
 					public void onClose(ConfirmDialog dialog) {
 						if (dialog.isConfirmed()) {
 							if(user.getId() != null ) {
-								service.deshabilitarUsuario(user);
+								service.eliminarUsuario(user);
 								userContainer.removeItem(user);				
 								setUser(userContainer.getItem( userContainer.firstItemId() ));
 							}
@@ -252,16 +253,16 @@ public class AdministrationView extends CssLayout implements View {
         // Loop through the properties, build fields for them and add the fields
         // to this UI
         for (Object propertyId : new String[]{"nombres","apellidoPaterno","apellidoMaterno","email","estadoUsuario","rol","contrasena","contrasena2","tasador"}) {
-        	if(propertyId.equals("male"))
+        	if(propertyId.equals("male") || propertyId.equals("id")||propertyId.equals("deleted"))
         		;
-        	else if(propertyId.equals("rol")){
+        	else if(propertyId.equals("rol")){        		
         		ComboBox cb = new ComboBox("Perfil",rolContainer);
         		cb.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+        		cb.setFilteringMode(FilteringMode.OFF);
         		cb.setItemCaptionPropertyId("nombre");
         		cb.setWidth("100%");
         		fieldGroup.bind(cb, propertyId);
-				cb.setContainerDataSource(rolContainer);				
-        		detailLayout.addComponent(cb);
+        		detailLayout.addComponent(cb);       		
         	}else if(propertyId.equals("contrasena")){
         		PasswordField pf = new PasswordField("Contraseña");
         		pf.setNullRepresentation("");
@@ -370,7 +371,7 @@ public class AdministrationView extends CssLayout implements View {
     	rolContainer.removeAllItems();
   		rolContainer.addAll(roles);
   		
-  		List<Usuario> usuarios = service.getUsuarios();
+  		List<Usuario> usuarios = serviceUser.findAllUser();
   		userContainer.removeAllItems();
   		userContainer.addAll(usuarios);
     }
@@ -417,8 +418,8 @@ public class AdministrationView extends CssLayout implements View {
 					public void onClose(ConfirmDialog dialog) {
 						if (dialog.isConfirmed()) {
 							if(rol.getId() != null ) {
-								if(!serviceUser.findUsersByRole(rol))
-									Notification.show("El role esta siendo ocupado por usuarios habilitados.");
+								if(!serviceUser.findUsersByRol(rol))
+									Notification.show("El perfil esta siendo ocupado por usuarios habilitados.");
 								else {
 									service.deleteRol(rol.getId());
 									rolContainer.removeItem(rol);				

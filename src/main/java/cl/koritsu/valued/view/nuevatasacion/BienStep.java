@@ -1,7 +1,6 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
@@ -35,7 +34,6 @@ import com.vaadin.ui.VerticalLayout;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.EstadoTasacion;
 import cl.koritsu.valued.domain.enums.TipoBien;

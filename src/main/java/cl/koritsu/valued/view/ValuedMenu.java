@@ -1,16 +1,21 @@
 package cl.koritsu.valued.view;
 
-import java.util.Collection;
+import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
+import cl.koritsu.valued.event.ValuedEvent.PostViewChangeEvent;
+import cl.koritsu.valued.event.ValuedEvent.ProfileUpdatedEvent;
+import cl.koritsu.valued.event.ValuedEvent.ReportsCountUpdatedEvent;
+import cl.koritsu.valued.event.ValuedEvent.UserLoggedOutEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.view.utils.SecurityHelper;
 
 import com.google.common.eventbus.Subscribe;
-import com.vaadin.event.dd.DragAndDropEvent;
-import com.vaadin.event.dd.DropHandler;
-import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.AbstractSelect.AcceptItem;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -18,31 +23,13 @@ import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.DragAndDropWrapper;
-import com.vaadin.ui.DragAndDropWrapper.DragStartMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
-
-import cl.koritsu.valued.ValuedUI;
-import cl.koritsu.valued.component.ProfilePreferencesWindow;
-import cl.koritsu.valued.domain.Transaction;
-import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.Permiso;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.view.utils.Constants;
-import cl.koritsu.valued.view.utils.SecurityHelper;
-import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
-import cl.koritsu.valued.event.ValuedEvent.PostViewChangeEvent;
-import cl.koritsu.valued.event.ValuedEvent.ProfileUpdatedEvent;
-import cl.koritsu.valued.event.ValuedEvent.ReportsCountUpdatedEvent;
-import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
-import cl.koritsu.valued.event.ValuedEvent.UserLoggedOutEvent;
 
 /**
  * A responsive menu component providing user information and the controls for
@@ -60,6 +47,8 @@ public final class ValuedMenu extends CustomComponent {
     private Label administrationBadge;
     private Label verTasacionesBadge;
     private Label ingresarTasacionBadge;
+    private Label buscarTasacionBadge;
+    private Label facturarTasacionBadge;
     private MenuItem settingsItem;
 
     public ValuedMenu() {
@@ -181,7 +170,7 @@ public final class ValuedMenu extends CustomComponent {
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }
 	            
-	            if (view == ValuedViewType.TRANSACTIONS2 && SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES)) {
+	            if (view == ValuedViewType.TRANSACTIONS2 && (SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES))) {
 	                verTasacionesBadge = new Label();
 	                verTasacionesBadge.setId(STYLE_VISIBLE);
 	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
@@ -195,6 +184,24 @@ public final class ValuedMenu extends CustomComponent {
 	                ingresarTasacionBadge.setId(STYLE_VISIBLE);
 	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
 	                		ingresarTasacionBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.BUSQUEDA_TASACIONES && SecurityHelper.hasPermission(Permiso.BUSCAR_TASACIONES)) {
+	            	buscarTasacionBadge = new Label();
+	            	buscarTasacionBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		buscarTasacionBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.FACTURACION && SecurityHelper.hasPermission(Permiso.FACTURAR)) {
+	            	facturarTasacionBadge = new Label();
+	            	facturarTasacionBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		facturarTasacionBadge);
 	                
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }
