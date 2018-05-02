@@ -36,7 +36,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 
 
-
 public class MapToolBox extends Window {
 
 	/**
@@ -156,7 +155,7 @@ public class MapToolBox extends Window {
 	}
 
 	private FilterTable buildTable() {
-		FilterTable table = new FilterTable() {
+		final FilterTable table = new FilterTable() {
 			@Override
 			protected String formatPropertyValue(final Object rowId, final Object colId, final Property<?> property) {
 				String result = super.formatPropertyValue(rowId, colId,property);
@@ -272,38 +271,38 @@ public class MapToolBox extends Window {
 		
 		if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) ){
 			
-			table.addGeneratedColumn("nombrecliente",
-					new CustomTable.ColumnGenerator() {
-	
-						@Override
-						public Object generateCell(CustomTable source,
-								Object itemId, Object columnId) {
-							SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
-									.getItem(itemId)).getBean();
-							return sol.getCliente() != null ? sol.getCliente()
-									.getNombreCliente() : "";
-						}
-					});
-			
+		table.addGeneratedColumn("nombrecliente",
+				new CustomTable.ColumnGenerator() {
+
+					@Override
+					public Object generateCell(CustomTable source,
+							Object itemId, Object columnId) {
+						SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source
+								.getItem(itemId)).getBean();
+						return sol.getCliente() != null ? sol.getCliente()
+								.getNombreCliente() : "";
+					}
+				});
+
 			table.addGeneratedColumn("tasador",
-					new CustomTable.ColumnGenerator() {
-	
-						@Override
-						public Object generateCell(CustomTable source,
-								Object itemId, Object columnId) {
+				new CustomTable.ColumnGenerator() {
+
+					@Override
+					public Object generateCell(CustomTable source,
+							Object itemId, Object columnId) {
 							SolicitudTasacion sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId)).getBean();
 							return sol.getTasador() != null ? sol.getTasador().getFullname() : "";
-						}
-					});			
+					}
+				});
 		}
-		
+
 		if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES)){
 			table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "tasador", "bien.direccion","bien.comuna.nombre","bien.comuna.region.nombre","numeroTasacion","nombrecliente");
 			table.setColumnHeaders("Acciones", "Estado","Fecha Encargo", "Fecha Visista", "Tasador","Dirección","Comuna","Región","N° Tasación","Cliente");
 		}else{
 			table.setVisibleColumns("acciones", "estado", "fechaEncargo", "fechaTasacion", "bien.direccion","bien.comuna.nombre","bien.comuna.region.nombre","numeroTasacion");
-			table.setColumnHeaders("Acceder", "Estado","Fecha Encargo", "Fecha Visista", "Dirección", "Comuna","Región","N° Tasación");
-		}
+			table.setColumnHeaders("Acceder", "Estado","Fecha Encargo", "Fecha Visita", "Dirección", "Comuna","Región","N° Tasación");
+			}
 
 		table.setFilterBarVisible(true);
 		table.setFooterVisible(true);
