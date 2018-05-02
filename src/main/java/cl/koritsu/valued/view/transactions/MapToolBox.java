@@ -141,7 +141,7 @@ public class MapToolBox extends Window {
 	}
 
 	private FilterTable buildTable() {
-		FilterTable table = new FilterTable() {
+		final FilterTable table = new FilterTable() {
 			@Override
 			protected String formatPropertyValue(final Object rowId,
 					final Object colId, final Property<?> property) {
@@ -232,7 +232,7 @@ public class MapToolBox extends Window {
 		table.setVisibleColumns("acceder", "estado", "numeroTasacion",
 				"fechaEncargo", "fechaTasacion", "direccion");
 		table.setColumnHeaders("Acceder", "Estado", "N° Tasación",
-				"Fecha Encargo", "Fecha Visista", "Dirección");
+				"Fecha Encargo", "Fecha Visita", "Dirección");
 		table.setFilterBarVisible(true);
 		table.setFooterVisible(true);
 
