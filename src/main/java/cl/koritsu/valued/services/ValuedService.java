@@ -1,5 +1,6 @@
 package cl.koritsu.valued.services;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.Bitacora;
 import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
@@ -24,7 +26,9 @@ import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoInforme;
 import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EtapaTasacion;
 import cl.koritsu.valued.repositories.BienRepository;
+import cl.koritsu.valued.repositories.BitacoraRepository;
 import cl.koritsu.valued.repositories.CargoRepository;
 import cl.koritsu.valued.repositories.ClienteRepository;
 import cl.koritsu.valued.repositories.ComunaRepository;
@@ -41,6 +45,7 @@ import cl.koritsu.valued.repositories.SucursalRepository;
 import cl.koritsu.valued.repositories.TipoInformeRepository;
 import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
+import cl.koritsu.valued.view.bitacora.BuscarBitacoraSolicitudVO;
 import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
 
 import com.vaadin.server.VaadinSession;
@@ -84,6 +89,8 @@ public class ValuedService {
 	RolRepository rolRepo;
 	@Autowired
 	FacturaRepository facturaRepo;
+	@Autowired
+	BitacoraRepository bitacoraRepo;
 	
 	
 	public List<Region> getRegiones() {
@@ -311,7 +318,7 @@ public class ValuedService {
     }
 	
 	public List<Factura> getFacturas() {
-		return (List<Factura>) facturaRepo.findAll();
+		return (List<Factura>) facturaRepo.findByOrderByFechaDesc();
 	}
 	
 	public Factura getFacturaById(Long id) {
@@ -331,5 +338,24 @@ public class ValuedService {
 	public Usuario findUsuarioExistenteByUsername(String email, Long id) {
 		return usuarioRepo.findExistenteByEmail(id, email);
 		
+	}
+	
+	public List<Bitacora> getBitacoraFiltrada(BuscarBitacoraSolicitudVO vo) {
+		return (List<Bitacora>) bitacoraRepo.findBitacora(vo);
+    }
+	
+	public List<Bitacora> getBitacoras() {
+		return (List<Bitacora>) bitacoraRepo.findByOrderByFechaInicioDesc();
+	}
+	
+	public void saveBitacora(SolicitudTasacion sol, EtapaTasacion etapa) {
+		Bitacora b = new Bitacora();
+		b.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+		b.setSolicitudTasacion(sol);
+		b.setFechaInicio(new Date());
+		b.setFechaTermino(new Date());
+		b.setEtapa(etapa);
+
+		bitacoraRepo.save(b);
 	}
 }

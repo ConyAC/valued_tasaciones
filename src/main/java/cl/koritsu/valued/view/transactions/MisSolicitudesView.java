@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import ru.xpoft.vaadin.VaadinView;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EtapaTasacion;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.services.MailService;
 import cl.koritsu.valued.services.ValuedService;
@@ -176,6 +177,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 			public void onClick(BeanItem<SolicitudTasacion> sol) {
 				//guarda el elemento
 				service.saveSolicitud(sol.getBean());
+				guardarEnBitacora(sol.getBean());
 			}
 		});
     	
@@ -295,4 +297,28 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 		googleMap.setMinZoom(4);
 		googleMap.setMaxZoom(16);
 	}
+    
+    
+    public void guardarEnBitacora(SolicitudTasacion sol){
+    	
+    	switch (sol.getEstado()) {
+		case AGENDADA:
+			service.saveBitacora(sol, EtapaTasacion.AGENDAR_VISITA);
+			break;
+		case AGENDADA_CON_INCIDENCIA:
+			service.saveBitacora(sol, EtapaTasacion.CREAR_INCIDENCIA);
+			break;
+		case TASADA:
+			service.saveBitacora(sol, EtapaTasacion.INGRESAR_INFORMACION);
+		case VISADA:
+			service.saveBitacora(sol, EtapaTasacion.ENVIAR_A_CLIENTE);
+			break;
+		case VISADA_CLIENTE:
+			service.saveBitacora(sol, EtapaTasacion.ENVIAR_A_CLIENTE);
+			break;
+		case VISITADA:
+			service.saveBitacora(sol, EtapaTasacion.CONFIRMAR_VISITA);
+			break;
+		}   	
+    }
 }

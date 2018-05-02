@@ -24,6 +24,7 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Responsive;
 import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
@@ -50,7 +51,6 @@ public class EditarTasaciones extends Window {
 	
 	protected BeanFieldGroup<Factura> fieldGroup = new BeanFieldGroup<Factura>(Factura.class);
 	protected BeanItemContainer<Factura> facturaContainer = new BeanItemContainer<Factura>(Factura.class);
-	protected BeanItemContainer<SolicitudTasacion> solContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
 	protected BeanItemContainer<SolicitudTasacion> solicitudContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
 	
 	ComboBox cbCliente, cbRegion, cbComuna, cbDireccion;
@@ -63,26 +63,30 @@ public class EditarTasaciones extends Window {
 	Comuna lComuna;
 	Cliente lCliente;
 	Bien stDireccion;
+	Window win;
 
 	public EditarTasaciones(final Factura factura, ValuedService service,BeanFieldGroup<Factura> fieldGroup) {
-		init(factura, service,fieldGroup);
+		init(factura, service,fieldGroup, null);
 	}
 
-	EditarTasaciones(ValuedService service,BeanFieldGroup<Factura> fieldGroup) {
-		init(new Factura(), service, fieldGroup);
+	EditarTasaciones(ValuedService service,BeanFieldGroup<Factura> fieldGroup,BeanItemContainer<SolicitudTasacion> solicitudContainer) {
+		init(new Factura(), service, fieldGroup,solicitudContainer);
 	}
 
-	public void init(Factura factura, ValuedService service,BeanFieldGroup<Factura> fieldGroup) {
+	public void init(Factura factura, ValuedService service,BeanFieldGroup<Factura> fieldGroup,BeanItemContainer<SolicitudTasacion> solicitudContainer) {
 		this.service = service;
 		this.fieldGroup = fieldGroup;
+		this.solicitudContainer = solicitudContainer;
 		setId(ID);
 		Responsive.makeResponsive(this);
+		
 		setSizeFull();
-
 		setModal(true);
 		setContent(buildTasaciones());
 		center();
 
+		win = this;
+		
 		fieldGroup.bindMemberFields(this);
 
 		UI.getCurrent().addWindow(this);
@@ -331,7 +335,7 @@ public class EditarTasaciones extends Window {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				Notification.show("Próximamente", Type.WARNING_MESSAGE);
+		    	solicitudContainer.addAll(fieldGroup.getItemDataSource().getBean().getSolicitudes());
 			}
 		});
 		btnGuardar.setIcon(FontAwesome.SAVE);
@@ -341,7 +345,8 @@ public class EditarTasaciones extends Window {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				//((UI) win.getParent()).removeWindow(win);
+				solicitudContainer.removeAllItems();
+				((UI) win.getParent()).removeWindow(win);
 			}
 		});
 
@@ -350,8 +355,8 @@ public class EditarTasaciones extends Window {
 
 		footer.addComponent(btnGuardar);
 		footer.addComponent(btnCancelar);
-//		footer.setComponentAlignment(btnGuardar, Alignment.BOTTOM_LEFT);
-//		footer.setComponentAlignment(btnCancelar, Alignment.BOTTOM_RIGHT);
+		footer.setComponentAlignment(btnGuardar, Alignment.TOP_RIGHT);
+		footer.setComponentAlignment(btnCancelar, Alignment.TOP_RIGHT);
 
 		return footer;
 	}

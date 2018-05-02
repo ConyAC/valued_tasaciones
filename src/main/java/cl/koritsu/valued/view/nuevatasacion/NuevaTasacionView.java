@@ -15,6 +15,17 @@ import org.vaadin.teemu.wizards.event.WizardProgressListener;
 import org.vaadin.teemu.wizards.event.WizardStepActivationEvent;
 import org.vaadin.teemu.wizards.event.WizardStepSetChangedEvent;
 
+import ru.xpoft.vaadin.VaadinView;
+import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.HonorarioCliente;
+import cl.koritsu.valued.domain.Movie;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EtapaTasacion;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.utils.Utils;
+
 import com.vaadin.data.Container;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
@@ -31,16 +42,6 @@ import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
-
-import cl.koritsu.valued.ValuedUI;
-import cl.koritsu.valued.domain.Bien;
-import cl.koritsu.valued.domain.HonorarioCliente;
-import cl.koritsu.valued.domain.Movie;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.utils.Utils;
-import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
@@ -170,6 +171,7 @@ public class NuevaTasacionView extends VerticalLayout implements View, WizardPro
 			//TODO
 			//crea el objeto de solicitud tasacion
 			String nroValued = service.saveSolicitud(fg.getItemDataSource().getBean());
+			service.saveBitacora(fg.getItemDataSource().getBean(), EtapaTasacion.CREAR_SOLICITUD);	
 			endWizard("Se ha ingresado la solicitud con el siguiente número asociado "+nroValued);
 			
 			reset();

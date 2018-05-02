@@ -49,6 +49,7 @@ public final class ValuedMenu extends CustomComponent {
     private Label ingresarTasacionBadge;
     private Label buscarTasacionBadge;
     private Label facturarTasacionBadge;
+    private Label bitacoraTasacionBadge;
     private MenuItem settingsItem;
 
     public ValuedMenu() {
@@ -202,6 +203,15 @@ public final class ValuedMenu extends CustomComponent {
 	            	facturarTasacionBadge.setId(STYLE_VISIBLE);
 	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
 	                		facturarTasacionBadge);
+	                
+		            menuItemsLayout.addComponent(menuItemComponent);
+	            }
+	            
+	            if (view == ValuedViewType.BITACORA_TASACIONES && SecurityHelper.hasPermission(Permiso.VISUALIZAR_BITACORA)) {
+	            	bitacoraTasacionBadge = new Label();
+	            	bitacoraTasacionBadge.setId(STYLE_VISIBLE);
+	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+	                		bitacoraTasacionBadge);
 	                
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }

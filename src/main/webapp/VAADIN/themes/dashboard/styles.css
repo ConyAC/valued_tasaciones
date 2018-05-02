@@ -10858,6 +10858,12 @@ div.v-layout.v-horizontal.v-widget {
 	color: white;
 }
 
+.dashboard .img-diagrama {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .dashboard .valo-menu {
 	border-right: none;
 }

@@ -13,7 +13,8 @@ public enum Permiso {
 	VISUALIZAR_MIS_TASACIONES(9,"Visualizar Mis Tasaciones"),
 	BUSCAR_TASACIONES(10,"Buscar Tasaciones"),
 	ENVIAR_CORREO(11,"Enviar Correo"),
-	MARCAR_REPARO(12,"Marcar tasación en reparo")
+	MARCAR_REPARO(12,"Marcar tasación en reparo"),
+	VISUALIZAR_BITACORA(13,"Visualizar Bitacora de Tasaciones")
 	;
 	
 	int i;

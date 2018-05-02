@@ -1,5 +1,6 @@
 package cl.koritsu.valued.view;
 
+import cl.koritsu.valued.view.bitacora.BitacoraTasacionesView;
 import cl.koritsu.valued.view.busqueda.BusquedaTasacionesView;
 import cl.koritsu.valued.view.dashboard.DashboardView;
 import cl.koritsu.valued.view.facturacion.FacturacionView;
@@ -17,6 +18,7 @@ public enum ValuedViewType {
     SALES(NuevaTasacionView.NAME/*"nueva solicitud"*/, NuevaTasacionView.class, FontAwesome.BUILDING, false), 
     TRANSACTIONS2(MisSolicitudesView.NAME/*"tasaciones en curso"*/, MisSolicitudesView.class, FontAwesome.TABLE, false),
     BUSQUEDA_TASACIONES(BusquedaTasacionesView.NAME/*"Buscar Tasación"*/, BusquedaTasacionesView.class, FontAwesome.SEARCH, true),
+    BITACORA_TASACIONES(BitacoraTasacionesView.NAME/*"Bitacora Tasación"*/, BitacoraTasacionesView.class, FontAwesome.ALIGN_JUSTIFY, true),
     FACTURACION(FacturacionView.NAME/*"Facturación"*/, FacturacionView.class, FontAwesome.DOLLAR, true),
     REPORTS(ReportsView.NAME/*"Buscar Tasación"*/, ReportsView.class, FontAwesome.SIGNAL, true), 
     ADMINISTRATION(AdministrationView.NAME/*"Administración"*/, AdministrationView.class, FontAwesome.GEAR, false),

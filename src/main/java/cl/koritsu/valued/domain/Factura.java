@@ -29,7 +29,6 @@ public class Factura {
 	Date fecha;
 	
 	float montoManual;
-	float montoCalculado;
 	
 	String nombre = "";
 	String numero = "";
@@ -82,12 +81,6 @@ public class Factura {
 	}
 	public void setMontoManual(float montoManual) {
 		this.montoManual = montoManual;
-	}
-	public float getMontoCalculado() {
-		return montoCalculado;
-	}
-	public void setMontoCalculado(float montoCalculado) {
-		this.montoCalculado = montoCalculado;
 	}
 	public String getNombre() {
 		return nombre;

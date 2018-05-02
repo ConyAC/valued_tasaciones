@@ -64,3 +64,13 @@ CREATE TABLE `factura_solicitud_tasacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1$$
 
 
+ALTER TABLE `factura` DROP COLUMN `montoCalculado` ;
+
+CREATE  TABLE `bitacora` (
+  `id` INT(10) NOT NULL AUTO_INCREMENT ,
+  `solicitud_tasacionId` INT(10) NOT NULL ,
+  `etapaTasacion` VARCHAR(145) NOT NULL ,
+  `usuarioId` INT(10) NOT NULL ,
+  `fechaInicio` DATETIME NOT NULL ,
+  `fechaTermino` DATETIME NOT NULL ,
+  PRIMARY KEY (`id`) );

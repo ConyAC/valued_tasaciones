@@ -8,21 +8,26 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+
+import ru.xpoft.vaadin.VaadinView;
+import cl.koritsu.valued.ValuedUI;
+import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EstadoUsuario;
+import cl.koritsu.valued.event.ValuedEvent.UserLoginRequestedEvent;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.UserService;
+import cl.koritsu.valued.view.utils.Constants;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
 import com.vaadin.server.Responsive;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.Position;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -37,16 +42,6 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
-
-import cl.koritsu.valued.ValuedUI;
-import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.EstadoUsuario;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.event.ValuedEvent.UserLoginRequestedEvent;
-import cl.koritsu.valued.services.UserService;
-import cl.koritsu.valued.view.schedule.AdministrationView;
-import cl.koritsu.valued.view.utils.Constants;
-import ru.xpoft.vaadin.VaadinView;
 
 
 @org.springframework.stereotype.Component

@@ -257,8 +257,7 @@ public class FacturacionView extends VerticalLayout implements View {
 					if (property.getValue() != null)
 						result = Utils
 								.formatoFecha(((Date) property.getValue()));
-				} else if (colId.equals("montoCalculado")
-						|| colId.equals("montoManual")) {
+				} else if (colId.equals("montoManual")) {
 					if (property != null && property.getValue() != null) {
 						return "$"
 								+ Utils.getDecimalFormatSinDecimal().format(
@@ -341,8 +340,8 @@ public class FacturacionView extends VerticalLayout implements View {
 			}
 		});
 
-		table.setVisibleColumns("estado", "numero", "nombrecliente", "fecha","montoCalculado", "montoManual", "acciones");
-		table.setColumnHeaders("Estado", "N° Factura", "Cliente", "Fecha","Monto Calculado", "Monto Manual", "Acciones");
+		table.setVisibleColumns("estado", "numero", "nombrecliente", "fecha","montoManual", "acciones");
+		table.setColumnHeaders("Estado", "N° Factura", "Cliente", "Fecha","Monto Manual", "Acciones");
 
 		return table;
 	}
@@ -390,14 +389,8 @@ public class FacturacionView extends VerticalLayout implements View {
 		fecha.setValue(Utils.formatoFecha(f.getFecha()));
 		fl.addComponent(fecha);
 
-		Label montoCalculado = new Label();
-		montoCalculado.setCaption("Monto Calculado");
-		montoCalculado.setValue(Utils.getDecimalFormatSinDecimal().format(
-				f.getMontoCalculado()));
-		fl.addComponent(montoCalculado);
-
 		Label montoManual = new Label();
-		montoManual.setCaption("Monto Manual");
+		montoManual.setCaption("Monto $");
 		montoManual.setValue(Utils.getDecimalFormatSinDecimal().format(
 				f.getMontoManual()));
 		fl.addComponent(montoManual);

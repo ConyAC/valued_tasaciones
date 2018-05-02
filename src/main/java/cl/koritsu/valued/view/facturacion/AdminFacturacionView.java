@@ -26,7 +26,6 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Responsive;
-import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -104,18 +103,17 @@ public class AdminFacturacionView extends CssLayout implements View {
 		numero.setCaption("N° Factura");
 		fieldGroup.bind(numero, "numero");
 		fl.addComponent(numero);
-
-		ComboBox cbCliente = new ComboBox("Cliente");
-		fl.addComponent(cbCliente);
-		cbCliente.setFilteringMode(FilteringMode.CONTAINS);
-		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-		cbCliente.setItemCaptionPropertyId("nombreCliente");
+		
 		BeanItemContainer<Cliente> cls = new BeanItemContainer<Cliente>(
 				Cliente.class);
 		List<Cliente> clientes = service.getClientes();
 		cls.addAll(clientes);
-		fieldGroup.bind( cbCliente, "cliente");
-		cbCliente.setContainerDataSource(cls);
+		
+		ComboBox cbCliente = new ComboBox("Cliente",cls);
+		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbCliente.setItemCaptionPropertyId("fullname");
+		fieldGroup.bind(cbCliente, "cliente");
+		fl.addComponent(cbCliente);
 
 		DateField fecha = new DateField();
 		fecha.setCaption("Fecha");
@@ -134,11 +132,6 @@ public class AdminFacturacionView extends CssLayout implements View {
 		montoManual.setCaption("Monto Manual");
 		fieldGroup.bind( montoManual, "montoManual");
 		fl.addComponent(montoManual);
-
-		TextField montoCalculado = new TextField();
-		montoCalculado.setCaption("Monto Calculado");
-		fieldGroup.bind( montoCalculado, "montoCalculado");
-		fl.addComponent(montoCalculado);
 
 		Label sectionTasaciones = new Label("Información Tasaciones");
 		sectionTasaciones.addStyleName(ValoTheme.LABEL_H3);
@@ -185,8 +178,7 @@ public class AdminFacturacionView extends CssLayout implements View {
 						property);
 				if (colId.equals("fechaEncargo")) {
 					result = Utils.formatoFecha(((Date) property.getValue()));
-				} else if (colId.equals("montoCalculado")
-						|| colId.equals("montoManual")) {
+				} else if (colId.equals("montoManual")) {
 					if (property != null && property.getValue() != null) {
 						return "$"
 								+ Utils.getDecimalFormatSinDecimal().format(
@@ -265,13 +257,13 @@ public class AdminFacturacionView extends CssLayout implements View {
 	 */
 	private Window drawFormAddTasaciones() {
 		final EditarTasaciones editor;
-		editor = new EditarTasaciones(service,fieldGroup);
+		editor = new EditarTasaciones(service,fieldGroup,solicitudContainer);
 
 		editor.getBtnCancelar().addClickListener(new ClickListener() {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				//editor.fieldGroup.discard();
+				editor.fieldGroup.discard();
 			}
 		});
 
@@ -282,15 +274,14 @@ public class AdminFacturacionView extends CssLayout implements View {
 				try {
 					// realiza el commit de los campos del fomulario
 					editor.fieldGroup.commit();
-					
-					Notification.show("Tasaciones almacenadas correctamente.",	Type.TRAY_NOTIFICATION);
-
+					Notification.show("Tasaciones almacenadas correctamente.", Type.TRAY_NOTIFICATION);
 				} catch (CommitException e) {
 					Utils.validateEditor("el cliente", e);
 				}
 			}
 		});
-
+		
+		solicitudContainer.addAll(editor.fieldGroup.getItemDataSource().getBean().getSolicitudes());
 		return editor;
 	}
 
@@ -338,6 +329,9 @@ public class AdminFacturacionView extends CssLayout implements View {
 
 		footer.addComponent(btnGuardar);
 		footer.addComponent(btnCancelar);
+		
+		footer.setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
+		footer.setComponentAlignment(btnCancelar, Alignment.TOP_LEFT);
 
 		return footer;
 	}
