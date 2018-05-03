@@ -41,15 +41,7 @@ public class Factura {
 	@JoinColumn(name="clienteId")
 	Cliente cliente;
 	
-//	@OneToMany(mappedBy="factura",fetch=FetchType.LAZY,cascade={CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval=true )
-//	List<SolicitudTasacion> solicitudesTable = new LinkedList<SolicitudTasacion>();
-	
-	//tabla intermedia entre factura y tasacion    
-//	@OneToMany(mappedBy="factura",fetch=FetchType.LAZY,cascade={CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval=true)
-//    @CollectionTable(name="solicitud_tasacion", joinColumns = @JoinColumn(name = "facturaId"))
-//    @JoinColumn(name="factura_solicitud")
     Set<SolicitudTasacion> solicitud = new HashSet<SolicitudTasacion>(); 
-	
     
     @OneToMany
     @JoinTable(
@@ -57,6 +49,8 @@ public class Factura {
             joinColumns = @JoinColumn( name="factura_Id"),
             inverseJoinColumns = @JoinColumn( name="solicitud_Id")
     )
+    
+    
 	public Set<SolicitudTasacion> getSolicitudes() {
 		return solicitud;
 	}
@@ -94,12 +88,6 @@ public class Factura {
 	public void setNumero(String numero) {
 		this.numero = numero;
 	}
-//	public List<SolicitudTasacion> getSolicitudesTable() {
-//		return solicitudesTable;
-//	}
-//	public void setSolicitudesTable(List<SolicitudTasacion> solicitudesTable) {
-//		this.solicitudesTable = solicitudesTable;
-//	}
 	public EstadoFactura getEstado() {
 		return estado;
 	}

@@ -45,8 +45,10 @@ import cl.koritsu.valued.repositories.SucursalRepository;
 import cl.koritsu.valued.repositories.TipoInformeRepository;
 import cl.koritsu.valued.repositories.TipoOperacionRepository;
 import cl.koritsu.valued.repositories.UsuarioRepository;
+import cl.koritsu.valued.repositories.ValorUFRepository;
 import cl.koritsu.valued.view.bitacora.BuscarBitacoraSolicitudVO;
 import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
+import cl.koritsu.valued.view.facturacion.BuscarFacturaVO;
 
 import com.vaadin.server.VaadinSession;
 
@@ -87,6 +89,8 @@ public class ValuedService {
 	ObraComplementariaRepository obrasRepo;
 	@Autowired
 	RolRepository rolRepo;
+	@Autowired
+	ValorUFRepository valorUFRepo;
 	@Autowired
 	FacturaRepository facturaRepo;
 	@Autowired
@@ -309,6 +313,10 @@ public class ValuedService {
 		return (List<SolicitudTasacion>) solicitudTasacionRepo.findByCoordenadas(id, norteY, esteX);
 	}
 	
+	public Double getValorUFporFecha(Date fecha){
+		return valorUFRepo.getValorUF(fecha);
+	}
+
 	public List<Bien> getDirecciones() {
 		return (List<Bien>) bienRepo.findAll();
 	}
@@ -328,10 +336,10 @@ public class ValuedService {
 	@Transactional
 	public void saveFactura(Factura bean) {
 		bean.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
-		Factura factura = facturaRepo.save(bean);		
+		facturaRepo.save(bean);		
 	}
 	
-	public List<Factura> getFacturasFiltradas(BuscarSolicitudVO vo) {
+	public List<Factura> getFacturasFiltradas(BuscarFacturaVO vo) {
 		return (List<Factura>) facturaRepo.findFacturas(vo);
     }
 	
@@ -352,10 +360,23 @@ public class ValuedService {
 		Bitacora b = new Bitacora();
 		b.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
 		b.setSolicitudTasacion(sol);
-		b.setFechaInicio(new Date());
-		b.setFechaTermino(new Date());
 		b.setEtapa(etapa);
 
+		if(etapa.equals(EtapaTasacion.CREAR_SOLICITUD)){
+			b.setFechaInicio(new Date());
+			b.setFechaTermino(new Date());
+		}else{
+			Date termino = bitacoraRepo.findLastRow(sol.getId());
+			b.setFechaInicio(termino);
+			b.setFechaTermino(new Date());
+		}
+
 		bitacoraRepo.save(b);
+	}
+	
+	public void saveFacturaAnulada(Factura bean) {
+		bean.setUsuario((Usuario) VaadinSession.getCurrent().getAttribute(Usuario.class.getName()));
+		facturaRepo.deleteTasacionesDeFactura(bean.getId());
+		facturaRepo.save(bean);		
 	}
 }

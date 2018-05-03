@@ -54,7 +54,6 @@ public class AdminFacturacionView extends CssLayout implements View {
 	public static final String NAME = "adminfacturacion";
 
 	protected BeanFieldGroup<Factura> fieldGroup = new BeanFieldGroup<Factura>(Factura.class);
-	protected BeanItemContainer<Factura> facturaContainer = new BeanItemContainer<Factura>(Factura.class);
 	protected BeanItemContainer<SolicitudTasacion> solicitudContainer = new BeanItemContainer<SolicitudTasacion>(
 			SolicitudTasacion.class);
 	
@@ -101,6 +100,8 @@ public class AdminFacturacionView extends CssLayout implements View {
 
 		TextField numero = new TextField();
 		numero.setCaption("N° Factura");
+		numero.setRequired(true);
+		numero.setRequiredError("El numero de factura es obligatorio.");
 		fieldGroup.bind(numero, "numero");
 		fl.addComponent(numero);
 		
@@ -110,12 +111,16 @@ public class AdminFacturacionView extends CssLayout implements View {
 		cls.addAll(clientes);
 		
 		ComboBox cbCliente = new ComboBox("Cliente",cls);
+		cbCliente.setRequired(true);
+		cbCliente.setRequiredError("El cliente es obligatorio.");
 		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbCliente.setItemCaptionPropertyId("fullname");
 		fieldGroup.bind(cbCliente, "cliente");
 		fl.addComponent(cbCliente);
 
 		DateField fecha = new DateField();
+		fecha.setRequired(true);
+		fecha.setRequiredError("La fecha es obligatoria.");
 		fecha.setCaption("Fecha");
 		fieldGroup.bind(fecha, "fecha");
 		fl.addComponent(fecha);
@@ -129,6 +134,8 @@ public class AdminFacturacionView extends CssLayout implements View {
 		fl.addComponent(cbEstado);
 
 		TextField montoManual = new TextField();
+		montoManual.setRequired(true);
+		montoManual.setRequiredError("Debe ingresar un monto en pesos.");
 		montoManual.setCaption("Monto Manual");
 		fieldGroup.bind( montoManual, "montoManual");
 		fl.addComponent(montoManual);
@@ -216,9 +223,9 @@ public class AdminFacturacionView extends CssLayout implements View {
 									public void onClose(
 											ConfirmDialog dialog) {
 										if (dialog.isConfirmed()) {
-											solicitudContainer.removeItem(itemId);
 											BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
 									    	fieldGroup.getItemDataSource().getBean().getSolicitudes().remove(sol.getBean());
+											solicitudContainer.removeItem(itemId);
 										}
 									}
 								});
@@ -259,13 +266,13 @@ public class AdminFacturacionView extends CssLayout implements View {
 		final EditarTasaciones editor;
 		editor = new EditarTasaciones(service,fieldGroup,solicitudContainer);
 
-		editor.getBtnCancelar().addClickListener(new ClickListener() {
-
-			@Override
-			public void buttonClick(ClickEvent event) {
-				editor.fieldGroup.discard();
-			}
-		});
+//		editor.getBtnCancelar().addClickListener(new ClickListener() {
+//
+//			@Override
+//			public void buttonClick(ClickEvent event) {
+//				editor.fieldGroup.discard();
+//			}
+//		});
 
 		editor.getBtnGuadar().addClickListener(new ClickListener() {
 
@@ -324,14 +331,13 @@ public class AdminFacturacionView extends CssLayout implements View {
 			}
 		});
 
-		btnCancelar.setIcon(FontAwesome.CLOSE);
-		btnCancelar.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnCancelar.addStyleName("link");
 
 		footer.addComponent(btnGuardar);
 		footer.addComponent(btnCancelar);
 		
-		footer.setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
-		footer.setComponentAlignment(btnCancelar, Alignment.TOP_LEFT);
+		footer.setComponentAlignment(btnGuardar, Alignment.TOP_RIGHT);
+		footer.setComponentAlignment(btnCancelar, Alignment.TOP_RIGHT);
 
 		return footer;
 	}

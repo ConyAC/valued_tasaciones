@@ -368,4 +368,38 @@ public class SolicitudTasacion {
 		+ getBien().getComuna().getNombre() + ", "
 		+ getBien().getComuna().getRegion().getNombre();
 	}
+	@Override
+	public String toString() {
+		return "SolicitudTasacion [id=" + id + ", fechaEncargo=" + fechaEncargo
+				+ ", fechaTasacion=" + fechaTasacion + ", fechaVisado="
+				+ fechaVisado + ", fechaEnvioCliente=" + fechaEnvioCliente
+				+ ", montoCompraEstimadoUF=" + montoCompraEstimadoUF
+				+ ", montoCompraEstimadoPesos=" + montoCompraEstimadoPesos
+				+ ", montoTasacionPesos=" + montoTasacionPesos
+				+ ", montoTasacionUF=" + montoTasacionUF
+				+ ", nombrePropietario=" + nombrePropietario
+				+ ", rutPropietario=" + rutPropietario
+				+ ", telefonoPropietario=" + telefonoPropietario
+				+ ", emailPropietario=" + emailPropietario
+				+ ", nombreContacto=" + nombreContacto
+				+ ", telefonoFijoContacto=" + telefonoFijoContacto
+				+ ", telefonoMovilContacto=" + telefonoMovilContacto
+				+ ", emailContacto=" + emailContacto + ", nombreContacto2="
+				+ nombreContacto2 + ", telefonoFijoContacto2="
+				+ telefonoFijoContacto2 + ", telefonoMovilContacto2="
+				+ telefonoMovilContacto2 + ", emailContacto2=" + emailContacto2
+				+ ", numeroTasacionCliente=" + numeroTasacionCliente
+				+ ", numeroTasacion=" + numeroTasacion + ", requiereTasador="
+				+ requiereTasador + ", estado=" + estado + ", tipoInforme="
+				+ tipoInforme + ", tipoOperacion=" + tipoOperacion
+				+ ", sucursal=" + sucursal + ", solicitante=" + solicitante
+				+ ", usuario=" + usuario + ", bien=" + bien
+				+ ", honorarioCliente=" + honorarioCliente + ", cliente="
+				+ cliente + ", ejecutivo=" + ejecutivo + ", tasador=" + tasador
+				+ ", observaciones=" + observaciones + ", observacionReparo="
+				+ observacionReparo + ", norteY=" + norteY + ", esteX=" + esteX
+				+ "]";
+	}
+	
+	
 }

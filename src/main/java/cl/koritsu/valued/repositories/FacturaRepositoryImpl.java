@@ -1,6 +1,7 @@
 package cl.koritsu.valued.repositories;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -12,7 +13,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import cl.koritsu.valued.domain.Factura;
-import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
+import cl.koritsu.valued.view.facturacion.BuscarFacturaVO;
 
 public class FacturaRepositoryImpl implements FacturaRepositoryCustom {
 
@@ -20,7 +21,7 @@ public class FacturaRepositoryImpl implements FacturaRepositoryCustom {
     private EntityManager em;
     
 	@Override	
-	public List<Factura> findFacturas(BuscarSolicitudVO vo) {
+	public List<Factura> findFacturas(BuscarFacturaVO vo) {
 		
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Factura> query = cb.createQuery(Factura.class);
@@ -32,8 +33,8 @@ public class FacturaRepositoryImpl implements FacturaRepositoryCustom {
             list.add(cb.equal(root.get("numero"),vo.getNroFactura()));
         }
 
-        if (vo.getEstado() != null) {
-            list.add(cb.equal(root.get("estado"),vo.getEstado()));
+        if (vo.getEstadoFactura() != null) {
+            list.add(cb.equal(root.get("estado"),vo.getEstadoFactura()));
         }
 
         if(vo.getCliente() != null){
@@ -51,6 +52,11 @@ public class FacturaRepositoryImpl implements FacturaRepositoryCustom {
         if(vo.getRegion() != null){
         	list.add(cb.equal(root.get("solicitud").get("bien").get("comuna").get("region"),vo.getRegion()));
         }        
+        
+        
+        if(vo.getFechaDesde() != null){
+        	list.add(cb.between(root.get("fecha").as(Date.class), vo.getFechaDesde(), vo.getFechaHasta()));
+        }          
         
         query.where(list.toArray(new Predicate[list.size()]));
         query.orderBy(cb.desc(root.get("fecha")));

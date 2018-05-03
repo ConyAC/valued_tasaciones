@@ -74,6 +74,8 @@ public class ClienteEditor extends VerticalLayout {
     private OptionGroup tipoPersonaField;
     @PropertyId("multiRut")
     private OptionGroup multirutField;
+    @PropertyId("prefijo")
+    private TextField prefijoField;
     
     private HorizontalLayout tbMultirut, tbContactos;
     protected BeanItemContainer<Contacto> beanItemContacto = new BeanItemContainer<Contacto>(Contacto.class);
@@ -254,6 +256,9 @@ public class ClienteEditor extends VerticalLayout {
         
         razonSocialField = new TextField("Razón Social");
         details.addComponent(razonSocialField);razonSocialField.setRequired(true);razonSocialField.setRequiredError("El campo Nombre es requerido");
+        
+        prefijoField = new TextField("Prefijo");
+        details.addComponent(prefijoField);prefijoField.setRequired(true);prefijoField.setRequiredError("El campo prefijo es requerido");
         
         direccionField = new TextField("Dirección");
         details.addComponent(direccionField);

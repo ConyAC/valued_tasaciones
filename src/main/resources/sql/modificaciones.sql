@@ -74,3 +74,9 @@ CREATE  TABLE `bitacora` (
   `fechaInicio` DATETIME NOT NULL ,
   `fechaTermino` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) );
+
+CREATE TABLE `valor_uf` (
+  `fecha` date NOT NULL,
+  `valor` double NOT NULL,
+  PRIMARY KEY (`fecha`)
+);

@@ -31,7 +31,6 @@ import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.TextField;
@@ -88,7 +87,17 @@ public class EditarTasaciones extends Window {
 		win = this;
 		
 		fieldGroup.bindMemberFields(this);
-
+		
+		if(fieldGroup.getField("cliente").getValue() != null){
+			cbCliente.select(fieldGroup.getField("cliente"));
+			BuscarSolicitudVO vo = new BuscarSolicitudVO();
+	    	vo.setCliente((Cliente)fieldGroup.getField("cliente").getValue());
+	    	vo.setNroTasacion(null);
+	    	
+	    	List<SolicitudTasacion> solicitudes = service.getTasacionesFiltradas(vo);
+	    	((BeanItemContainer<SolicitudTasacion>)tableTasaciones.getContainerDataSource()).addAll(solicitudes); 
+		}
+		
 		UI.getCurrent().addWindow(this);
 	}
 
@@ -336,6 +345,7 @@ public class EditarTasaciones extends Window {
 			@Override
 			public void buttonClick(ClickEvent event) {
 		    	solicitudContainer.addAll(fieldGroup.getItemDataSource().getBean().getSolicitudes());
+		    	((UI) win.getParent()).removeWindow(win);
 			}
 		});
 		btnGuardar.setIcon(FontAwesome.SAVE);
@@ -346,12 +356,12 @@ public class EditarTasaciones extends Window {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				solicitudContainer.removeAllItems();
+				fieldGroup.discard();
 				((UI) win.getParent()).removeWindow(win);
 			}
 		});
 
-		btnCancelar.setIcon(FontAwesome.CLOSE);
-		btnCancelar.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnCancelar.addStyleName("link");
 
 		footer.addComponent(btnGuardar);
 		footer.addComponent(btnCancelar);

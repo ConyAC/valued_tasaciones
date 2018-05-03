@@ -30,7 +30,7 @@ public class Cliente {
     private String tipo = "";
     private boolean multiRut = false;
     
-    private String prefijo;
+    private String prefijo = "";
     long correlativoActual;
     
     
@@ -125,15 +125,28 @@ public class Cliente {
 	public void setCorrelativoActual(long correlativoActual) {
 		this.correlativoActual = correlativoActual;
 	}
-	@Override
-	public String toString() {
-		return "Cliente [id=" + id + "]";
-	}
+//	@Override
+//	public String toString() {
+//		return "Cliente [id=" + id + "]";
+//	}
     
 	public String getFullname(){
 		if(razonSocial != null)
 			return razonSocial;
 		else
 			return (nombres != null ? nombres : "") + " " + (apellidoPaterno != null ? apellidoPaterno : "");
-    }   
+    }
+	@Override
+	public String toString() {
+		return "Cliente [id=" + id + ", rut=" + rut + ", nombres=" + nombres
+				+ ", apellidoPaterno=" + apellidoPaterno + ", apellidoMaterno="
+				+ apellidoMaterno + ", razonSocial=" + razonSocial
+				+ ", telefonoFijo=" + telefonoFijo + ", tipoPersona="
+				+ tipoPersona + ", factorKm=" + factorKm + ", direccion="
+				+ direccion + ", tipo=" + tipo + ", multiRut=" + multiRut
+				+ ", prefijo=" + prefijo + ", correlativoActual="
+				+ correlativoActual + "]";
+	}  
+	
+	
 }

@@ -29,7 +29,7 @@ public class BitacoraRepositoryImpl implements BitacoraRepositoryCustom {
         List<Predicate> list = new ArrayList<Predicate>();
         
         if (!vo.getNroTasacion().isEmpty()) {
-            list.add(cb.equal(root.get("solicitudTasacion").get("numeroTasacion"),vo.getNroTasacion())); //list.add(cb.equal(root.get("solicitud").get("bien").get("comuna").get("region"),vo.getRegion()));
+            list.add(cb.equal(root.get("solicitudTasacion").get("numeroTasacion"),vo.getNroTasacion()));
         }
 
         if (vo.getEtapaTasacion() != null) {

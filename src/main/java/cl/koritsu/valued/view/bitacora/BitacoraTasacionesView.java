@@ -211,8 +211,8 @@ public class BitacoraTasacionesView extends VerticalLayout implements View {
 			public void buttonClick(ClickEvent event) {
 				
 				Window window = new Window("Diagrama de Proceso");
-                window.setWidth("90%");
-                window.setHeight("70%");
+                window.setWidth("80%");
+                window.setHeight("50%");
                 window.setResizable(false);
                 window.setModal(true);
                 window.setDraggable(false);

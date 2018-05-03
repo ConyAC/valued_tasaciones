@@ -22,7 +22,6 @@ import cl.koritsu.valued.domain.enums.EstadoFactura;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
 import cl.koritsu.valued.view.transactions.MisSolicitudesView;
 import cl.koritsu.valued.view.utils.SecurityHelper;
 import cl.koritsu.valued.view.utils.Utils;
@@ -43,6 +42,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.DateField;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -66,7 +66,10 @@ public class FacturacionView extends VerticalLayout implements View {
 
 	public static final String NAME = "facturar";
 
-	ComboBox cbTasador, cbEstado, cbRegion, cbComuna, cbCliente, cbDireccion;
+	ComboBox cbTasador, cbRegion, cbComuna, cbCliente, cbDireccion, cbEstadoFactura;
+	DateField fechaDesde, fechaHasta;
+	Date vfechaDesde, vfechaHasta;
+	EstadoFactura vEstadoFactura;
 	String stNroFactura;
 	EstadoSolicitud stEstado;
 	Usuario lTasador;
@@ -75,8 +78,10 @@ public class FacturacionView extends VerticalLayout implements View {
 	Cliente lCliente;
 	Bien stDireccion;
 	TextField nroFactura;
-	Table table;
+	Table tableFacturas;
 	Button btnFacturar;
+	
+	protected BeanItemContainer<Factura> facturaContainer = new BeanItemContainer<Factura>(Factura.class);
 
 	@Autowired
 	ValuedService service;
@@ -90,9 +95,9 @@ public class FacturacionView extends VerticalLayout implements View {
 
 		addComponent(buildFiltro());
 
-		table = buildTable();
-		addComponent(table);
-		setExpandRatio(table, 1);
+		tableFacturas = buildTable();
+		addComponent(tableFacturas);
+		setExpandRatio(tableFacturas, 1);
 	}
 
 	private Component buildToolbar() {
@@ -124,9 +129,28 @@ public class FacturacionView extends VerticalLayout implements View {
 		
 		nroFactura = new TextField("N° Factura");
 	    hl.addComponent(nroFactura);
-
+	    
+	    cbEstadoFactura = new ComboBox("Estado Factura");
+	    cbEstadoFactura.setImmediate(true);
+        hl.addComponent(cbEstadoFactura);
+        for(EstadoFactura estado : EstadoFactura.values()) {
+        	cbEstadoFactura.addItem(estado);
+		}
+        
+        fechaDesde = new DateField("Fecha Desde");
+        fechaDesde.setDateFormat("dd/MM/yyyy");
+        hl.addComponent(fechaDesde);
+        
+        fechaHasta = new DateField("Fecha Hasta");
+        fechaHasta.setDateFormat("dd/MM/yyyy");
+        hl.addComponent(fechaHasta);
+        
+        HorizontalLayout hl2 = new HorizontalLayout();
+		vl.addComponent(hl2);
+		hl2.setSpacing(true);
+        
 		cbCliente = new ComboBox("Cliente");
-		hl.addComponent(cbCliente);
+		hl2.addComponent(cbCliente);
 		cbCliente.setFilteringMode(FilteringMode.CONTAINS);
 		cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbCliente.setItemCaptionPropertyId("nombreCliente");
@@ -138,7 +162,7 @@ public class FacturacionView extends VerticalLayout implements View {
 
 		cbRegion = new ComboBox("Región");
 		cbRegion.setImmediate(true);
-		hl.addComponent(cbRegion);
+		hl2.addComponent(cbRegion);
 		cbRegion.setContainerDataSource(new BeanItemContainer<Region>(
 				Region.class));
 		cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
@@ -151,14 +175,14 @@ public class FacturacionView extends VerticalLayout implements View {
 
 		cbComuna = new ComboBox("Comuna");
 		cbComuna.setImmediate(true);
-		hl.addComponent(cbComuna);
+		hl2.addComponent(cbComuna);
 		cbComuna.setContainerDataSource(new BeanItemContainer<Comuna>(
 				Comuna.class));
 		cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbComuna.setItemCaptionPropertyId("nombre");
 
 		cbDireccion = new ComboBox("Dirección");
-		hl.addComponent(cbDireccion);
+		hl2.addComponent(cbDireccion);
 		cbDireccion.setFilteringMode(FilteringMode.CONTAINS);
 		cbDireccion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 		cbDireccion.setItemCaptionPropertyId("direccion");
@@ -197,19 +221,24 @@ public class FacturacionView extends VerticalLayout implements View {
 				stDireccion = cbDireccion.getValue() == null ? null : ((Bien) cbDireccion.getValue());
 				lCliente = cbCliente.getValue() == null ? null : ((Cliente) cbCliente.getValue());
 				stNroFactura = nroFactura.getValue() == null ? null : nroFactura.getValue();
+				vEstadoFactura = cbEstadoFactura.getValue() == null ? null : (EstadoFactura) cbEstadoFactura.getValue();
+				vfechaDesde = fechaDesde.getValue() == null ? null : fechaDesde.getValue();
+				vfechaHasta = fechaHasta.getValue() == null ? null : fechaHasta.getValue();
 
-            	BuscarSolicitudVO vo = new BuscarSolicitudVO();
+            	BuscarFacturaVO vo = new BuscarFacturaVO();
             	vo.setNroFactura(stNroFactura);
-            	//vo.setEstado(stEstado); estado enviada a cliente
             	vo.setRegion(lRegion);
             	vo.setComuna(lComuna);
             	vo.setCliente(lCliente);
             	vo.setDireccion(stDireccion);
+            	vo.setEstadoFactura(vEstadoFactura);
+            	vo.setFechaDesde(vfechaDesde);
+            	vo.setFechaHasta(vfechaHasta);
             	
             	List<Factura> facturas = service.getFacturasFiltradas(vo);
-            	((BeanItemContainer<Factura>)table.getContainerDataSource()).addAll(facturas); 
+            	((BeanItemContainer<Factura>)tableFacturas.getContainerDataSource()).addAll(facturas); 
 
-				if (table.getItemIds().isEmpty()) {
+				if (tableFacturas.getItemIds().isEmpty()) {
 					Notification
 							.show("No existen resultados que coincidan con los filtros aplicados...");
 				}
@@ -229,6 +258,9 @@ public class FacturacionView extends VerticalLayout implements View {
 				cbCliente.select(null);
 				cbDireccion.select(null);
 				nroFactura.setValue("");
+				fechaDesde.setValue(null);
+				fechaHasta.setValue(null);
+				cbEstadoFactura.setValue(null);
 			}
 		});
 
@@ -322,7 +354,7 @@ public class FacturacionView extends VerticalLayout implements View {
 				hl.addComponent(btnEditar);
 
 				if (SecurityHelper.hasPermission(Permiso.FACTURAR)) {
-					Button btnFacturar = new Button(null, FontAwesome.CHECK);
+					btnFacturar = new Button(null, FontAwesome.CHECK);
 					btnFacturar.addClickListener(new Button.ClickListener() {
 
 						@Override
@@ -340,21 +372,22 @@ public class FacturacionView extends VerticalLayout implements View {
 			}
 		});
 
+		table.setContainerDataSource(facturaContainer);
 		table.setVisibleColumns("estado", "numero", "nombrecliente", "fecha","montoManual", "acciones");
-		table.setColumnHeaders("Estado", "N° Factura", "Cliente", "Fecha","Monto Manual", "Acciones");
+		table.setColumnHeaders("Estado", "N° Factura", "Cliente", "Fecha","Monto Factura", "Acciones");
 
 		return table;
 	}
 
 	public void limpiarTabla() {
-		((BeanItemContainer<Factura>) table.getContainerDataSource()).removeAllItems();
+		facturaContainer.removeAllItems();
 	}
 
 	/* Funcion que permite marcar como pagada o anulada una factura */
 	private Window buildFacturar(Factura f) {
-		Window window = new Window(f.getNumero());
-		window.setHeight("600px");
-		window.setWidth("550px");
+		Window window = new Window("N° Factura: "+f.getNumero());
+		window.setHeight("65%");
+		window.setWidth("30%");
 		window.setModal(true);
 		window.setResizable(false);
 		window.center();
@@ -362,6 +395,7 @@ public class FacturacionView extends VerticalLayout implements View {
 		FormLayout fl = new FormLayout();
 		window.setContent(fl);
 		fl.setMargin(true);
+		fl.setSpacing(true);
 
 		Label sectionInformacion = new Label("Información Factura");
 		sectionInformacion.addStyleName(ValoTheme.LABEL_H3);
@@ -435,8 +469,9 @@ public class FacturacionView extends VerticalLayout implements View {
 				try{
 					f.setEstado(EstadoFactura.PAGADA);
 					service.saveFactura(f);
-					((UI) w.getParent()).removeWindow(w);
 					Notification.show("Cambio de estado de la factura a Pagada.", Type.ASSISTIVE_NOTIFICATION);					
+
+					((UI) w.getParent()).removeWindow(w);
 				}catch(Exception e){
 					Notification.show("Se ha producido un error al realizar la facturación.", Type.ERROR_MESSAGE);
 				}
@@ -445,6 +480,7 @@ public class FacturacionView extends VerticalLayout implements View {
 
 		btnFacturar.setIcon(FontAwesome.DOLLAR);
 		btnFacturar.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnFacturar.focus();
 
 		Button btnAnular = new Button("Anular");
 		btnAnular.addClickListener(new Button.ClickListener() {
@@ -453,10 +489,12 @@ public class FacturacionView extends VerticalLayout implements View {
 			public void buttonClick(ClickEvent event) {
 				try{
 					f.setEstado(EstadoFactura.ANULADA);
-					service.saveFactura(f);
-					((UI) w.getParent()).removeWindow(w);
+					service.saveFacturaAnulada(f);
 					Notification.show("Cambio de estado de la factura a Anulada, las tasaciones han sido liberadas.", Type.ASSISTIVE_NOTIFICATION);					
+
+					((UI) w.getParent()).removeWindow(w);
 				}catch(Exception e){
+					System.out.println(e);
 					Notification.show("Se ha producido un error al realizar la anulación.", Type.ERROR_MESSAGE);
 				}
 			}
@@ -478,11 +516,11 @@ public class FacturacionView extends VerticalLayout implements View {
 		btnCerrar.addStyleName(ValoTheme.BUTTON_PRIMARY);
 
 		footer.addComponent(btnFacturar);
-		footer.addComponent(btnCerrar);
+		//footer.addComponent(btnCerrar);
 		footer.addComponent(btnAnular);
 		footer.setComponentAlignment(btnFacturar, Alignment.BOTTOM_LEFT);
 		footer.setComponentAlignment(btnAnular, Alignment.BOTTOM_CENTER);
-		footer.setComponentAlignment(btnCerrar, Alignment.BOTTOM_RIGHT);
+		//footer.setComponentAlignment(btnCerrar, Alignment.BOTTOM_RIGHT);
 
 		return footer;
 	}
@@ -490,10 +528,8 @@ public class FacturacionView extends VerticalLayout implements View {
 	@Override
 	public void enter(ViewChangeEvent event) {
 		// limpia la tabla
-		table.removeAllItems();
+		tableFacturas.removeAllItems();
 		List<Factura> facturas = service.getFacturas();
-		((BeanItemContainer<Factura>) table.getContainerDataSource())
-				.addAll(facturas);
-
+		facturaContainer.addAll(facturas);
 	}
 }
