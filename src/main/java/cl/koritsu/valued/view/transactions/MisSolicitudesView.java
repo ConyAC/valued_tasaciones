@@ -10,20 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
-import ru.xpoft.vaadin.VaadinView;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.Usuario;
-import cl.koritsu.valued.domain.enums.EtapaTasacion;
-import cl.koritsu.valued.event.ValuedEventBus;
-import cl.koritsu.valued.services.MailService;
-import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
-import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
-import cl.koritsu.valued.view.utils.Constants;
-import cl.koritsu.valued.view.utils.OpenInfoWindowOnMarkerClickListener;
-import cl.koritsu.valued.view.utils.ResumenTasacion;
-
 import com.google.code.geocoder.Geocoder;
 import com.google.code.geocoder.GeocoderRequestBuilder;
 import com.google.code.geocoder.model.GeocodeResponse;
@@ -48,6 +34,23 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
+
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.EtapaTasacion;
+import cl.koritsu.valued.domain.enums.Permiso;
+import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.MailService;
+import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
+import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
+import cl.koritsu.valued.view.utils.Constants;
+import cl.koritsu.valued.view.utils.OpenInfoWindowOnMarkerClickListener;
+import cl.koritsu.valued.view.utils.ResumenTasacion;
+import cl.koritsu.valued.view.utils.SecurityHelper;
+import ru.xpoft.vaadin.VaadinView;
 
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
@@ -250,6 +253,11 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 	    	solicitudes = service.getTasacionesEnProceso();
     	}else { // si no, toma las tasaciones asociadas al usuario 
     		solicitudes = service.getTasacionesEnProcesoByTasador(user);
+    		if( SecurityHelper.hasPermission(Permiso.VISAR_TASACION ) ) {
+	    		//si tiene el permiso de tasador, entonces agrega las tasaciones que tengan el estado tasadas
+	    		List<SolicitudTasacion> solicitudesTasadas = service.getTasacionesByEstado(EstadoSolicitud.TASADA);
+	    		solicitudes.addAll(solicitudesTasadas);
+    		}
     	}
     	mapToolBox.setSolicitudes(solicitudes);
     	

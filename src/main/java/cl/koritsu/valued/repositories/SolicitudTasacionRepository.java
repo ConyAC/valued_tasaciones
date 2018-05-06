@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 
 public interface SolicitudTasacionRepository extends PagingAndSortingRepository<SolicitudTasacion, Long>, SolicitudTasacionRepositoryCustom {
 	
@@ -32,5 +33,7 @@ public interface SolicitudTasacionRepository extends PagingAndSortingRepository<
 	@Query("select s from SolicitudTasacion s join fetch s.tasador t where s.estado not in (cl.koritsu.valued.domain.enums.EstadoSolicitud.FACTURA,cl.koritsu.valued.domain.enums.EstadoSolicitud.VISADA_CLIENTE)"
 			+ " order by s.estado ASC, s.fechaTasacion ASC")
 	List<SolicitudTasacion> findAllTasaciones();
+
+	List<SolicitudTasacion> findByEstado(EstadoSolicitud tasada);
 	
 }

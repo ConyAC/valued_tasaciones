@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.vaadin.server.VaadinSession;
+
 import cl.koritsu.valued.domain.Bien;
 import cl.koritsu.valued.domain.Bitacora;
 import cl.koritsu.valued.domain.Cargo;
@@ -26,6 +28,7 @@ import cl.koritsu.valued.domain.Sucursal;
 import cl.koritsu.valued.domain.TipoInforme;
 import cl.koritsu.valued.domain.TipoOperacion;
 import cl.koritsu.valued.domain.Usuario;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 import cl.koritsu.valued.domain.enums.EtapaTasacion;
 import cl.koritsu.valued.repositories.BienRepository;
 import cl.koritsu.valued.repositories.BitacoraRepository;
@@ -49,8 +52,6 @@ import cl.koritsu.valued.repositories.ValorUFRepository;
 import cl.koritsu.valued.view.bitacora.BuscarBitacoraSolicitudVO;
 import cl.koritsu.valued.view.busqueda.BuscarSolicitudVO;
 import cl.koritsu.valued.view.facturacion.BuscarFacturaVO;
-
-import com.vaadin.server.VaadinSession;
 
 @Service
 public class ValuedService {
@@ -305,6 +306,10 @@ public class ValuedService {
 		return solicitudTasacionRepo.findByTasadorEnProceso(user);
 	}
 	
+	public List<SolicitudTasacion> getTasacionesByEstado(EstadoSolicitud estado) {
+		return solicitudTasacionRepo.findByEstado(estado);
+	}
+	
 	public List<SolicitudTasacion> getTasacionesEnProceso() {
 		return solicitudTasacionRepo.findAllTasaciones();
 	}
@@ -379,4 +384,5 @@ public class ValuedService {
 		facturaRepo.deleteTasacionesDeFactura(bean.getId());
 		facturaRepo.save(bean);		
 	}
+
 }
