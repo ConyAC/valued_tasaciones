@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+
 import org.vaadin.teemu.wizards.WizardStep;
 
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -13,6 +16,7 @@ import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.combobox.FilteringMode;
 import com.vaadin.ui.AbstractSelect.ItemCaptionMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -36,6 +40,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+import cl.koritsu.valued.domain.Rol;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.TipoInforme;
 import cl.koritsu.valued.domain.Usuario;
@@ -50,6 +55,7 @@ public class SolTasacionStep implements WizardStep {
 	VerticalLayout generalDetailLayout;
 	ComboBox cbTasador = new ComboBox();
 	Button btnAgregarTasador;
+	BeanItemContainer<Rol> rolContainer = new BeanItemContainer<Rol>(Rol.class);
 	
 	String MASCULINO = "Masculino";
 	String FEMENINO = "Femenino";
@@ -61,6 +67,10 @@ public class SolTasacionStep implements WizardStep {
 	}
 
 	private void initView() {
+		
+		List<Rol> roles = service.getRoles();
+    	rolContainer.removeAllItems();
+  		rolContainer.addAll(roles);
 		
 		hsp = new HorizontalSplitPanel();
 		hsp.setSizeFull();
@@ -283,6 +293,15 @@ public class SolTasacionStep implements WizardStep {
 		tfGenero.setWidth("100%");
 		Utils.bind(fgUsuario, tfGenero, "male");
 		detailLayout.addComponent(tfGenero);
+		
+		ComboBox cbPerfil = new ComboBox("Perfil",rolContainer);
+		cbPerfil.setRequired(true);
+		cbPerfil.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbPerfil.setFilteringMode(FilteringMode.OFF);
+		cbPerfil.setItemCaptionPropertyId("nombre");
+		cbPerfil.setWidth("100%");
+		detailLayout.addComponent(cbPerfil);   
+		Utils.bind(fgUsuario, cbPerfil, "rol");
 
 		TextField tfEmail = new TextField("Email");
 		tfEmail.setWidth("100%");tfEmail.setRequired(true);tfEmail.setRequiredError("El correo es requerido");
@@ -311,6 +330,9 @@ public class SolTasacionStep implements WizardStep {
 					fgUsuario.commit();
 					//setea
 					Usuario usuario = fgUsuario.getItemDataSource().getBean();
+					//se asegura de marcarlo como tasador
+					usuario.setTasador(true);
+					
 	        		service.saveUsuario(usuario);
 	        		
 					//recarga las sucursales del cliente
@@ -327,6 +349,13 @@ public class SolTasacionStep implements WizardStep {
 				} catch (CommitException e) {
 
 					Utils.validateEditor("el tasador",e);
+				} catch (ConstraintViolationException e ) {
+					
+					e.printStackTrace();
+					for(ConstraintViolation constrain : e.getConstraintViolations()) {
+						
+						Notification.show("Error en el dato "+constrain.getPropertyPath()+" con el valor "+constrain.getInvalidValue(),Type.ERROR_MESSAGE);
+					}
 				}
         	}
         }){{
