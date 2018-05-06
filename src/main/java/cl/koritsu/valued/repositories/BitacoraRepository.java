@@ -12,6 +12,6 @@ public interface BitacoraRepository extends PagingAndSortingRepository<Bitacora,
 	
 	List<Bitacora> findByOrderByFechaInicioDesc();
 	
-	@Query("select b.fechaTermino from Bitacora b where b.solicitudTasacion.id = ?1 ")
+	@Query("select max(b.fechaTermino) from Bitacora b where b.solicitudTasacion.id = ?1 ")
 	Date findLastRow(Long id);
 }
