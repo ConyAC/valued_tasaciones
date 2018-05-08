@@ -1,10 +1,13 @@
 package cl.koritsu.valued.services;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,7 @@ import cl.koritsu.valued.domain.Bitacora;
 import cl.koritsu.valued.domain.Cargo;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
+import cl.koritsu.valued.domain.ConsolidadoCliente;
 import cl.koritsu.valued.domain.Contacto;
 import cl.koritsu.valued.domain.Factura;
 import cl.koritsu.valued.domain.HonorarioCliente;
@@ -384,5 +388,57 @@ public class ValuedService {
 		facturaRepo.deleteTasacionesDeFactura(bean.getId());
 		facturaRepo.save(bean);		
 	}
+
+	public int countTasacionesSinAsignar() {
+		return solicitudTasacionRepo.countByEstado(EstadoSolicitud.CREADA);
+	}
+	
+	public int countTasacionesSinTasar() {
+		return solicitudTasacionRepo.countByEstado(EstadoSolicitud.AGENDADA,EstadoSolicitud.AGENDADA_CON_INCIDENCIA,EstadoSolicitud.VISITADA);
+	}
+	
+	public int countTasacionesSinVisar() {
+		return solicitudTasacionRepo.countByEstado(EstadoSolicitud.TASADA);
+	}
+	
+	public int countTasacionesSinFacturar() {
+		return solicitudTasacionRepo.countByEstado(EstadoSolicitud.VISADA,EstadoSolicitud.VISADA_CLIENTE);
+	}
+	
+	public int countTasacionesFacturadas() {
+		return solicitudTasacionRepo.countByEstado(EstadoSolicitud.FACTURA);
+	}
+
+	public int countMontoFacturoPorMes(Date date) {
+		///return facturaRepo.sumMes(mes,ano);
+		Integer sum = facturaRepo.sumMes(date);
+		return sum == null?  0 : sum;
+	}
+
+	public List<ConsolidadoCliente> top10TasacionesSinVisarByCliente() {
+		
+		//pide la primera pagina con 10 elementos
+		PageRequest pageRequest = new PageRequest(0,10);
+		Page<ConsolidadoCliente> consolidado = solicitudTasacionRepo.findTop10ByEstadoOrderByCount(pageRequest,EstadoSolicitud.TASADA);
+		return  new ArrayList<ConsolidadoCliente>(consolidado.getContent());
+		
+		
+	}
+
+	public List<ConsolidadoCliente> top10TasacionesMesByCliente(Date date) {
+		//pide la primera pagina con 10 elementos
+		PageRequest pageRequest = new PageRequest(0,10);
+		Page<ConsolidadoCliente> consolidado = solicitudTasacionRepo.findTop10MesByOrderByCount(pageRequest,date);
+		return new ArrayList<ConsolidadoCliente>(consolidado.getContent());
+
+	}
+
+	public List<ConsolidadoCliente> top10FacturacionMesByCliente(Date date) {
+		///return facturaRepo.sumMes(mes,ano);
+		PageRequest pageRequest = new PageRequest(0,10);
+		Page<ConsolidadoCliente> consolidado = facturaRepo.findTop10MesByOrderByCount(pageRequest,date);
+		return new ArrayList<ConsolidadoCliente>(consolidado.getContent());
+	}
+
 
 }

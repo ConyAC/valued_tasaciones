@@ -1,11 +1,17 @@
 package cl.koritsu.valued.view.dashboard;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
 import com.google.common.eventbus.Subscribe;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.event.ShortcutAction.KeyCode;
@@ -26,6 +32,7 @@ import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
@@ -33,11 +40,12 @@ import com.vaadin.ui.themes.ValoTheme;
 
 import cl.koritsu.valued.ValuedUI;
 import cl.koritsu.valued.component.SparklineChart;
-import cl.koritsu.valued.component.TopTenMoviesTable;
+import cl.koritsu.valued.domain.ConsolidadoCliente;
 import cl.koritsu.valued.domain.DashboardNotification;
 import cl.koritsu.valued.event.ValuedEvent.CloseOpenWindowsEvent;
 import cl.koritsu.valued.event.ValuedEvent.NotificationsCountUpdatedEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
+import cl.koritsu.valued.services.ValuedService;
 import cl.koritsu.valued.view.dashboard.DashboardEdit.DashboardEditListener;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -54,12 +62,18 @@ public final class DashboardView extends Panel implements View,
     public static final String TITLE_ID = "dashboard-title";
 
     private Label titleLabel;
-    private NotificationsButton notificationsButton;
     private CssLayout dashboardPanels;
-    private final VerticalLayout root;
+    private VerticalLayout root;
     private Window notificationsWindow;
-
+    
+    @Autowired
+    ValuedService service;
+    
     public DashboardView() {
+    }
+    
+    @PostConstruct
+    public void init() {
         addStyleName(ValoTheme.PANEL_BORDERLESS);
         setSizeFull();
         ValuedEventBus.register(this);
@@ -94,25 +108,26 @@ public final class DashboardView extends Panel implements View,
         sparks.addStyleName("sparks");
         sparks.setWidth("100%");
         Responsive.makeResponsive(sparks);
+        
+        int tasacionesSinAsignar = service.countTasacionesSinAsignar();
+        int tasacionesSinTasar = service.countTasacionesSinTasar();
+        int tasacionesSinVisar = service.countTasacionesSinVisar();
+        int tasacionesSinFacturar = service.countTasacionesSinFacturar();
+        int tasacionesFacturadas = service.countMontoFacturoPorMes(new Date());
 
-        SparklineChart s = new SparklineChart("Sol. Creadas", "K", "",
-               // DummyDataGenerator.chartColors[0],
-        		22, 20, 80);
+        SparklineChart s = new SparklineChart("Sin Asignar", " tas.", "", tasacionesSinAsignar );
+        sparks.addComponent(s);
+/*
+        s = new SparklineChart("Sin Tasar", " tas.", "", tasacionesSinTasar );
+        sparks.addComponent(s);
+*/
+        s = new SparklineChart("Sin Visar", " tas.", "", tasacionesSinVisar );
         sparks.addComponent(s);
 
-        s = new SparklineChart("Monto Esperado", "M UF", "",
-                //DummyDataGenerator.chartColors[2],
-                8, 89, 150);
+        s = new SparklineChart("Sin Facturar", " tas.", "", tasacionesSinFacturar );
         sparks.addComponent(s);
-
-        s = new SparklineChart("Monto Facturado", " M UF", "",
-        		//DummyDataGenerator.chartColors[3],
-                10, 30, 120);
-        sparks.addComponent(s);
-
-        s = new SparklineChart("Tiempo promedio de visita", " días", "",
-        		//DummyDataGenerator.chartColors[5],
-                50, 34, 100);
+        
+        s = new SparklineChart("Facturado este mes", "", "$ ", tasacionesFacturadas );
         sparks.addComponent(s);
 
         return sparks;
@@ -129,45 +144,8 @@ public final class DashboardView extends Panel implements View,
         titleLabel.addStyleName(ValoTheme.LABEL_H1);
         titleLabel.addStyleName(ValoTheme.LABEL_NO_MARGIN);
         header.addComponent(titleLabel);
-/*
-        notificationsButton = buildNotificationsButton();
-        Component edit = buildEditButton();
-        HorizontalLayout tools = new HorizontalLayout(notificationsButton, edit);
-        tools.setSpacing(true);
-        tools.addStyleName("toolbar");
-        header.addComponent(tools);
-        */
 
         return header;
-    }
-
-    private NotificationsButton buildNotificationsButton() {
-        NotificationsButton result = new NotificationsButton();
-        result.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                openNotificationsPopup(event);
-            }
-        });
-        return result;
-    }
-
-    private Component buildEditButton() {
-        Button result = new Button();
-        result.setId(EDIT_ID);
-        result.setIcon(FontAwesome.EDIT);
-        result.addStyleName("icon-edit");
-        result.addStyleName(ValoTheme.BUTTON_ICON_ONLY);
-        result.setDescription("Edit Dashboard");
-        result.addClickListener(new ClickListener() {
-            @Override
-            public void buttonClick(final ClickEvent event) {
-                getUI().addWindow(
-                        new DashboardEdit(DashboardView.this, titleLabel
-                                .getValue()));
-            }
-        });
-        return result;
     }
 
     private Component buildContent() {
@@ -175,18 +153,74 @@ public final class DashboardView extends Panel implements View,
         dashboardPanels.addStyleName("dashboard-panels");
         Responsive.makeResponsive(dashboardPanels);
 
-        dashboardPanels.addComponent(buildTopGrossingMovies());
+        dashboardPanels.addComponent(buildTop10TasacionesSinVisar());
         dashboardPanels.addComponent(buildNotes());
-        dashboardPanels.addComponent(buildTopGrossingMovies());
-        dashboardPanels.addComponent(buildPopularMovies());
+        dashboardPanels.addComponent(buildTop10TasacionesPorClienteMes());
+        dashboardPanels.addComponent(buildTop10Facturaciones());
 
         return dashboardPanels;
     }
 
-    private Component buildTopGrossingMovies() {
-        //TopGrossingMoviesChart topGrossingMoviesChart = new TopGrossingMoviesChart();
+    private Component buildTop10TasacionesSinVisar() {
         VerticalLayout topGrossingMoviesChart = new VerticalLayout();
+        topGrossingMoviesChart.setCaption("Cantidad tasaciones sin visar por cliente");
         topGrossingMoviesChart.setSizeFull();
+        
+        List<ConsolidadoCliente> sinVisar = service.top10TasacionesSinVisarByCliente();
+        
+        Table table = new Table();
+        BeanItemContainer<ConsolidadoCliente> btc = new BeanItemContainer<ConsolidadoCliente>(ConsolidadoCliente.class,sinVisar);
+        btc.addNestedContainerBean("cliente");
+        table.setContainerDataSource(btc);
+        table.setVisibleColumns("cliente.nombreCliente","cantidad");
+        table.setColumnHeaders("Cliente","Cantidad");
+        table.setSizeFull();
+        
+        topGrossingMoviesChart.addComponent(table);
+        
+        return createContentWrapper(topGrossingMoviesChart);
+    }
+    
+    private Component buildTop10TasacionesPorClienteMes() {
+        VerticalLayout topGrossingMoviesChart = new VerticalLayout();
+        topGrossingMoviesChart.setCaption("Cantidad tasaciones encargadas por cliente en el mes");
+        topGrossingMoviesChart.setSizeFull();
+        
+        List<ConsolidadoCliente> cantTasacionesCliente = service.top10TasacionesMesByCliente(new Date());
+        
+        Table table = new Table();
+        BeanItemContainer<ConsolidadoCliente> btc = new BeanItemContainer<ConsolidadoCliente>(ConsolidadoCliente.class,cantTasacionesCliente);
+        btc.addNestedContainerBean("cliente");
+        table.setContainerDataSource(btc);
+        table.setVisibleColumns("cliente.nombreCliente","cantidad");
+        table.setColumnHeaders("Cliente","Cantidad");
+        table.setSizeFull();
+        
+        topGrossingMoviesChart.addComponent(table);
+        
+        
+        return createContentWrapper(topGrossingMoviesChart);
+    }
+    
+    
+    private Component buildTop10Facturaciones() {
+        VerticalLayout topGrossingMoviesChart = new VerticalLayout();
+        
+        topGrossingMoviesChart.setCaption("Facturacion por cliente en el mes");
+        topGrossingMoviesChart.setSizeFull();
+        
+        List<ConsolidadoCliente> cantTasacionesCliente = service.top10FacturacionMesByCliente(new Date());
+        
+        Table table = new Table();
+        BeanItemContainer<ConsolidadoCliente> btc = new BeanItemContainer<ConsolidadoCliente>(ConsolidadoCliente.class,cantTasacionesCliente);
+        btc.addNestedContainerBean("cliente");
+        table.setContainerDataSource(btc);
+        table.setVisibleColumns("cliente.nombreCliente","cantidad");
+        table.setColumnHeaders("Cliente","Cantidad");
+        table.setSizeFull();
+        
+        topGrossingMoviesChart.addComponent(table);
+        
         return createContentWrapper(topGrossingMoviesChart);
     }
 
@@ -198,12 +232,6 @@ public final class DashboardView extends Panel implements View,
         Component panel = createContentWrapper(notes);
         panel.addStyleName("notes");
         return panel;
-    }
-
-    private Component buildTop10TitlesByRevenue() {
-        Component contentWrapper = createContentWrapper(new TopTenMoviesTable());
-        contentWrapper.addStyleName("top10-revenue");
-        return contentWrapper;
     }
 
     private Component buildPopularMovies() {
