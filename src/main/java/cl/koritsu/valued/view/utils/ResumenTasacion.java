@@ -118,7 +118,10 @@ public class ResumenTasacion extends FormLayout {
 	    
 	    Label tasador = new Label();
 	    tasador.setCaption("Tasador");
-	    tasador.setValue(sol.getTasador().getFullname());
+	    if(sol.getTasador() != null && !sol.getTasador().getFullname().isEmpty())
+	    	tasador.setValue(sol.getTasador().getFullname());
+	    else
+	    	tasador.setValue("No existe tasador");
 	    fl.addComponent(tasador);
 	    
 	    if(sol.getFechaTasacion() != null){

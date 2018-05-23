@@ -5,11 +5,14 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
 import ru.xpoft.vaadin.VaadinView;
 import cl.koritsu.valued.domain.Bien;
+import cl.koritsu.valued.domain.Bitacora;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.Region;
@@ -69,11 +72,15 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
     Bien stDireccion;
     TextField nroTasacion;
     Table table;
+    Table tableBitacora;
     
     @Autowired
     ValuedService service;
     GoogleMap googleMap;
 
+    protected BeanItemContainer<SolicitudTasacion> solicitudTasacionContainer = new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class);
+    protected BeanItemContainer<Bitacora> bitacoraContainer = new BeanItemContainer<Bitacora>(Bitacora.class);
+    
     public BusquedaTasacionesView() {
     }
     
@@ -222,10 +229,10 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
             	vo.setDireccion(stDireccion);
             	
             	List<SolicitudTasacion> solicitudes = service.getTasacionesFiltradas(vo);
-            	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).addAll(solicitudes); 
+            	solicitudTasacionContainer.addAll(solicitudes); 
             	
                 if (table.getItemIds().isEmpty()){
-                	Notification.show("No existen resultados que coincidan con los filtros aplciados...");
+                	Notification.show("No existen resultados que coincidan con los filtros aplicados...");
                 }            	
             }
                 
@@ -274,7 +281,6 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
         table.setSelectable(true);
 
         table.setColumnReorderingAllowed(true);
-        table.setContainerDataSource(new BeanItemContainer<SolicitudTasacion>(SolicitudTasacion.class));
         table.setSortAscending(false);
         
         table.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
@@ -333,6 +339,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 				HorizontalLayout hl = new HorizontalLayout();
 				hl.setSpacing(true);
 				Button verTasacion = new Button(null, FontAwesome.LIST_ALT);
+				verTasacion.setDescription("Ver Tasación");
 				verTasacion.addClickListener(new Button.ClickListener() {
 
 					@Override
@@ -345,6 +352,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 				
 			if( SecurityHelper.hasPermission(Permiso.MARCAR_REPARO)){
 				Button cambiarEstado = new Button(null, FontAwesome.RECYCLE);
+				cambiarEstado.setDescription("Reparo");
 				cambiarEstado.addClickListener(new Button.ClickListener() {
 
 					@Override
@@ -355,12 +363,32 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 				});
 				
 				hl.addComponent(cambiarEstado);
-			}			
+			}
+			
+			if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_BITACORA)){
+				Button verBitacora = new Button(null, FontAwesome.BOOK);
+				verBitacora.setDescription("Bitacora");
+				verBitacora.addClickListener(new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+						
+						List<Bitacora> bitacoras = service.getBitacoraBySol(sol.getBean());
+				    	bitacoraContainer.addAll(bitacoras); 
+
+				    	buildBitacora(sol.getBean());
+					}
+				});
+				
+				hl.addComponent(verBitacora);
+			}
 				
 				return hl;
 			}
 		});
         
+        table.setContainerDataSource(solicitudTasacionContainer);
         table.setVisibleColumns("numeroTasacion", "nombrecliente", "estado", "fechaEncargo","fechaTasacion","direccion","tasador","acciones");
         table.setColumnHeaders("N° Tasación", "Cliente", "Estado","Fecha Encargo", "Fecha Visita","Dirección","Tasador","Ver");
         
@@ -368,7 +396,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
     }
 	 
     public void limpiarTabla() {
-    	((BeanItemContainer<SolicitudTasacion>)table.getContainerDataSource()).removeAllItems();
+    	solicitudTasacionContainer.removeAllItems();
     }
 
 
@@ -423,4 +451,102 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 	    
 	    return window;
     }
+    
+    private Window buildBitacora(SolicitudTasacion sol) {
+    	Window window = new Window("Bitacora Tasación "+sol.getNumeroTasacion());
+    	window.setWidth("65%");
+    	window.setHeight("50%");
+	    window.setModal(true);
+		window.setResizable(false);
+		window.center();
+		 
+		VerticalLayout vl = new VerticalLayout();        
+		vl.addComponent(buildTableBitacora());
+		vl.setMargin(true);
+    	
+//	    Button btnCerrar = new Button("Cerrar", FontAwesome.CLOSE);
+//	    btnCerrar.addStyleName(ValoTheme.LINK_LARGE);
+//	    btnCerrar.addClickListener(new Button.ClickListener() {
+//
+//			@Override
+//			public void buttonClick(ClickEvent event) {
+//				
+//				((UI)window.getParent()).removeWindow(window);
+//			}
+//		});
+//	    fl.addComponent(btnCerrar);
+	    
+	    window.setContent(vl);
+		UI.getCurrent().addWindow(window);
+	    
+	    return window;
+    }
+    
+	private Table buildTableBitacora() {    	
+		final Table tableBit = new Table() {
+			@Override
+			protected String formatPropertyValue(final Object rowId,
+					final Object colId, final Property<?> property) {
+				String result = super.formatPropertyValue(rowId, colId,
+						property);
+				if (colId.equals("fechaInicio") || colId.equals("fechaTermino")) {
+					if (property.getValue() != null)
+						result = Utils
+								.formatoFecha(((Date) property.getValue()));
+				}
+				return result;
+			}
+		};
+
+		tableBit.setSizeFull();
+		tableBit.setSelectable(true);
+		tableBit.setColumnReorderingAllowed(true);
+		tableBit.setContainerDataSource(bitacoraContainer);
+		tableBit.setSortContainerPropertyId("fechaInicio");
+		tableBit.setSortAscending(false);
+		
+		tableBit.addGeneratedColumn("nombrecliente", new ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, Object itemId,Object columnId) {
+				Bitacora b = ((BeanItem<Bitacora>) source.getItem(itemId)).getBean();
+				return b.getSolicitudTasacion().getCliente() != null ? b.getSolicitudTasacion().getCliente().getNombreCliente() : "";
+			}
+		});
+		
+		tableBit.addGeneratedColumn("nombreusuario", new ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, Object itemId,Object columnId) {
+				Bitacora b = ((BeanItem<Bitacora>) source.getItem(itemId)).getBean();
+				return b.getUsuario() != null ? b.getUsuario().getFullname() : "";
+			}
+		});
+
+		tableBit.addGeneratedColumn("etapa", new ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, Object itemId,Object columnId) {
+				Bitacora b = ((BeanItem<Bitacora>) source.getItem(itemId)).getBean();
+				return b.getEtapa() != null ? b.getEtapa().toString() : "";
+			}
+		});
+		
+		tableBit.addGeneratedColumn("dias", new ColumnGenerator() {
+
+			@Override
+			public Object generateCell(Table source, Object itemId,Object columnId) {
+				Bitacora b = ((BeanItem<Bitacora>) source.getItem(itemId)).getBean();
+				DateTime inicio = new DateTime(b.getFechaInicio());
+				DateTime termino = new DateTime(b.getFechaTermino());		    
+				    
+				return Days.daysBetween(inicio.toLocalDate(), termino.toLocalDate()).getDays();
+			}
+		});
+
+		tableBit.setVisibleColumns("nombrecliente","etapa","fechaInicio", "fechaTermino","dias","nombreusuario");
+		tableBit.setColumnHeaders("Cliente", "Etapa Tasación","Fecha Inicio Etapa", "Fecha Término Etapa","Duración (días)","Usuario Sistema");
+
+		return tableBit;
+	}
 }

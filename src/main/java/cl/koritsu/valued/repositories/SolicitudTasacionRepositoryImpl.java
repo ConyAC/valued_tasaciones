@@ -28,7 +28,7 @@ public class SolicitudTasacionRepositoryImpl implements SolicitudTasacionReposit
         Root<SolicitudTasacion> root = query.from(SolicitudTasacion.class);
         List<Predicate> list = new ArrayList<Predicate>();
         
-        if (vo.getNroTasacion() != null) {
+        if (!vo.getNroTasacion().isEmpty()) {
             list.add(cb.equal(root.get("numeroTasacion"),vo.getNroTasacion()));
         }
         

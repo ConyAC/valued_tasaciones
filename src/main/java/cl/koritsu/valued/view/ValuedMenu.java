@@ -206,15 +206,6 @@ public final class ValuedMenu extends CustomComponent {
 	                
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }
-	            
-	            if (view == ValuedViewType.BITACORA_TASACIONES && SecurityHelper.hasPermission(Permiso.VISUALIZAR_BITACORA)) {
-	            	bitacoraTasacionBadge = new Label();
-	            	bitacoraTasacionBadge.setId(STYLE_VISIBLE);
-	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
-	                		bitacoraTasacionBadge);
-	                
-		            menuItemsLayout.addComponent(menuItemComponent);
-	            }
 	            	
 //	            if (view == ValuedViewType.REPORTS) {
 //	                // Add drop target to reports button

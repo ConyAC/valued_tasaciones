@@ -60,4 +60,11 @@ public class BuscarSolicitudVO {
 	public void setDireccion(Bien direccion) {
 		this.direccion = direccion;
 	}
+	@Override
+	public String toString() {
+		return "BuscarSolicitudVO [nroTasacion=" + nroTasacion + ", estado="
+				+ estado + ", tasador=" + tasador + ", region=" + region
+				+ ", comuna=" + comuna + ", cliente=" + cliente
+				+ ", direccion=" + direccion + "]";
+	}
 }

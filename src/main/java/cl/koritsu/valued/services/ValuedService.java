@@ -440,5 +440,9 @@ public class ValuedService {
 		return new ArrayList<ConsolidadoCliente>(consolidado.getContent());
 	}
 
+	public List<Bitacora> getBitacoraBySol(SolicitudTasacion sol) {
+		return (List<Bitacora>) bitacoraRepo.finddBitacoraBySol(sol);
+	}
+
 
 }
