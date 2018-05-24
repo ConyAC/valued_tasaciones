@@ -67,6 +67,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
     VerticalLayout agendar,confirmar,llenar,root,resumen;
     GoogleMap googleMap;
 	private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
+	boolean editar;
     
     
     /** CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
@@ -110,7 +111,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	/** FIN CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
     
     
-	public EditorSolicitudTasacion() {
+	public EditorSolicitudTasacion(boolean edicion) {
+		editar = edicion;
 		
 		setSizeFull();
 		
@@ -128,10 +130,18 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	    
 		resumen = buildAgregarResumen();
     	root.addComponent(resumen);
+    	
 	    agendar = buildAgregarVisita();
 	    confirmar = buildAgregarConfirmacion();
 	    llenar = buildAgregarInfoBien();
 	    
+    	if(edicion){
+    		System.out.println("lala ");
+    		root.addComponent(agendar);
+    		root.addComponent(confirmar);
+    		root.addComponent(llenar);
+    	}
+    	
     	footer = buildFooter();
         addComponent(footer);
 		
@@ -388,7 +398,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
         dsProgramaBien.removeAllItems();
         dsProgramaBien.addAll(solicitud.getBien().getProgramas());
         
-        definirVista(solicitud.getEstado());
+        if(!editar)
+        	definirVista(solicitud.getEstado());
 	}
 	
 	/**

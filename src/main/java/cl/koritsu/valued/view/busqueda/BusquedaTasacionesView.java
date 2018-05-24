@@ -21,6 +21,7 @@ import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.services.ValuedService;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion;
 import cl.koritsu.valued.view.utils.ResumenTasacion;
 import cl.koritsu.valued.view.utils.SecurityHelper;
 import cl.koritsu.valued.view.utils.Utils;
@@ -350,6 +351,21 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 				});				
 				hl.addComponent(verTasacion);
 				
+			if( SecurityHelper.hasPermission(Permiso.EDITAR_TASACIONES)){
+				Button editar = new Button(null, FontAwesome.EDIT);
+				editar.setDescription("Editar");
+				editar.addClickListener(new Button.ClickListener() {
+
+					@Override
+					public void buttonClick(ClickEvent event) {
+						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+						buildEdicion(sol.getBean());
+					}
+				});
+				
+				hl.addComponent(editar);
+			}
+				
 			if( SecurityHelper.hasPermission(Permiso.MARCAR_REPARO)){
 				Button cambiarEstado = new Button(null, FontAwesome.RECYCLE);
 				cambiarEstado.setDescription("Reparo");
@@ -390,7 +406,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
         
         table.setContainerDataSource(solicitudTasacionContainer);
         table.setVisibleColumns("numeroTasacion", "nombrecliente", "estado", "fechaEncargo","fechaTasacion","direccion","tasador","acciones");
-        table.setColumnHeaders("N° Tasación", "Cliente", "Estado","Fecha Encargo", "Fecha Visita","Dirección","Tasador","Ver");
+        table.setColumnHeaders("N° Tasación", "Cliente", "Estado","Fecha Encargo", "Fecha Visita","Dirección","Tasador","Acciones");
         
         return table;
     }
@@ -452,6 +468,26 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 	    return window;
     }
     
+    private Window buildEdicion(SolicitudTasacion sol) {
+    	Window window = new Window(sol.getNumeroTasacion());
+    	window.setWidth("50%");
+    	window.setHeight("50%");
+	    window.setModal(true);
+		window.setResizable(false);
+		window.center();
+		
+		EditorSolicitudTasacion editorSolicitud = new EditorSolicitudTasacion(true);
+		editorSolicitud.setSolicitud(sol);
+		
+		VerticalLayout vl = new VerticalLayout();        
+		vl.addComponent(editorSolicitud);
+	    
+	    window.setContent(vl);
+		UI.getCurrent().addWindow(window);
+	    
+	    return window;
+    }
+    
     private Window buildBitacora(SolicitudTasacion sol) {
     	Window window = new Window("Bitacora Tasación "+sol.getNumeroTasacion());
     	window.setWidth("65%");
@@ -460,8 +496,11 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 		window.setResizable(false);
 		window.center();
 		 
-		VerticalLayout vl = new VerticalLayout();        
-		vl.addComponent(buildTableBitacora());
+		VerticalLayout vl = new VerticalLayout();
+		if(bitacoraContainer.size() > 0)
+			vl.addComponent(buildTableBitacora());
+		else
+			vl.addComponent(new Label("No registra bitácora."));
 		vl.setMargin(true);
     	
 //	    Button btnCerrar = new Button("Cerrar", FontAwesome.CLOSE);

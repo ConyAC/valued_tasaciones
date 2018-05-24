@@ -14,7 +14,8 @@ public enum Permiso {
 	BUSCAR_TASACIONES(10,"Buscar Tasaciones"),
 	ENVIAR_CORREO(11,"Enviar Correo"),
 	MARCAR_REPARO(12,"Marcar tasación en reparo"),
-	VISUALIZAR_BITACORA(13,"Visualizar Bitacora de Tasaciones")
+	VISUALIZAR_BITACORA(13,"Visualizar Bitacora de Tasaciones"),
+	EDITAR_TASACIONES(14,"Editar Tasaciones")
 	;
 	
 	int i;
