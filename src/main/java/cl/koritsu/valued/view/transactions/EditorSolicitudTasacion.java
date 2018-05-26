@@ -62,7 +62,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	
     OptionGroup continuar;
     Button btnRegresar = new Button("Regresar");
-    Button btnGuadar = new Button("Guardar");
+    Button btnSiguiente = new Button("Guardar");
+    Button btnGuardar;
     Component footer;
     VerticalLayout agendar,confirmar,llenar,root,resumen;
     GoogleMap googleMap;
@@ -80,6 +81,21 @@ public class EditorSolicitudTasacion extends VerticalLayout {
     	}
     }
 	public interface OnClickRegresarListener {
+		void onClick(BeanItem<SolicitudTasacion> sol);
+	}
+	
+	/** CODIGO PARA GUARDAR **/
+	List<OnClickGuardarListener> onClickGuardarEvents = new ArrayList<OnClickGuardarListener>();
+	public void addOnClickGuardarEvent(OnClickGuardarListener listener) {
+		onClickGuardarEvents.add(listener);
+    }
+	
+	protected void doClickGuardar(BeanItem<SolicitudTasacion> sol) {
+		for(OnClickGuardarListener listener : onClickGuardarEvents) {
+    		listener.onClick(sol);
+    	}
+	}
+	public interface OnClickGuardarListener {
 		void onClick(BeanItem<SolicitudTasacion> sol);
 	}
 	
@@ -115,6 +131,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		setSizeFull();
 		
 		googleMap = new GoogleMap(apiKey, null, "english");
+		
+		btnGuardar = buildGuardar();
 		
 		Panel rootPanel = new Panel();
 		rootPanel.setSizeFull();
@@ -244,13 +262,45 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		return vl;
 	}
 	
+	private Button buildGuardar() {
+		Button btnGuardar = new Button(FontAwesome.SAVE) ;
+		btnGuardar.addClickListener(new Button.ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				//intenda guardar la tasacion
+				try {
+					bfg.commit();
+					//recupera la informacion
+					BeanItem<SolicitudTasacion> sol = bfg.getItemDataSource();
+					
+					//define la lista de obras complementarias extraidas desde la tabla
+					if(sol.getBean().getEstado() == EstadoSolicitud.TASADA) {
+						sol.getItemProperty("bien.obrasComplementarias").setValue(new HashSet<ObraComplementaria>(dsObraComplementaria.getItemIds()));
+						sol.getItemProperty("bien.programas").setValue(new HashSet<ProgramaBien>(dsProgramaBien.getItemIds()));
+					}
+					
+					doClickGuardar(bfg.getItemDataSource());
+					Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
+					
+				}catch(Exception e) {
+					e.printStackTrace();
+					if(e instanceof CommitException )
+						Utils.validateEditor("Error al guardar la tasación", (CommitException) e);
+					else
+						Notification.show("Error al guardar la tasación",Type.ERROR_MESSAGE);
+				}
+			}
+		});
+		return btnGuardar;
+	}
+	
 	/**
 	 * 
 	 * @return
 	 */
 	private VerticalLayout buildAgregarInfoBien() {
 		VerticalLayout vl = new VerticalLayout();
-
 
 	    Label sectionBien = new Label("Agregar Información Tasación");
 	    sectionBien.addStyleName(ValoTheme.LABEL_H3);
@@ -373,6 +423,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		return vl;
 	}
 	
+
 	/**
 	 * Permite definir la tasación a mostrar
 	 * @param solicitud
@@ -397,10 +448,14 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	 */
 	public void definirVista(EstadoSolicitud estado) {
 
+		//guita el boton guardar si es que existe
+		removeComponent(btnGuardar);
 		//quita todos los elementos
 		root.removeAllComponents();
 		//agrega el resumen
 		root.addComponent(resumen);
+		btnSiguiente.setCaption("Guardar");
+		btnSiguiente.removeStyleName(ValoTheme.BUTTON_DANGER);
 		switch (estado) {
 		case CREADA:
 			root.addComponent(agendar, 1);
@@ -416,8 +471,13 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 			root.addComponent(agendar, 1);
 			break;
 		case TASADA:
-			//FIXME
+			//agrega el btnGuardar como primer elemento
+			addComponent(btnGuardar,0);
+			setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
+			
 			root.addComponent(llenar, 1);
+			btnSiguiente.setCaption("Enviar a cliente");
+			btnSiguiente.addStyleName(ValoTheme.BUTTON_DANGER);
 			break;
 		case VISADA:
 			//FIXME
@@ -428,7 +488,13 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 			root.addComponent(llenar, 1);
 			break;
 		case VISITADA:
+			//agrega el btnGuardar como primer elemento
+			addComponent(btnGuardar,0);
+			setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
+			
 			root.addComponent(llenar, 1);
+			btnSiguiente.setCaption("Enviar a visar");
+			btnSiguiente.addStyleName(ValoTheme.BUTTON_DANGER);
 			break;
 		default:
 			root.addComponent(agendar, 1);
@@ -446,8 +512,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
 
-        btnGuadar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        btnGuadar.setIcon(FontAwesome.SAVE);
+        btnSiguiente.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        btnSiguiente.setIcon(FontAwesome.SAVE);
         //btnGuadar.focus();
 		
         btnRegresar.addStyleName("link");        
@@ -479,38 +545,77 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 			}
 		});	
         
-	    btnGuadar.addClickListener(new ClickListener() {
+	    btnSiguiente.addClickListener(new ClickListener() {
 			
 			@Override
 			public void buttonClick(ClickEvent event) {
 				//dependiendo del estado
-				try {
-					bfg.commit();
-					//recupera la informacion
+				
 					BeanItem<SolicitudTasacion> sol = bfg.getItemDataSource();
-					//define el siguiente estado
-					sol.getItemProperty("estado").setValue(definirEstado(sol.getBean()));
-					
-					//define la lista de obras complementarias extraidas desde la tabla
-					if(sol.getBean().getEstado() == EstadoSolicitud.TASADA) {
-						sol.getItemProperty("bien.obrasComplementarias").setValue(new HashSet<ObraComplementaria>(dsObraComplementaria.getItemIds()));
-						sol.getItemProperty("bien.programas").setValue(new HashSet<ProgramaBien>(dsProgramaBien.getItemIds()));
+			    	//verifica que se quiere avanzar de estado en caso de que se envie a visar o al cliente
+			    	final boolean porTasar = sol.getBean().getEstado() == EstadoSolicitud.VISITADA;
+			    	final boolean porVisar = sol.getBean().getEstado() == EstadoSolicitud.TASADA;
+			    	if( porTasar || porVisar ) {
+			    		ConfirmDialog.show(UI.getCurrent(),"Confirmar Acción:","Esta a punto de enviar la tasación "+(porTasar ? "para que un visador la revise": "para que se facture")+", ¿quiere continuar?","Enviar", "Cancelar",
+			    				new ConfirmDialog.Listener() {
+							
+							@Override
+							public void onClose(ConfirmDialog dialog) {
+								if (dialog.isConfirmed()) {
+									try {
+										bfg.commit();
+										//recupera la informacion
+										BeanItem<SolicitudTasacion> sol = bfg.getItemDataSource();
+										//define el siguiente estado
+										sol.getItemProperty("estado").setValue(definirEstado(sol.getBean()));
+										
+										//define la lista de obras complementarias extraidas desde la tabla
+										if(sol.getBean().getEstado() == EstadoSolicitud.TASADA) {
+											sol.getItemProperty("bien.obrasComplementarias").setValue(new HashSet<ObraComplementaria>(dsObraComplementaria.getItemIds()));
+											sol.getItemProperty("bien.programas").setValue(new HashSet<ProgramaBien>(dsProgramaBien.getItemIds()));
+										}
+										
+										doClickSiguiente(sol);
+										Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
+									}catch(CommitException e) {
+										Utils.validateEditor("", e);
+									}catch(Exception e) {
+										Notification.show("Ocurrio un error al intentar guardar la solicitud",Type.ERROR_MESSAGE);
+										e.printStackTrace();
+									}
+								}
+							}
+						});
+			    	}
+			    	else {
+					    try {
+							bfg.commit();
+							//recupera la informacion
+							sol = bfg.getItemDataSource();
+							//define el siguiente estado
+							sol.getItemProperty("estado").setValue(definirEstado(sol.getBean()));
+							
+							//define la lista de obras complementarias extraidas desde la tabla
+							if(sol.getBean().getEstado() == EstadoSolicitud.TASADA) {
+								sol.getItemProperty("bien.obrasComplementarias").setValue(new HashSet<ObraComplementaria>(dsObraComplementaria.getItemIds()));
+								sol.getItemProperty("bien.programas").setValue(new HashSet<ProgramaBien>(dsProgramaBien.getItemIds()));
+							}
+							
+							doClickSiguiente(sol);
+							Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
+						}catch(CommitException e) {
+							Utils.validateEditor("", e);
+						}catch(Exception e) {
+							Notification.show("Ocurrio un error al intentar guardar la solicitud",Type.ERROR_MESSAGE);
+							e.printStackTrace();
+						}
 					}
-					
-					doClickSiguiente(sol);
-					Notification.show("Guardado",Type.HUMANIZED_MESSAGE);
-				}catch(CommitException e) {
-					Utils.validateEditor("", e);
-				}catch(Exception e) {
-					Notification.show("Ocurrio un error al intentar guardar la solicitud",Type.ERROR_MESSAGE);
-					e.printStackTrace();
 				}
-			}
 		});
 	    
 	    footer.addComponent(btnRegresar);
-	    footer.addComponent(btnGuadar);
-        footer.setComponentAlignment(btnGuadar, Alignment.BOTTOM_RIGHT);
+	    footer.addComponent(btnSiguiente);
+        footer.setComponentAlignment(btnSiguiente, Alignment.BOTTOM_RIGHT);
         footer.setComponentAlignment(btnRegresar, Alignment.BOTTOM_LEFT);
         
         return footer;

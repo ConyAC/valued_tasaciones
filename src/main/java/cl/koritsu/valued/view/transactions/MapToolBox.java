@@ -16,6 +16,7 @@ import cl.koritsu.valued.event.ValuedEvent.BrowserResizeEvent;
 import cl.koritsu.valued.event.ValuedEvent.TransactionReportEvent;
 import cl.koritsu.valued.event.ValuedEventBus;
 import cl.koritsu.valued.view.ValuedViewType;
+import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickGuardarListener;
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegresarListener;
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
 import cl.koritsu.valued.view.utils.SecurityHelper;
@@ -133,7 +134,20 @@ public class MapToolBox extends Window {
 				regresar(sol);
 			}
 		});
-
+		editorSolicitud
+				.addOnClickGuardarEvent(new OnClickGuardarListener() {
+		
+					@Override
+					public void onClick(BeanItem<SolicitudTasacion> sol) {
+						doClickSiguiente(sol);
+						// si el estado es tasada y TODO es tasador, retorna a
+						// la tabla
+						solicitudContainer.getItem(sol.getBean())
+								.getItemProperty("estado")
+								.setValue(sol.getBean().getEstado());
+					}
+				});
+		
 		editorSolicitud
 				.addOnClickSiguienteListener(new OnClickSiguienteListener() {
 
