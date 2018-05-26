@@ -21,7 +21,7 @@ import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 import cl.koritsu.valued.domain.enums.Permiso;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion;
+import cl.koritsu.valued.view.utils.EditarSolicitudTasacion;
 import cl.koritsu.valued.view.utils.ResumenTasacion;
 import cl.koritsu.valued.view.utils.SecurityHelper;
 import cl.koritsu.valued.view.utils.Utils;
@@ -388,8 +388,9 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 
 					@Override
 					public void buttonClick(ClickEvent event) {
-						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
+						bitacoraContainer.removeAllItems();
 						
+						BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));						
 						List<Bitacora> bitacoras = service.getBitacoraBySol(sol.getBean());
 				    	bitacoraContainer.addAll(bitacoras); 
 
@@ -469,18 +470,17 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
     }
     
     private Window buildEdicion(SolicitudTasacion sol) {
-    	Window window = new Window(sol.getNumeroTasacion());
+    	Window window = new Window("Edición Tasación " +sol.getNumeroTasacion());
     	window.setWidth("50%");
     	window.setHeight("50%");
 	    window.setModal(true);
 		window.setResizable(false);
 		window.center();
 		
-		EditorSolicitudTasacion editorSolicitud = new EditorSolicitudTasacion(true);
-		editorSolicitud.setSolicitud(sol);
+		EditarSolicitudTasacion editarSolicitud = new EditarSolicitudTasacion(service,sol,window);
 		
 		VerticalLayout vl = new VerticalLayout();        
-		vl.addComponent(editorSolicitud);
+		vl.addComponent(editarSolicitud);
 	    
 	    window.setContent(vl);
 		UI.getCurrent().addWindow(window);
@@ -510,11 +510,12 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
 //			@Override
 //			public void buttonClick(ClickEvent event) {
 //				
-//				((UI)window.getParent()).removeWindow(window);
+//				bitacoraContainer.removeAllItems();
+//				window.close();
 //			}
 //		});
-//	    fl.addComponent(btnCerrar);
-	    
+//	    vl.addComponent(btnCerrar);		
+		
 	    window.setContent(vl);
 		UI.getCurrent().addWindow(window);
 	    

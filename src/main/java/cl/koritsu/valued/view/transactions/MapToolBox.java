@@ -125,7 +125,7 @@ public class MapToolBox extends Window {
 		setContent(table);
 		// crea el formulario que podrà utilizar el tasador para llenar la
 		// información
-		editorSolicitud = new EditorSolicitudTasacion(false);
+		editorSolicitud = new EditorSolicitudTasacion();
 		editorSolicitud.addOnClickRegresarEvent(new OnClickRegresarListener() {
 
 			@Override

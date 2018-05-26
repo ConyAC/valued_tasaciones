@@ -376,7 +376,10 @@ public class ValuedService {
 			b.setFechaTermino(new Date());
 		}else{
 			Date termino = bitacoraRepo.findLastRow(sol.getId());
-			b.setFechaInicio(termino);
+			if(termino != null)
+				b.setFechaInicio(termino);
+			else
+				b.setFechaInicio(new Date());
 			b.setFechaTermino(new Date());
 		}
 

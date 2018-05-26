@@ -153,14 +153,14 @@ public final class ValuedMenu extends CustomComponent {
 		            menuItemsLayout.addComponent(menuItemComponent);
 	            }
 	            
-	            if (view == ValuedViewType.REPORTS && SecurityHelper.hasPermission(Permiso.VISUALIZAR_REPORTES)) {
-	                reportsBadge = new Label();
-	                reportsBadge.setId(REPORTS_BADGE_ID);
-	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
-	                        reportsBadge);
-	                
-		            menuItemsLayout.addComponent(menuItemComponent);
-	            }
+//	            if (view == ValuedViewType.REPORTS && SecurityHelper.hasPermission(Permiso.VISUALIZAR_REPORTES)) {
+//	                reportsBadge = new Label();
+//	                reportsBadge.setId(REPORTS_BADGE_ID);
+//	                menuItemComponent = buildBadgeWrapper(menuItemComponent,
+//	                        reportsBadge);
+//	                
+//		            menuItemsLayout.addComponent(menuItemComponent);
+//	            }
 	            
 	            if (view == ValuedViewType.ADMINISTRATION && SecurityHelper.hasPermission(Permiso.ADMINISTRACION)) {
 	                administrationBadge = new Label();
