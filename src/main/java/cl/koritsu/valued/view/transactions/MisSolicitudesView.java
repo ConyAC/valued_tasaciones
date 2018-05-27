@@ -35,6 +35,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.tapio.googlemaps.GoogleMap;
 import com.vaadin.tapio.googlemaps.client.LatLon;
 import com.vaadin.tapio.googlemaps.client.events.MarkerClickListener;
+import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
 import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Component;
@@ -57,7 +58,6 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 	public static final String NAME = "en_proceso";
 
 	FormLayout details, detailsIngreso;
-    Label consoleEntry;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     
@@ -145,6 +145,20 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
 					mapaTasacion.cargarTasaciones(sol);
 			
+				/**
+				 * Mostramos las coordenadas en base al arrastre del marker
+				 */
+				googleMap.addMarkerDragListener(new MarkerDragListener() {
+					@Override
+					public void markerDragged(GoogleMapMarker draggedMarker,
+		                LatLon oldPosition) {
+		                mapToolBox.setCoordenadasTasacion("Marcador arrastrado desde ("
+			                    + oldPosition.getLat() + ", " + oldPosition.getLon()
+			                    + ") hacia (" + draggedMarker.getPosition().getLat()
+			                    + ", " + draggedMarker.getPosition().getLon() + ")");
+		            }
+		        });
+				
 			}
 		});
     	

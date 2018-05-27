@@ -500,19 +500,23 @@ public class BienStep implements WizardStep {
 			//lo agrega solo si tiene sentido
 			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
 				String ruta_img = null;
-				switch (tasacion.getEstado()) {
-				case CREADA:
-					ruta_img = "VAADIN/img/pin_tas_asignada.png";
-					break;
-				case TASADA:
-					ruta_img = "VAADIN/img/pin_tas_visitada.png";
-					break;
-				case VISADA:
-					ruta_img = "VAADIN/img/pin_tas_visada.png";
-					break;
-				default:
-					break;			
-				}
+				
+				if(tasacion.getEstado() != null){
+					switch (tasacion.getEstado()) {
+					case CREADA:
+						ruta_img = "VAADIN/img/pin_tas_asignada.png";
+						break;
+					case TASADA:
+						ruta_img = "VAADIN/img/pin_tas_visitada.png";
+						break;
+					case VISADA:
+						ruta_img = "VAADIN/img/pin_tas_visada.png";
+						break;
+					default:
+						break;			
+					}
+				}else
+					ruta_img = "VAADIN/img/pin_tas_proceso.png";
 				
 				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
 									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+

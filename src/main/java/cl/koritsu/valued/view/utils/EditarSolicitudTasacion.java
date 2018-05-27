@@ -7,10 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import cl.koritsu.valued.domain.Cliente;
+import cl.koritsu.valued.domain.Comuna;
 import cl.koritsu.valued.domain.ObraComplementaria;
 import cl.koritsu.valued.domain.ProgramaBien;
+import cl.koritsu.valued.domain.Region;
 import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.TipoInforme;
 import cl.koritsu.valued.domain.enums.Adicional;
+import cl.koritsu.valued.domain.enums.ClaseBien;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
 import cl.koritsu.valued.domain.enums.EtapaTasacion;
 import cl.koritsu.valued.domain.enums.Programa;
@@ -65,6 +69,8 @@ public class EditarSolicitudTasacion extends VerticalLayout {
 	BeanFieldGroup<SolicitudTasacion> bfg = new BeanFieldGroup<SolicitudTasacion>(SolicitudTasacion.class);
 	BeanItemContainer<ObraComplementaria> dsObraComplementaria = new BeanItemContainer<ObraComplementaria>(ObraComplementaria.class);
 	BeanItemContainer<ProgramaBien> dsProgramaBien = new BeanItemContainer<ProgramaBien>(ProgramaBien.class);
+	BeanItemContainer<Comuna> comunaDS = new BeanItemContainer<Comuna>(Comuna.class);
+
 	
 	@Autowired
 	ValuedService service;
@@ -79,6 +85,7 @@ public class EditarSolicitudTasacion extends VerticalLayout {
 	Window window;
 	SolicitudTasacion solicitudTasacion;
 	MapaTasacion mapaTasacion;
+	ComboBox cbRegion, cbComuna;
 	
 	public EditarSolicitudTasacion(ValuedService service, SolicitudTasacion solicitud, Window win) {
 		
@@ -145,25 +152,73 @@ public class EditarSolicitudTasacion extends VerticalLayout {
 	    cbCliente.setCaption("Nombre Cliente");
 	    cbCliente.setContainerDataSource(cls);
 	    cbCliente.setImmediate(true);
-	    cbCliente.setItemCaptionMode(ItemCaptionMode.ID);
+	    cbCliente.setItemCaptionMode(ItemCaptionMode.PROPERTY);
 	    cbCliente.setItemCaptionPropertyId("nombreCliente");
 	    Utils.bind(bfg, cbCliente, "cliente");
 	    vl.addComponent(cbCliente);
 	    
-	    TextField estado = new TextField();
-	    estado.setCaption("Estado");
-	    Utils.bind(bfg, estado, "estado");
-	    vl.addComponent(estado);
+	    ComboBox cbEstado = new ComboBox();
+	    cbEstado.setCaption("Estado");
+        cbEstado.setImmediate(true);
+        for(EstadoSolicitud estado : EstadoSolicitud.values()) {
+        	cbEstado.addItem(estado);
+		}
+        Utils.bind(bfg, cbEstado, "estado");
+	    vl.addComponent(cbEstado);
 	    
-	    TextField informe = new TextField();
-	    informe.setCaption("Tipo Informe");
-	    Utils.bind(bfg, informe, "tipoInformeString");
-	    vl.addComponent(informe);
+	    BeanItemContainer<TipoInforme> tipoInformeDS = new BeanItemContainer<TipoInforme>(TipoInforme.class);
+	    List<TipoInforme> informes = service.getTipoInformes();
+		tipoInformeDS.addAll(informes);
+		
+	    ComboBox cbInforme = new ComboBox();
+	    cbInforme.setCaption("Tipo Informe");
+	    cbInforme.setContainerDataSource(tipoInformeDS);
+	    cbInforme.setImmediate(true);
+	    cbInforme.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+	    cbInforme.setItemCaptionPropertyId("nombre");
+	    Utils.bind(bfg, cbInforme, "tipoInforme");
+	    vl.addComponent(cbInforme);
 	    
-	    TextField clase = new TextField();
-	    clase.setCaption("Clase Bien");
-	    Utils.bind(bfg, clase, "claseBienString");
-	    vl.addComponent(clase);
+	    ComboBox cbClase = new ComboBox();
+	    cbClase.setCaption("Clase");
+	    cbClase.setImmediate(true);
+        for(ClaseBien clase : ClaseBien.values()) {
+        	cbClase.addItem(clase);
+		}
+        Utils.bind(bfg, cbClase, "bien.clase");
+	    vl.addComponent(cbClase);
+	    
+	    BeanItemContainer<Region> regionDS = new BeanItemContainer<Region>(Region.class);
+		List<Region> regiones = service.getRegiones();
+		regionDS.addAll(regiones);
+		
+	    cbRegion = new ComboBox();
+	    cbRegion.setCaption("Region");
+	    cbRegion.setContainerDataSource(regionDS);
+		cbRegion.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbRegion.setItemCaptionPropertyId("nombre");
+		Utils.bind(bfg, cbRegion, "bien.comuna.region");
+	    vl.addComponent(cbRegion);
+	    
+	    cbRegion.addValueChangeListener(new ValueChangeListener() {
+			
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				
+				Region region = (Region) event.getProperty().getValue();
+				//obtiene la lista de regiones
+				List<Comuna> comunas = service.getComunaPorRegion(region);
+				comunaDS.addAll(comunas);
+			}
+		});
+
+	    cbComuna = new ComboBox();
+	    cbComuna.setCaption("Comuna");
+	    cbComuna.setContainerDataSource(comunaDS);
+		cbComuna.setItemCaptionMode(ItemCaptionMode.PROPERTY);
+		cbComuna.setItemCaptionPropertyId("nombre");
+		Utils.bind(bfg, cbComuna, "bien.comuna");
+	    vl.addComponent(cbComuna);
 	    
 	    TextArea direccion = new TextArea();
 	    direccion.setWidth("100%");

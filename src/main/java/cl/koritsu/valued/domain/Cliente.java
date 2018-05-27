@@ -146,7 +146,106 @@ public class Cliente {
 				+ direccion + ", tipo=" + tipo + ", multiRut=" + multiRut
 				+ ", prefijo=" + prefijo + ", correlativoActual="
 				+ correlativoActual + "]";
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((apellidoMaterno == null) ? 0 : apellidoMaterno.hashCode());
+		result = prime * result
+				+ ((apellidoPaterno == null) ? 0 : apellidoPaterno.hashCode());
+		result = prime * result
+				+ (int) (correlativoActual ^ (correlativoActual >>> 32));
+		result = prime * result
+				+ ((direccion == null) ? 0 : direccion.hashCode());
+		result = prime * result
+				+ ((factorKm == null) ? 0 : factorKm.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (multiRut ? 1231 : 1237);
+		result = prime * result + ((nombres == null) ? 0 : nombres.hashCode());
+		result = prime * result + ((prefijo == null) ? 0 : prefijo.hashCode());
+		result = prime * result
+				+ ((razonSocial == null) ? 0 : razonSocial.hashCode());
+		result = prime * result + ((rut == null) ? 0 : rut.hashCode());
+		result = prime * result
+				+ ((telefonoFijo == null) ? 0 : telefonoFijo.hashCode());
+		result = prime * result + ((tipo == null) ? 0 : tipo.hashCode());
+		result = prime * result
+				+ ((tipoPersona == null) ? 0 : tipoPersona.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cliente other = (Cliente) obj;
+		if (apellidoMaterno == null) {
+			if (other.apellidoMaterno != null)
+				return false;
+		} else if (!apellidoMaterno.equals(other.apellidoMaterno))
+			return false;
+		if (apellidoPaterno == null) {
+			if (other.apellidoPaterno != null)
+				return false;
+		} else if (!apellidoPaterno.equals(other.apellidoPaterno))
+			return false;
+		if (correlativoActual != other.correlativoActual)
+			return false;
+		if (direccion == null) {
+			if (other.direccion != null)
+				return false;
+		} else if (!direccion.equals(other.direccion))
+			return false;
+		if (factorKm == null) {
+			if (other.factorKm != null)
+				return false;
+		} else if (!factorKm.equals(other.factorKm))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (multiRut != other.multiRut)
+			return false;
+		if (nombres == null) {
+			if (other.nombres != null)
+				return false;
+		} else if (!nombres.equals(other.nombres))
+			return false;
+		if (prefijo == null) {
+			if (other.prefijo != null)
+				return false;
+		} else if (!prefijo.equals(other.prefijo))
+			return false;
+		if (razonSocial == null) {
+			if (other.razonSocial != null)
+				return false;
+		} else if (!razonSocial.equals(other.razonSocial))
+			return false;
+		if (rut == null) {
+			if (other.rut != null)
+				return false;
+		} else if (!rut.equals(other.rut))
+			return false;
+		if (telefonoFijo == null) {
+			if (other.telefonoFijo != null)
+				return false;
+		} else if (!telefonoFijo.equals(other.telefonoFijo))
+			return false;
+		if (tipo == null) {
+			if (other.tipo != null)
+				return false;
+		} else if (!tipo.equals(other.tipo))
+			return false;
+		if (tipoPersona != other.tipoPersona)
+			return false;
+		return true;
 	}  
-	
-	
 }

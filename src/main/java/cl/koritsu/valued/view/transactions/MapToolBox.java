@@ -353,6 +353,15 @@ public class MapToolBox extends Window {
 		editorSolicitud.setSolicitud(sol);
 
 	}
+	
+	/**
+	 * Permite setear las coordenadas del mapa toda vez que se arrastre el punto
+	 * @param coord
+	 */
+	public void setCoordenadasTasacion(String coord) {
+		editorSolicitud.setCoordenadas(coord);
+
+	}
 
 	/**
 	 * Permite regresar

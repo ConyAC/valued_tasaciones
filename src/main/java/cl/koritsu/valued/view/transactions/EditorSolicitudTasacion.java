@@ -6,6 +6,14 @@ import java.util.List;
 
 import org.vaadin.dialogs.ConfirmDialog;
 
+import cl.koritsu.valued.domain.ObraComplementaria;
+import cl.koritsu.valued.domain.ProgramaBien;
+import cl.koritsu.valued.domain.SolicitudTasacion;
+import cl.koritsu.valued.domain.enums.Adicional;
+import cl.koritsu.valued.domain.enums.EstadoSolicitud;
+import cl.koritsu.valued.domain.enums.Programa;
+import cl.koritsu.valued.view.utils.Utils;
+
 import com.vaadin.data.Container;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
@@ -15,9 +23,6 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.tapio.googlemaps.GoogleMap;
-import com.vaadin.tapio.googlemaps.client.LatLon;
-import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -42,14 +47,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-import cl.koritsu.valued.domain.ObraComplementaria;
-import cl.koritsu.valued.domain.ProgramaBien;
-import cl.koritsu.valued.domain.SolicitudTasacion;
-import cl.koritsu.valued.domain.enums.Adicional;
-import cl.koritsu.valued.domain.enums.EstadoSolicitud;
-import cl.koritsu.valued.domain.enums.Programa;
-import cl.koritsu.valued.view.utils.Utils;
-
 public class EditorSolicitudTasacion extends VerticalLayout {
 
 	/**
@@ -68,6 +65,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
     VerticalLayout agendar,confirmar,llenar,root,resumen;
     GoogleMap googleMap;
 	private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
+    Label consoleEntry = new Label();
     
     
     /** CODIGO PARA AGREGAR LISTENER DEL BOTON DE TASACIONES */
@@ -263,7 +261,7 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 	}
 	
 	private Button buildGuardar() {
-		Button btnGuardar = new Button(FontAwesome.SAVE) ;
+		Button btnGuardar = new Button("Guardar Tasación",FontAwesome.SAVE) ;
 		btnGuardar.addClickListener(new Button.ClickListener() {
 			
 			@Override
@@ -403,22 +401,8 @@ public class EditorSolicitudTasacion extends VerticalLayout {
         final CssLayout consoleLayout = new CssLayout();
         console.setContent(consoleLayout);
         detailsIngreso.addComponent(console);
-		/*
-		 * Permite añadir, en la parte inferior del mapa, la historia de las coordenadas por la que
-		 * se arrastraron los puntos (draggable)
-		 */    
-		googleMap.addMarkerDragListener(new MarkerDragListener() {
-			@Override
-			public void markerDragged(GoogleMapMarker draggedMarker,
-                LatLon oldPosition) {
-                Label consoleEntry = new Label();
-                consoleEntry.setValue("Marcador arrastrado desde ("
-                    + oldPosition.getLat() + ", " + oldPosition.getLon()
-                    + ") hacia (" + draggedMarker.getPosition().getLat()
-                    + ", " + draggedMarker.getPosition().getLon() + ")");
-                consoleLayout.addComponent(consoleEntry);
-            }
-        });
+        
+        consoleLayout.addComponent(consoleEntry);
 		
 		return vl;
 	}
@@ -440,6 +424,10 @@ public class EditorSolicitudTasacion extends VerticalLayout {
         dsProgramaBien.addAll(solicitud.getBien().getProgramas());
         
         definirVista(solicitud.getEstado());
+	}
+	
+	public void setCoordenadas(String coord) {
+		consoleEntry.setValue(coord);
 	}
 	
 	/**
@@ -473,10 +461,11 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		case TASADA:
 			//agrega el btnGuardar como primer elemento
 			addComponent(btnGuardar,0);
+			setSpacing(true);
 			setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
 			
 			root.addComponent(llenar, 1);
-			btnSiguiente.setCaption("Enviar a cliente");
+			btnSiguiente.setCaption("Enviar a Cliente");
 			btnSiguiente.addStyleName(ValoTheme.BUTTON_DANGER);
 			break;
 		case VISADA:
@@ -490,10 +479,11 @@ public class EditorSolicitudTasacion extends VerticalLayout {
 		case VISITADA:
 			//agrega el btnGuardar como primer elemento
 			addComponent(btnGuardar,0);
+			setSpacing(true);
 			setComponentAlignment(btnGuardar, Alignment.TOP_LEFT);
 			
 			root.addComponent(llenar, 1);
-			btnSiguiente.setCaption("Enviar a visar");
+			btnSiguiente.setCaption("Enviar a Visar");
 			btnSiguiente.addStyleName(ValoTheme.BUTTON_DANGER);
 			break;
 		default:
