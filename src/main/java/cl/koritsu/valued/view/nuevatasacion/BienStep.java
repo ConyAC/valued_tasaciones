@@ -1,6 +1,7 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import org.vaadin.teemu.wizards.WizardStep;
@@ -467,9 +468,12 @@ public class BienStep implements WizardStep {
 		        	 Notification.show("No existen resultados para la dirección ingresada.", Type.TRAY_NOTIFICATION);
 		             break;
 				case OK:
-					for(GoogleMapMarker item : googleMap.getMarkers()){
+					
+					Collection<GoogleMapMarker> markersColl = googleMap.getMarkers();
+					
+					for(GoogleMapMarker item : markersColl){
 						if(item.getCaption().equals(EstadoTasacion.NUEVA_TASACION.toString())){
-							googleMap.removeMarker(item);
+							markersColl.remove(item);							
 						}
 					}
 					
@@ -516,13 +520,42 @@ public class BienStep implements WizardStep {
 						break;			
 					}
 				}else
-					ruta_img = "VAADIN/img/pin_tas_proceso.png";
+					ruta_img = "VAADIN/img/pin_tas_sin_estado.png";
 				
-				googleMap.addMarker("Tasación "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
-									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
-									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
-									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
-									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);
+				googleMap
+						.addMarker(
+								"Tasación "
+										+ ((tasacion.getEstado() != null) ? tasacion
+												.getEstado().toString()
+												: "Estado no registrado")
+										+ ": "
+										+ ((tasacion.getCliente() != null && tasacion
+												.getCliente().getFullname() != null) ? tasacion
+												.getCliente().getFullname()
+												: "Nombre no registrado")
+										+ "\n"
+										+ "Tasador: "
+										+ ((tasacion.getTasador() != null) ? tasacion
+												.getTasador().getFullname()
+												: "No requiere")
+										+ "\n"
+										+ "Tipo Bien: "
+										+ ((tasacion.getBien() != null && tasacion
+												.getBien().getClase() != null) ? tasacion
+												.getBien().getClase()
+												.toString()
+												+ ", "
+												+ tasacion.getBien().getTipo()
+														.toString()
+												: "No registrado")
+										+ "\n"
+										+ "Fecha Encargo: "
+										+ ((tasacion.getFechaEncargo() != null) ? Utils
+												.formatoFecha(tasacion
+														.getFechaEncargo())
+												: "No registrada"),
+								new LatLon(tasacion.getNorteY(), tasacion
+										.getEsteX()), false, ruta_img);
 			}
 		}
 		
