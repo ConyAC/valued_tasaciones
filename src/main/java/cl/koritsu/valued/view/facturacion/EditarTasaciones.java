@@ -257,7 +257,7 @@ public class EditarTasaciones extends Window {
 		table.addGeneratedColumn("acciones", new ColumnGenerator() {
 			
 			@Override
-			public Object generateCell(Table source, final Object itemId,Object columnId) {
+			public Object generateCell(final Table source, final Object itemId,Object columnId) {
 				HorizontalLayout hl = new HorizontalLayout();
 				
 				Button verTasacion = new Button(null, FontAwesome.FILE);
