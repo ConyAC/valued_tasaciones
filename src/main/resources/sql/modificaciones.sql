@@ -80,3 +80,11 @@ CREATE TABLE `valor_uf` (
   `valor` double NOT NULL,
   PRIMARY KEY (`fecha`)
 );
+
+
+ALTER TABLE `valor_uf` 
+ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT AFTER `valor`,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`id`),
+ADD UNIQUE INDEX `fecha_UNIQUE` (`fecha` ASC);
+
