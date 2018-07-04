@@ -92,7 +92,7 @@ public class EditarTasaciones extends Window {
 			cbCliente.select(fieldGroup.getField("cliente"));
 			BuscarSolicitudVO vo = new BuscarSolicitudVO();
 	    	vo.setCliente((Cliente)fieldGroup.getField("cliente").getValue());
-	    	vo.setNroTasacion(null);
+	    	//vo.setNroTasacion(null);
 	    	
 	    	List<SolicitudTasacion> solicitudes = service.getTasacionesFiltradas(vo);
 	    	((BeanItemContainer<SolicitudTasacion>)tableTasaciones.getContainerDataSource()).addAll(solicitudes); 

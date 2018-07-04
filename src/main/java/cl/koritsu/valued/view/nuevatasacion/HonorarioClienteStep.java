@@ -1,6 +1,5 @@
 package cl.koritsu.valued.view.nuevatasacion;
 
-import java.util.Collection;
 import java.util.Date;
 
 import org.vaadin.teemu.wizards.Wizard;
@@ -9,7 +8,6 @@ import org.vaadin.teemu.wizards.WizardStep;
 import cl.koritsu.valued.domain.Cliente;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.services.ValuedService;
-import cl.koritsu.valued.view.utils.Constants;
 import cl.koritsu.valued.view.utils.Utils;
 
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -18,7 +16,6 @@ import com.vaadin.data.fieldgroup.BeanFieldGroup;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -35,6 +32,7 @@ public class HonorarioClienteStep implements WizardStep {
 	final TextField tfDesplazamientoPesos = new TextField();
 	final TextField tfKMTotal = new TextField();
 	BeanFieldGroup<SolicitudTasacion> fg;
+	float desplazamiento = 0;
 	ValuedService service;
 	
 	VerticalLayout root = new VerticalLayout();
@@ -131,7 +129,8 @@ public class HonorarioClienteStep implements WizardStep {
 				Cliente cliente  = (Cliente) fg.getField("cliente").getValue();
 				if(cliente != null && cliente.getFactorKm() != null)
 					lb2FactorEmpresa.setValue(cliente.getFactorKm());
-
+				else
+					lb2FactorEmpresa.setValue("Sin factor registrado");
 				String opcion= (String)event.getProperty().getValue();
 				mostrarOcultarPanel(opcion,glMontoDesplazamientoFijo,glPorDesplazamiento);
 			}
@@ -190,14 +189,14 @@ public class HonorarioClienteStep implements WizardStep {
 		
 		tfKMTotal.addValueChangeListener(new ValueChangeListener() {
 		    public void valueChange(ValueChangeEvent event) {
-		    	if(tfKMTotal.getValue() != null && lb2FactorEmpresa.getValue() != null){
-		    		float desplazamiento = Float.parseFloat(tfKMTotal.getValue().toString()) * Float.parseFloat(lb2FactorEmpresa.getValue().toString());
+		    	if(tfKMTotal.getValue() != null && lb2FactorEmpresa.getValue() != null && !lb2FactorEmpresa.getValue().equals("Sin factor registrado")){
+		    		desplazamiento = Float.parseFloat(tfKMTotal.getValue().toString()) * Float.parseFloat(lb2FactorEmpresa.getValue().toString());
 					tfDesplazamientoUF.setValue(String.valueOf(desplazamiento));
 				}
 		    	
 				Double valorUF = service.getValorUFporFecha(new Date());
 		    	if(valorUF != null && tfDesplazamientoUF.getValue() != null){
-		    		float pesos = valorUF.floatValue() * Float.parseFloat(tfDesplazamientoUF.getValue().toString());		
+		    		float pesos = valorUF.floatValue() * desplazamiento;		
 					tfDesplazamientoPesos.setValue(String.valueOf(pesos));
 				}
 		    }

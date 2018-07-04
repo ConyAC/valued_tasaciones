@@ -1,6 +1,5 @@
 package cl.koritsu.valued.view.transactions;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -10,31 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 
-import com.google.code.geocoder.Geocoder;
-import com.google.code.geocoder.GeocoderRequestBuilder;
-import com.google.code.geocoder.model.GeocodeResponse;
-import com.google.code.geocoder.model.GeocoderComponent;
-import com.google.code.geocoder.model.GeocoderRequest;
-import com.google.code.geocoder.model.GeocoderStatus;
-import com.vaadin.data.util.BeanItem;
-import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
-import com.vaadin.server.Responsive;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.tapio.googlemaps.GoogleMap;
-import com.vaadin.tapio.googlemaps.client.LatLon;
-import com.vaadin.tapio.googlemaps.client.events.MarkerClickListener;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
-import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
-
+import ru.xpoft.vaadin.VaadinView;
 import cl.koritsu.valued.domain.SolicitudTasacion;
 import cl.koritsu.valued.domain.Usuario;
 import cl.koritsu.valued.domain.enums.EstadoSolicitud;
@@ -47,10 +22,30 @@ import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickRegres
 import cl.koritsu.valued.view.transactions.EditorSolicitudTasacion.OnClickSiguienteListener;
 import cl.koritsu.valued.view.transactions.MapToolBox.OnClickTasacionEvent;
 import cl.koritsu.valued.view.utils.Constants;
+import cl.koritsu.valued.view.utils.MapaTasacion;
 import cl.koritsu.valued.view.utils.OpenInfoWindowOnMarkerClickListener;
 import cl.koritsu.valued.view.utils.ResumenTasacion;
 import cl.koritsu.valued.view.utils.SecurityHelper;
-import ru.xpoft.vaadin.VaadinView;
+
+import com.vaadin.data.util.BeanItem;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.server.Responsive;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.tapio.googlemaps.GoogleMap;
+import com.vaadin.tapio.googlemaps.client.LatLon;
+import com.vaadin.tapio.googlemaps.client.events.MarkerClickListener;
+import com.vaadin.tapio.googlemaps.client.events.MarkerDragListener;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapInfoWindow;
+import com.vaadin.tapio.googlemaps.client.overlays.GoogleMapMarker;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
 
 @SuppressWarnings("serial")
 @org.springframework.stereotype.Component
@@ -63,7 +58,6 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 	public static final String NAME = "en_proceso";
 
 	FormLayout details, detailsIngreso;
-    Label consoleEntry;
     GoogleMap googleMap;
     private String apiKey="AIzaSyBUxpPki9NJFg10wosJrH0Moqp1_JzsNuo";
     
@@ -82,7 +76,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     }
     
     @PostConstruct
-    public void init() {
+    public void init() {        
     	addStyleName("transactions");
     	ValuedEventBus.register(this);
 
@@ -94,6 +88,8 @@ public class MisSolicitudesView extends VerticalLayout implements View {
         googleMap.setMinZoom(4);
         googleMap.setMaxZoom(16);
 
+        MapaTasacion mapaTasacion = new MapaTasacion(service, googleMap);
+        
         Panel mapsPanel = new Panel();
         mapsPanel.setSizeFull();
         mapsPanel.setHeight("800px");
@@ -134,7 +130,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 				
 				//cuando las coordenadas son igual a 0 tenemos que ir a buscarlas para almacenarla en la solicitud.
 				if(lat == 0 || lon == 0){
-					LatLon coordenadas = recuperarCoordenadas(sol);
+					LatLon coordenadas = mapaTasacion.recuperarCoordenadas(sol);
 					if(coordenadas.getLat() > 0 && coordenadas.getLon() > 0){
 						googleMap.setCenter(new LatLon(coordenadas.getLat(),coordenadas.getLon()));
 						googleMap.addMarker(sol.getNumeroTasacion(), new LatLon(coordenadas.getLat(), coordenadas.getLon()), true, "VAADIN/img/pin_tas_asignada.png");
@@ -147,8 +143,22 @@ public class MisSolicitudesView extends VerticalLayout implements View {
 				googleMap.setZoom(20);
 				
 				if(sol.getBien() != null && sol.getBien().getComuna() != null)
-					cargarTasaciones(sol);
+					mapaTasacion.cargarTasaciones(sol);
 			
+				/**
+				 * Mostramos las coordenadas en base al arrastre del marker
+				 */
+				googleMap.addMarkerDragListener(new MarkerDragListener() {
+					@Override
+					public void markerDragged(GoogleMapMarker draggedMarker,
+		                LatLon oldPosition) {
+		                mapToolBox.setCoordenadasTasacion("Marcador arrastrado desde ("
+			                    + oldPosition.getLat() + ", " + oldPosition.getLon()
+			                    + ") hacia (" + draggedMarker.getPosition().getLat()
+			                    + ", " + draggedMarker.getPosition().getLon() + ")");
+		            }
+		        });
+				
 			}
 		});
     	
@@ -186,39 +196,6 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     	
     	UI.getCurrent().addWindow(mapToolBox);
     }
-
-  
-    
-    private LatLon recuperarCoordenadas(SolicitudTasacion sol) {
-		Geocoder geo = new Geocoder();
-		LatLon coord = new LatLon();
-		double lat = 0;
-		double lon = 0;
-		GeocoderRequest geocoderRequest = new GeocoderRequestBuilder().setAddress(sol.getBien().getDireccion()+" "+sol.getBien().getNumeroManzana()+" "+sol.getBien().getComuna().getNombre()).getGeocoderRequest();
-		geocoderRequest.addComponent(GeocoderComponent.COUNTRY, "cl");
-			try {
-				GeocodeResponse geocoderResponse = geo.geocode(geocoderRequest);
-				System.out.println(sol.getId() +" "+ geocoderResponse);
-				
-				if(geocoderResponse.getStatus() != null && geocoderResponse.getStatus().equals(GeocoderStatus.OK)) {
-					lat = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLat().doubleValue();
-					lon = geocoderResponse.getResults().get(0).getGeometry().getLocation().getLng().doubleValue();
-					
-					sol.setNorteY((float) lat);
-					sol.setEsteX((float) lon);
-					
-					service.saveSolicitud(sol);					
-				}
-				
-				coord.setLat(lat);
-				coord.setLon(lon);
-				
-			}catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return coord; 
-	}
 
 	@Override
     public void detach() {
@@ -261,51 +238,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
     	}
     	mapToolBox.setSolicitudes(solicitudes);
     	
-    }
-    
-    /*
-     * Permite cargar en el mapa las tasaciones historicas.
-     */
-    private void cargarTasaciones(SolicitudTasacion sol){		
-		//obtiene las solicitud pasadas en base a la comuna y región
-		List<SolicitudTasacion> tasaciones = service.getTasacionesByRegionAndComuna(sol.getBien().getComuna());
-    	//List<SolicitudTasacion> tasaciones = service.getTasacionesByCoordenadas(sol.getBien().getComuna().getId(),sol.getNorteY(), sol.getEsteX());
-	
-		//agrega las tasaciones realizadas
-		for(SolicitudTasacion tasacion : tasaciones) {
-			//lo agrega solo si tiene sentido
-			if(tasacion.getCliente() != null && tasacion.getNorteY() != 0  && tasacion.getEsteX() != 0 ) {
-				String ruta_img = null;
-				switch (tasacion.getEstado()) {
-				case CREADA:
-					ruta_img = "VAADIN/img/pin_tas_asignada.png";
-					break;
-				case TASADA:
-					ruta_img = "VAADIN/img/pin_tas_visitada.png";
-					break;
-				case VISADA:
-					ruta_img = "VAADIN/img/pin_tas_visada.png";
-					break;
-				default:
-					break;			
-				}
-				
-//				GoogleMapMarker marker = googleMap.addMarker("Tasación "+tasacion.getNumeroTasacion()+" "+tasacion.getEstado().toString()+": "+tasacion.getCliente().getNombreCliente()+"\n"+
-//									"Tasador: "+((tasacion.getTasador() != null)?tasacion.getTasador().getFullname():"No requiere")+"\n"+
-//									"Tipo Bien: "+tasacion.getBien().getClase().toString()+", "+tasacion.getBien().getTipo().toString()+"\n"+
-//									"Fecha Encargo: "+Utils.formatoFecha(tasacion.getFechaEncargo()), new LatLon(
-//									tasacion.getNorteY(),tasacion.getEsteX()), false, ruta_img);				
-				
-				//no consideramos la tasación que ha sido seleccionada
-				if(!sol.getNumeroTasacion().equals(tasacion.getNumeroTasacion()))
-					googleMap.addMarker(tasacion.getNumeroTasacion(), new LatLon(tasacion.getNorteY(),tasacion.getEsteX()),false,ruta_img);
-			}
-		}
-		
-		googleMap.setMinZoom(4);
-		googleMap.setMaxZoom(16);
-	}
-    
+    }    
     
     public void guardarEnBitacora(SolicitudTasacion sol){
     	

@@ -155,7 +155,7 @@ public class SolTasacionStep implements WizardStep {
 			{
 				setSpacing(true);
 				cbTasador.setItemCaptionMode(ItemCaptionMode.PROPERTY);
-				cbTasador.setItemCaptionPropertyId("nombres");
+				cbTasador.setItemCaptionPropertyId("fullname");
 				Utils.bind(fg, cbTasador, "tasador");
 				BeanItemContainer<Usuario> ds = new BeanItemContainer<Usuario>(Usuario.class);
 				cbTasador.setContainerDataSource(ds);
