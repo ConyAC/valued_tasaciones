@@ -33,7 +33,7 @@ public class SolicitudTasacionRepositoryImpl implements SolicitudTasacionReposit
         }
         
         if (vo.getDireccion() != null) {
-            list.add(cb.like(root.<String>get("bien").get("direccion"),vo.getDireccion().getDireccion()));
+            list.add(cb.like(root.<String>get("bien").<String>get("direccion"),vo.getDireccion().getDireccion()));
         }
 
         if (vo.getEstado() != null) {
