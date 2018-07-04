@@ -217,7 +217,7 @@ public class MapToolBox extends Window {
 		table.addGeneratedColumn("acciones", new CustomTable.ColumnGenerator() {
 			
 			@Override
-			public Object generateCell(CustomTable source, final Object itemId,Object columnId) {
+			public Object generateCell(final CustomTable source, final Object itemId,Object columnId) {
 				HorizontalLayout hl = new HorizontalLayout();
 				
 				if( SecurityHelper.hasPermission(Permiso.VISUALIZAR_TASACIONES) || SecurityHelper.hasPermission(Permiso.VISUALIZAR_MIS_TASACIONES)){
