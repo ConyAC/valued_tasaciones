@@ -209,7 +209,7 @@ public class AdminFacturacionView extends CssLayout implements View {
 		tabTasaciones.addGeneratedColumn("acciones", new Table.ColumnGenerator() {
 
 			@Override
-			public Object generateCell(Table source,
+			public Object generateCell(final Table source,
 					final Object itemId, Object columnId) {
 				return new Button(null, new Button.ClickListener() {
 
