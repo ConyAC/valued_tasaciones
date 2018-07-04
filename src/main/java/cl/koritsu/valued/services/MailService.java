@@ -42,7 +42,7 @@ public class MailService {
 	 * Enviar un a todos los usuarios con permiso confirmación central avisando que el 
 	 * administrador de obra confirmó la asistencia del mes
 	 */
-	public void enviarAlertaVisitaVencida(SolicitudTasacion sol){
+	public void enviarAlertaVisitaVencida(final SolicitudTasacion sol){
 
 		if(debugmode)return;
 		//realiza las llamadas asincronicamente
