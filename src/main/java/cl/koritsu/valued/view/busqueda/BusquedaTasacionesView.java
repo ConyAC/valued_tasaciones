@@ -335,7 +335,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
         table.addGeneratedColumn("acciones", new ColumnGenerator() {
 			
 			@Override
-			public Object generateCell(Table source, Object itemId, Object columnId) {
+			public Object generateCell(final Table source,final Object itemId, Object columnId) {
 				
 				HorizontalLayout hl = new HorizontalLayout();
 				hl.setSpacing(true);
@@ -423,8 +423,8 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
     	table.removeAllItems();  
     }
     
-    private Window buildReparo(SolicitudTasacion sol) {
-    	Window window = new Window(sol.getNumeroTasacion());
+    private Window buildReparo(final SolicitudTasacion sol) {
+    	final Window window = new Window(sol.getNumeroTasacion());
     	window.setWidth("500px");
     	window.setHeight("500px");
 	    window.setModal(true);
@@ -441,7 +441,7 @@ public class BusquedaTasacionesView extends VerticalLayout implements View {
       	sectionCliente.addStyleName(ValoTheme.LABEL_COLORED);	    
       	fl.addComponent(sectionCliente);
 	    
-      	TextArea reparo = new TextArea("Observación Cliente");
+      	final TextArea reparo = new TextArea("Observación Cliente");
       	reparo.setRows(10);
       	reparo.setWordwrap(false);
 	    fl.addComponent(reparo);

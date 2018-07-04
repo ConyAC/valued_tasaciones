@@ -280,6 +280,7 @@ public class EditarTasaciones extends Window {
 				    	BeanItem<SolicitudTasacion> sol = ((BeanItem<SolicitudTasacion>) source.getItem(itemId));
 				    	fieldGroup.getItemDataSource().getBean().getSolicitudes().add(sol.getBean());
 				    }
+				    
 				});
 				agregarTasacion.setImmediate(true);
 				hl.addComponent(agregarTasacion);
