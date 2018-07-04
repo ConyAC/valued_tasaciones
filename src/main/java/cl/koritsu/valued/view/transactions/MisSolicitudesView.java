@@ -88,7 +88,7 @@ public class MisSolicitudesView extends VerticalLayout implements View {
         googleMap.setMinZoom(4);
         googleMap.setMaxZoom(16);
 
-        MapaTasacion mapaTasacion = new MapaTasacion(service, googleMap);
+        final MapaTasacion mapaTasacion = new MapaTasacion(service, googleMap);
         
         Panel mapsPanel = new Panel();
         mapsPanel.setSizeFull();
